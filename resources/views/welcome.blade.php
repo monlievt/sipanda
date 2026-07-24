@@ -52,13 +52,9 @@
         </div>
     </nav>
 
-    <!-- Main Hero & Visual Banner -->
-    <div class="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 pt-10 pb-16 border-b border-slate-800/60">
-        <!-- Glow accents -->
-        <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute top-1/3 right-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-6">
+    <!-- SECTION 1: HERO & HEADING -->
+    <section class="relative bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 py-16 border-b border-slate-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
             <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 Portal Transparansi Pengawasan & Consulting APIP
@@ -73,7 +69,7 @@
             </p>
 
             <!-- Quick Action Buttons -->
-            <div class="pt-2 flex flex-wrap items-center justify-center gap-4">
+            <div class="pt-4 flex flex-wrap items-center justify-center gap-4">
                 <a href="{{ route('login') }}" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-emerald-600/30 transition-all transform hover:-translate-y-0.5">
                     🔑 Akses Portal Internal APIP
                 </a>
@@ -84,42 +80,51 @@
                     📚 Pusat Informasi FAQ & QnA
                 </a>
             </div>
+        </div>
+    </section>
 
-            <!-- Public Transparency Metrics Grid (Cleanly aligned below buttons) -->
-            <div class="pt-10 grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
+    <!-- SECTION 2: PUBLIC TRANSPARENCY METRICS (Clean Standalone Grid) -->
+    <section class="py-12 bg-slate-950 border-b border-slate-800/40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-8 space-y-1">
+                <h2 class="text-xl font-black text-white tracking-tight">Capaian & Metrik Real-Time Pengawasan ({{ $tahun }})</h2>
+                <p class="text-xs text-slate-400">Ringkasan pelaksanaan pengawasan dan tindak lanjut rekomendasi LHP Kabupaten Trenggalek.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <!-- Stat 1 -->
-                <div class="p-5 bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 shadow-xl space-y-1">
+                <div class="p-6 bg-slate-900 rounded-3xl border border-slate-800 shadow-xl space-y-1">
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Realisasi Pengawasan</span>
-                    <p class="text-3xl font-black text-emerald-400">{{ $totalPenugasan }} <span class="text-xs font-semibold text-slate-400">SPT ({{ $tahun }})</span></p>
+                    <p class="text-3xl font-black text-emerald-400">{{ $totalPenugasan }} <span class="text-xs font-semibold text-slate-400">SPT</span></p>
                     <span class="text-[11px] text-slate-400 block pt-1">Target PKPPT: {{ $totalPkppt }} Laporan</span>
                 </div>
 
                 <!-- Stat 2 -->
-                <div class="p-5 bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 shadow-xl space-y-1">
+                <div class="p-6 bg-slate-900 rounded-3xl border border-slate-800 shadow-xl space-y-1">
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Capaian Tindak Lanjut</span>
                     <p class="text-3xl font-black text-blue-400">{{ $persenSelesai }}%</p>
                     <span class="text-[11px] text-slate-400 block pt-1">{{ $countSelesai }} dari {{ $totalRekomendasi }} Rekomendasi Selesai</span>
                 </div>
 
                 <!-- Stat 3 -->
-                <div class="p-5 bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 shadow-xl space-y-1">
+                <div class="p-6 bg-slate-900 rounded-3xl border border-slate-800 shadow-xl space-y-1">
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Nilai Diawasi (APBD/Des)</span>
                     <p class="text-2xl font-black text-amber-400 font-mono">Rp {{ number_format($totalNilaiDiawasi, 0, ',', '.') }}</p>
                     <span class="text-[11px] text-slate-400 block pt-1">Total Nilai Anggaran Pengawasan</span>
                 </div>
 
                 <!-- Stat 4 -->
-                <div class="p-5 bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 shadow-xl space-y-1">
+                <div class="p-6 bg-slate-900 rounded-3xl border border-slate-800 shadow-xl space-y-1">
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Status Pelaksanaan</span>
                     <p class="text-3xl font-black text-purple-400">{{ $penugasanBerjalan }} <span class="text-xs font-semibold text-slate-400">Berjalan</span></p>
                     <span class="text-[11px] text-slate-400 block pt-1">{{ $penugasanSelesai }} SPT Selesai Diperiksa</span>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Modul & Fitur Utama SIPANDA -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
+    <!-- SECTION 3: MODUL & FITUR UTAMA SIPANDA -->
+    <section class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div class="text-center space-y-2">
             <h2 class="text-2xl font-black text-white tracking-tight">Cakupan Layanan Pengawasan & Consulting APIP</h2>
             <p class="text-xs text-slate-400 max-w-xl mx-auto">Pengawasan internal terpadu berbasis risiko dan layanan konsultasi dua arah untuk Perangkat Daerah.</p>
@@ -159,11 +164,11 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Artikel QnA / FAQ Publik Terbaru -->
+    <!-- SECTION 4: ARTIKEL QNA / FAQ PUBLIK -->
     @if($publicFaqs->isNotEmpty())
-        <div class="bg-slate-900/40 border-y border-slate-800 py-16">
+        <section class="bg-slate-900/40 border-y border-slate-800 py-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
@@ -196,10 +201,10 @@
                     @endforeach
                 </div>
             </div>
-        </div>
+        </section>
     @endif
 
-    <!-- Footer Landing Page -->
+    <!-- SECTION 5: FOOTER -->
     <footer class="mt-auto bg-slate-950 border-t border-slate-800/80 py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <div>
