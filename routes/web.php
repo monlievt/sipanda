@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 
 // Landing Page & Public Dashboard Transparansi (Tanpa Login)
 Route::get('/', [\App\Http\Controllers\PublicDashboardController::class, 'index'])->name('welcome');
+Route::get('/faq', [\App\Http\Controllers\KonsultasiController::class, 'faqIndex'])->name('faq.index');
 
 // ─── INTERNAL AREA (Guard: web) ──────────────────────────────────
 Route::middleware(['auth'])->group(function () {
@@ -107,7 +108,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/konsultasi/{konsultasi}/terbitkan-ba', [\App\Http\Controllers\KonsultasiController::class, 'terbitkanBa'])->name('konsultasi.terbitkan_ba');
     Route::patch('/konsultasi/{konsultasi}/toggle-faq', [\App\Http\Controllers\KonsultasiController::class, 'toggleFaq'])->name('konsultasi.toggle_faq');
     Route::get('/konsultasi/{konsultasi}/cetak-ba', [\App\Http\Controllers\KonsultasiController::class, 'cetakBa'])->name('konsultasi.cetak_ba');
-    Route::get('/faq', [\App\Http\Controllers\KonsultasiController::class, 'faqIndex'])->name('faq.index');
 });
 
 // ─── PORTAL OPD (Guard: opd, Area: /opd/*) ─────────────────────
