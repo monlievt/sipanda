@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" class="h-full bg-slate-900 text-slate-100">
+<html lang="id" class="h-full bg-slate-950 text-slate-100">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,7 +9,7 @@
 <body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex flex-col min-h-screen">
 
     <!-- Top Navigation Bar -->
-    <nav class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+    <nav class="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
                 <!-- Logo Brand -->
@@ -53,7 +53,7 @@
     </nav>
 
     <!-- Main Hero & Visual Banner -->
-    <div class="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 pt-12 pb-20 border-b border-slate-800/60">
+    <div class="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 pt-10 pb-16 border-b border-slate-800/60">
         <!-- Glow accents -->
         <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute top-1/3 right-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -73,7 +73,7 @@
             </p>
 
             <!-- Quick Action Buttons -->
-            <div class="pt-4 flex flex-wrap items-center justify-center gap-4">
+            <div class="pt-2 flex flex-wrap items-center justify-center gap-4">
                 <a href="{{ route('login') }}" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-emerald-600/30 transition-all transform hover:-translate-y-0.5">
                     🔑 Akses Portal Internal APIP
                 </a>
@@ -84,38 +84,36 @@
                     📚 Pusat Informasi FAQ & QnA
                 </a>
             </div>
-        </div>
-    </div>
 
-    <!-- Public Transparency Metrics Grid -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <!-- Stat 1 -->
-            <div class="p-6 bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 shadow-xl space-y-1">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Realisasi Pengawasan</span>
-                <p class="text-3xl font-black text-emerald-400">{{ $totalPenugasan }} <span class="text-xs font-semibold text-slate-400">SPT ({{ $tahun }})</span></p>
-                <span class="text-[11px] text-slate-400 block pt-1">Target PKPPT: {{ $totalPkppt }} Laporan</span>
-            </div>
+            <!-- Public Transparency Metrics Grid (Cleanly aligned below buttons) -->
+            <div class="pt-10 grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
+                <!-- Stat 1 -->
+                <div class="p-5 bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 shadow-xl space-y-1">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Realisasi Pengawasan</span>
+                    <p class="text-3xl font-black text-emerald-400">{{ $totalPenugasan }} <span class="text-xs font-semibold text-slate-400">SPT ({{ $tahun }})</span></p>
+                    <span class="text-[11px] text-slate-400 block pt-1">Target PKPPT: {{ $totalPkppt }} Laporan</span>
+                </div>
 
-            <!-- Stat 2 -->
-            <div class="p-6 bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 shadow-xl space-y-1">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Capaian Tindak Lanjut</span>
-                <p class="text-3xl font-black text-blue-400">{{ $persenSelesai }}%</p>
-                <span class="text-[11px] text-slate-400 block pt-1">{{ $countSelesai }} dari {{ $totalRekomendasi }} Rekomendasi Selesai</span>
-            </div>
+                <!-- Stat 2 -->
+                <div class="p-5 bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 shadow-xl space-y-1">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Capaian Tindak Lanjut</span>
+                    <p class="text-3xl font-black text-blue-400">{{ $persenSelesai }}%</p>
+                    <span class="text-[11px] text-slate-400 block pt-1">{{ $countSelesai }} dari {{ $totalRekomendasi }} Rekomendasi Selesai</span>
+                </div>
 
-            <!-- Stat 3 -->
-            <div class="p-6 bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 shadow-xl space-y-1">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Nilai Diawasi (APBD/Des)</span>
-                <p class="text-2xl font-black text-amber-400 font-mono">Rp {{ number_format($totalNilaiDiawasi, 0, ',', '.') }}</p>
-                <span class="text-[11px] text-slate-400 block pt-1">Total Nilai Anggaran Pengawasan</span>
-            </div>
+                <!-- Stat 3 -->
+                <div class="p-5 bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 shadow-xl space-y-1">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Nilai Diawasi (APBD/Des)</span>
+                    <p class="text-2xl font-black text-amber-400 font-mono">Rp {{ number_format($totalNilaiDiawasi, 0, ',', '.') }}</p>
+                    <span class="text-[11px] text-slate-400 block pt-1">Total Nilai Anggaran Pengawasan</span>
+                </div>
 
-            <!-- Stat 4 -->
-            <div class="p-6 bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 shadow-xl space-y-1">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Status Pelaksanaan</span>
-                <p class="text-3xl font-black text-purple-400">{{ $penugasanBerjalan }} <span class="text-xs font-semibold text-slate-400">Berjalan</span></p>
-                <span class="text-[11px] text-slate-400 block pt-1">{{ $penugasanSelesai }} SPT Selesai Diperiksa</span>
+                <!-- Stat 4 -->
+                <div class="p-5 bg-slate-900/90 backdrop-blur-md rounded-3xl border border-slate-800 shadow-xl space-y-1">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Status Pelaksanaan</span>
+                    <p class="text-3xl font-black text-purple-400">{{ $penugasanBerjalan }} <span class="text-xs font-semibold text-slate-400">Berjalan</span></p>
+                    <span class="text-[11px] text-slate-400 block pt-1">{{ $penugasanSelesai }} SPT Selesai Diperiksa</span>
+                </div>
             </div>
         </div>
     </div>
