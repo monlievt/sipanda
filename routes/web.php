@@ -18,16 +18,8 @@ use App\Http\Controllers\TindakLanjutController;
 use App\Http\Controllers\VerifikasiBuktiController;
 use Illuminate\Support\Facades\Route;
 
-// Landing: redirect ke login/dashboard
-Route::get('/', function () {
-    if (auth()->guard('opd')->check()) {
-        return redirect()->route('opd.dashboard');
-    }
-    if (auth()->check()) {
-        return redirect()->route('dashboard');
-    }
-    return redirect()->route('login');
-});
+// Landing Page & Public Dashboard Transparansi (Tanpa Login)
+Route::get('/', [\App\Http\Controllers\PublicDashboardController::class, 'index'])->name('welcome');
 
 // ─── INTERNAL AREA (Guard: web) ──────────────────────────────────
 Route::middleware(['auth'])->group(function () {
