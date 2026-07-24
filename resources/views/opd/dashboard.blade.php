@@ -11,11 +11,13 @@
     <nav class="bg-teal-700 text-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center space-x-3">
-                    <span class="font-black tracking-wider text-base">PORTAL OPD</span>
-                    <span class="text-xs bg-teal-800/80 px-3 py-1 rounded-full text-teal-200 font-semibold border border-teal-600">
-                        {{ $user->objekPenugasan?->nama ?? $user->nama }}
-                    </span>
+                <div class="flex items-center gap-6">
+                    <a href="{{ route('opd.dashboard') }}" class="font-extrabold text-lg tracking-tight hover:text-teal-200">
+                        SIPANDA <span class="text-xs font-normal opacity-80">| Portal OPD</span>
+                    </a>
+                    <a href="{{ route('opd.konsultasi.index') }}" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-600 text-white flex items-center gap-1.5 transition-all shadow-xs">
+                        💬 E-Consulting (QnA APIP)
+                    </a>
                 </div>
                 <div class="flex items-center gap-4">
                     <span class="text-xs text-teal-100 hidden sm:inline-block">PIC: <strong>{{ $user->nama }}</strong></span>

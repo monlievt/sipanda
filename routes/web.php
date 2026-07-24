@@ -106,6 +106,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/master/jenis-penugasan', [MasterDataController::class, 'jenisPenugasan'])->name('master.jenis-penugasan.index');
     Route::post('/master/jenis-penugasan', [MasterDataController::class, 'storeJenisPenugasan'])->name('master.jenis-penugasan.store');
     Route::get('/audit-log', [MasterDataController::class, 'auditLog'])->name('audit-log.index');
+
+    // E-Consulting & QnA APIP (Internal)
+    Route::get('/konsultasi', [\App\Http\Controllers\KonsultasiController::class, 'index'])->name('konsultasi.index');
+    Route::get('/konsultasi/{konsultasi}', [\App\Http\Controllers\KonsultasiController::class, 'show'])->name('konsultasi.show');
+    Route::post('/konsultasi/{konsultasi}/disposisi', [\App\Http\Controllers\KonsultasiController::class, 'disposisi'])->name('konsultasi.disposisi');
+    Route::post('/konsultasi/{konsultasi}/chat', [\App\Http\Controllers\KonsultasiController::class, 'sendChat'])->name('konsultasi.chat');
+    Route::post('/konsultasi/{konsultasi}/terbitkan-ba', [\App\Http\Controllers\KonsultasiController::class, 'terbitkanBa'])->name('konsultasi.terbitkan_ba');
+    Route::patch('/konsultasi/{konsultasi}/toggle-faq', [\App\Http\Controllers\KonsultasiController::class, 'toggleFaq'])->name('konsultasi.toggle_faq');
+    Route::get('/konsultasi/{konsultasi}/cetak-ba', [\App\Http\Controllers\KonsultasiController::class, 'cetakBa'])->name('konsultasi.cetak_ba');
+    Route::get('/faq', [\App\Http\Controllers\KonsultasiController::class, 'faqIndex'])->name('faq.index');
 });
 
 // ─── PORTAL OPD (Guard: opd, Area: /opd/*) ─────────────────────
@@ -124,6 +134,13 @@ Route::prefix('opd')->name('opd.')->group(function () {
         Route::get('/dashboard', [OpdDashboardController::class, 'index'])->name('dashboard');
         Route::get('/tindak-lanjut/{tindakLanjut}', [OpdDashboardController::class, 'show'])->name('tindak-lanjut.show');
         Route::post('/tindak-lanjut/{tindakLanjut}/bukti', [OpdDashboardController::class, 'storeBukti'])->name('tindak-lanjut.bukti.store');
+
+        // E-Consulting & QnA APIP Sisi OPD
+        Route::get('/konsultasi', [\App\Http\Controllers\Opd\OpdKonsultasiController::class, 'index'])->name('konsultasi.index');
+        Route::get('/konsultasi/create', [\App\Http\Controllers\Opd\OpdKonsultasiController::class, 'create'])->name('konsultasi.create');
+        Route::post('/konsultasi', [\App\Http\Controllers\Opd\OpdKonsultasiController::class, 'store'])->name('konsultasi.store');
+        Route::get('/konsultasi/{konsultasi}', [\App\Http\Controllers\Opd\OpdKonsultasiController::class, 'show'])->name('konsultasi.show');
+        Route::post('/konsultasi/{konsultasi}/chat', [\App\Http\Controllers\Opd\OpdKonsultasiController::class, 'sendChat'])->name('konsultasi.chat');
     });
 });
 
