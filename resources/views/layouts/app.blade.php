@@ -20,10 +20,10 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 
-    <!-- Theme Initialization & Global Toggle Function (Dark/Light Mode) -->
+    <!-- Theme Initialization & Global Toggle Function (Default: Light Mode) -->
     <script>
-        // Inisialisasi awal saat load
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        // Inisialisasi awal: Defaultkan ke Light Mode (Hanya dark jika user eksplisit memilih 'dark')
+        if (localStorage.theme === 'dark') {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
