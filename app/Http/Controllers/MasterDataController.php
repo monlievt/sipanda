@@ -49,24 +49,95 @@ class MasterDataController extends Controller
         return view('master.users', compact('listUsers', 'roles', 'irbans', 'search', 'roleFilter', 'irbanFilter'));
     }
 
-    /** Update Role & Irban Pengguna */
+    /** Tambah Pegawai Internal Baru */
+    public function storeUser(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'nama'             => ['required', 'string', 'max:150'],
+            'nama_tanpa_gelar' => ['nullable', 'string', 'max:150'],
+            'nip'              => ['required', 'string', 'max:30', 'unique:users,nip'],
+            'email'            => ['required', 'email', 'max:150', 'unique:users,email'],
+            'no_hp'            => ['nullable', 'string', 'max:25'],
+            'jabatan'          => ['nullable', 'string', 'max:150'],
+            'pangkat'          => ['nullable', 'string', 'max:100'],
+            'golongan'         => ['nullable', 'string', 'max:50'],
+            'irban_id'         => ['nullable', 'exists:irbans,id'],
+            'role'             => ['required', 'exists:roles,name'],
+            'password'         => ['nullable', 'string', 'min:6'],
+        ], [
+            'nama.required'  => 'Nama pegawai wajib diisi.',
+            'nip.required'   => 'NIP wajib diisi.',
+            'nip.unique'     => 'NIP tersebut sudah terdaftar.',
+            'email.required' => 'Email wajib diisi.',
+            'email.unique'   => 'Email tersebut sudah terdaftar.',
+            'role.required'  => 'Role akses wajib dipilih.',
+        ]);
+
+        $defaultPassword = $validated['password'] ?: ($validated['nip'] ?: 'password123');
+
+        $user = User::create([
+            'nama'             => $validated['nama'],
+            'nama_tanpa_gelar' => $validated['nama_tanpa_gelar'] ?: preg_replace('/,.*$/', '', $validated['nama']),
+            'nip'              => $validated['nip'],
+            'email'            => $validated['email'],
+            'no_hp'            => $validated['no_hp'],
+            'jabatan'          => $validated['jabatan'],
+            'pangkat'          => $validated['pangkat'],
+            'golongan'         => $validated['golongan'],
+            'irban_id'         => $validated['irban_id'],
+            'password'         => \Illuminate\Support\Facades\Hash::make($defaultPassword),
+            'tipe_akun'        => 'internal',
+            'is_active'        => true,
+        ]);
+
+        $user->assignRole($validated['role']);
+
+        ActivityLog::catat('users', $user->id, 'create', null, $user->toArray());
+
+        return back()->with('status', "✓ Pegawai baru '{$user->nama}' berhasil ditambahkan ke database!");
+    }
+
+    /** Update Lengkap Data Pegawai & Role */
     public function updateUserRole(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
+            'nama'      => ['required', 'string', 'max:150'],
+            'nip'       => ['required', 'string', 'max:30', 'unique:users,nip,' . $user->id],
+            'email'     => ['required', 'email', 'max:150', 'unique:users,email,' . $user->id],
+            'no_hp'     => ['nullable', 'string', 'max:25'],
+            'jabatan'   => ['nullable', 'string', 'max:150'],
+            'pangkat'   => ['nullable', 'string', 'max:100'],
+            'golongan'  => ['nullable', 'string', 'max:50'],
             'role'      => ['required', 'exists:roles,name'],
             'irban_id'  => ['nullable', 'exists:irbans,id'],
             'is_active' => ['required', 'boolean'],
+            'password'  => ['nullable', 'string', 'min:6'],
         ]);
 
-        $user->syncRoles([$validated['role']]);
-        $user->update([
+        $sebelum = $user->toArray();
+
+        $updateData = [
+            'nama'      => $validated['nama'],
+            'nip'       => $validated['nip'],
+            'email'     => $validated['email'],
+            'no_hp'     => $validated['no_hp'],
+            'jabatan'   => $validated['jabatan'],
+            'pangkat'   => $validated['pangkat'],
+            'golongan'  => $validated['golongan'],
             'irban_id'  => $validated['irban_id'],
             'is_active' => $validated['is_active'],
-        ]);
+        ];
 
-        ActivityLog::catat('users', $user->id, 'update', null, $user->toArray());
+        if (! empty($validated['password'])) {
+            $updateData['password'] = \Illuminate\Support\Facades\Hash::make($validated['password']);
+        }
 
-        return back()->with('status', "Data & role pengguna '{$user->nama_display}' berhasil diperbarui.");
+        $user->update($updateData);
+        $user->syncRoles([$validated['role']]);
+
+        ActivityLog::catat('users', $user->id, 'update', $sebelum, $user->toArray());
+
+        return back()->with('status', "Data pegawai '{$user->nama_display}' berhasil diperbarui.");
     }
 
     /**

@@ -101,6 +101,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Master Data
     Route::get('/master/users', [MasterDataController::class, 'users'])->middleware('can:users.view')->name('master.users.index');
+    Route::post('/master/users', [MasterDataController::class, 'storeUser'])->middleware('can:users.create')->name('master.users.store');
     Route::patch('/master/users/{user}', [MasterDataController::class, 'updateUserRole'])->middleware('can:users.edit')->name('master.users.update');
     Route::patch('/master/users/{user}/toggle-status', [MasterDataController::class, 'toggleUserStatus'])->middleware('can:users.edit')->name('master.users.toggle_status');
     Route::get('/master/opd-users', [OpdUserManagementController::class, 'index'])->middleware('can:opd_users.manage')->name('master.opd-users.index');
