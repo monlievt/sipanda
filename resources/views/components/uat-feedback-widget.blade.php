@@ -1,29 +1,36 @@
-<!-- Floating Action Button & Chat Drawer: Kotak Saran & Bug UAT (Pojok Kanan Bawah) -->
-<div id="uatFeedbackWidgetWrapper" style="position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 999999 !important;" class="no-print font-sans">
+<!-- Global Floating Action Button & Chat Drawer: Kotak Saran & Bug UAT (Pojok Kanan Bawah) -->
+<div id="uatFeedbackWidgetWrapper" class="no-print font-sans">
 
-    <!-- 1. Floating Toggle Button (Pojok Kanan Bawah) -->
-    <button type="button" id="uatFeedbackToggleBtn" onclick="toggleUatFeedbackPopup()" class="group flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-2xl shadow-2xl shadow-orange-500/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 cursor-pointer border border-amber-300/40">
-        <!-- Pulse Indicator -->
-        <span class="relative flex h-3 w-3">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+    <!-- 1. Floating Toggle Button (Selalu di Pojok Kanan Bawah, Sangat Kontras & Jelas) -->
+    <button type="button" 
+            id="uatFeedbackToggleBtn" 
+            onclick="toggleUatFeedbackPopup()" 
+            style="position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 9999998 !important; background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%) !important; box-shadow: 0 12px 28px -4px rgba(234, 88, 12, 0.65), 0 6px 12px -2px rgba(245, 158, 11, 0.4) !important; border: 2px solid #fef3c7 !important;" 
+            class="group flex items-center gap-2.5 px-4 py-3 text-white font-extrabold rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 active:scale-95 cursor-pointer">
+        
+        <!-- Blinking Pulse Beacon -->
+        <span class="relative flex h-3.5 w-3.5 shrink-0">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-85"></span>
+            <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-white shadow-xs"></span>
         </span>
         
-        <!-- Icon Chat -->
-        <span id="uatToggleIcon">
-            <svg class="w-5 h-5 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-            </svg>
+        <!-- Icon -->
+        <span id="uatToggleIcon" class="text-base flex items-center">
+            💬
         </span>
         
-        <span class="text-xs font-extrabold tracking-wide">Kotak Saran & Bug UAT</span>
+        <span class="text-xs font-black tracking-wide text-white drop-shadow-sm uppercase">
+            Kotak Saran & Bug UAT
+        </span>
     </button>
 
-    <!-- 2. Chatbox Popup Window Drawer -->
-    <div id="uatFeedbackPopupDrawer" class="hidden absolute bottom-16 right-0 w-96 max-w-[calc(100vw-2rem)] max-h-[85vh] bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-3xl shadow-2xl shadow-black/80 flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-right">
+    <!-- 2. Chatbox Popup Window Drawer (TERBUKA KE ATAS / DI ATAS TOMBOL) -->
+    <div id="uatFeedbackPopupDrawer" 
+         style="position: fixed !important; bottom: 85px !important; right: 24px !important; width: 400px !important; max-width: calc(100vw - 32px) !important; max-height: calc(100vh - 105px) !important; z-index: 9999999 !important; display: none;" 
+         class="bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-xl border-2 border-amber-500/40 rounded-3xl shadow-2xl shadow-black/90 flex-col overflow-hidden transition-all duration-300">
         
         <!-- Header Chat Drawer -->
-        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-4 border-b border-slate-700/80 flex items-center justify-between text-white">
+        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-4 border-b border-slate-700/80 flex items-center justify-between text-white shrink-0">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg font-bold border border-amber-500/30">
                     🛠️
@@ -31,9 +38,9 @@
                 <div>
                     <h3 class="text-sm font-black text-white tracking-tight flex items-center gap-1.5">
                         <span>Kotak Saran & Bug UAT</span>
-                        <span class="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 text-[9px] font-bold rounded-md uppercase">UAT</span>
+                        <span class="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 text-[9px] font-bold rounded-md uppercase">UAT Mode</span>
                     </h3>
-                    <p class="text-[11px] text-slate-400">Kirim masukan & screenshot saat mencoba fitur</p>
+                    <p class="text-[11px] text-slate-400">Kirim kendala, saran & screenshot saat pengujian</p>
                 </div>
             </div>
 
@@ -44,14 +51,14 @@
         </div>
 
         <!-- Chat Body / Scrollable Form -->
-        <div class="p-4 overflow-y-auto space-y-3.5 text-xs text-slate-200 custom-scrollbar flex-1">
+        <div class="p-4 overflow-y-auto space-y-3.5 text-xs text-slate-200 custom-scrollbar flex-1" style="max-height: calc(100vh - 200px);">
             
             <!-- Intro Chat Bubble from Support -->
             <div class="flex items-start gap-2.5">
                 <div class="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold shrink-0 border border-amber-500/30">
                     🤖
                 </div>
-                <div class="p-3 bg-slate-800/80 rounded-2xl rounded-tl-sm border border-slate-700/60 text-[11px] text-slate-300 leading-relaxed shadow-sm">
+                <div class="p-3 bg-slate-800/90 rounded-2xl rounded-tl-sm border border-slate-700/60 text-[11px] text-slate-300 leading-relaxed shadow-sm">
                     Halo! Tim pengembang siap menampung laporan kendala, pertanyaan alur, atau ide saran perbaikan Anda saat mencoba SIPANDA.
                 </div>
             </div>
@@ -81,7 +88,7 @@
                         <option value="sedang">🟡 Sedang (Normal)</option>
                         <option value="rendah">🟢 Rendah (Saran Minor)</option>
                         <option value="tinggi">⚠️ Tinggi (Fitur Tidak Berfungsi)</option>
-                        <option value="kritis">🔥 Kritis (Error 500 / Block)</option>
+                        <option value="kritis">🔥 Kritis (Error 500 / Blocker)</option>
                     </select>
                 </div>
 
@@ -143,25 +150,25 @@
 <script>
     function toggleUatFeedbackPopup() {
         const popup = document.getElementById('uatFeedbackPopupDrawer');
-        const isHidden = popup.classList.contains('hidden');
+        const isHidden = popup.style.display === 'none' || popup.style.display === '';
 
         if (isHidden) {
             document.getElementById('uatFeedbackUrl').value = window.location.href;
             document.getElementById('uatUrlBadge').textContent = window.location.pathname + window.location.search;
             document.getElementById('uatFeedbackBrowser').value = navigator.userAgent + ' | Screen: ' + window.innerWidth + 'x' + window.innerHeight;
             
-            popup.classList.remove('hidden');
-            document.getElementById('uatToggleIcon').innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+            popup.style.display = 'flex';
+            document.getElementById('uatToggleIcon').innerHTML = '✕';
         } else {
-            popup.classList.add('hidden');
-            document.getElementById('uatToggleIcon').innerHTML = '<svg class="w-5 h-5 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>';
+            popup.style.display = 'none';
+            document.getElementById('uatToggleIcon').innerHTML = '💬';
         }
     }
 
     // Listener Paste (Ctrl+V / Cmd+V)
     window.addEventListener('paste', function(e) {
         const popup = document.getElementById('uatFeedbackPopupDrawer');
-        if (!popup || popup.classList.contains('hidden')) return;
+        if (!popup || popup.style.display === 'none') return;
 
         const items = (e.clipboardData || e.originalEvent.clipboardData).items;
         for (let i = 0; i < items.length; i++) {
