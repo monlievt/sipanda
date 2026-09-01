@@ -56,15 +56,30 @@ class PublicDashboardController extends Controller
         });
 
         // QnA FAQ Publik Terbaru (Maks. 4 Item)
-        $publicFaqs = Cache::remember('public_faqs_home', 600, function () {
-            return Konsultasi::where('is_faq_public', true)
-                ->where('status', 'selesai')
-                ->orderBy('updated_at', 'desc')
-                ->take(4)
-                ->get();
-        });
+        $publicFaqs = Konsultasi::where('is_faq_public', true)
+            ->where('status', 'selesai')
+            ->orderBy('updated_at', 'desc')
+            ->take(4)
+            ->get();
 
-        $irbans = Cache::remember('all_irbans', 3600, fn() => Irban::all());
+        if ($publicFaqs->isEmpty()) {
+            $publicFaqs = \App\Models\FaqArtikel::published()
+                ->orderBy('urutan', 'asc')
+                ->orderBy('created_at', 'desc')
+                ->take(4)
+                ->get()
+                ->map(function ($item) {
+                    return (object) [
+                        'area_konsultasi'    => ucfirst($item->kategori),
+                        'judul_permasalahan' => $item->pertanyaan,
+                        'uraian_permasalahan'=> $item->jawaban,
+                        'kesimpulan_advis'   => $item->dasar_hukum_rujukan ? "Dasar Hukum: {$item->dasar_hukum_rujukan}\n\n{$item->jawaban}" : $item->jawaban,
+                        'updated_at'         => $item->updated_at,
+                    ];
+                });
+        }
+
+        $irbans = Irban::all();
 
         return view('welcome', array_merge($data, compact('tahun', 'publicFaqs', 'irbans')));
     }

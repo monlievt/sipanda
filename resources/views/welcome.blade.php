@@ -167,7 +167,7 @@
     </section>
 
     <!-- SECTION 4: ARTIKEL QNA / FAQ PUBLIK -->
-    @if($publicFaqs->isNotEmpty())
+    @if(!empty($publicFaqs) && count($publicFaqs) > 0)
         <section class="bg-slate-900/40 border-y border-slate-800 py-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -188,7 +188,7 @@
                                 <span class="px-2.5 py-1 bg-blue-950 text-blue-300 font-extrabold text-[10px] rounded-lg uppercase">
                                     {{ $faq->area_konsultasi }}
                                 </span>
-                                <span class="text-[10px] text-slate-500 font-semibold">{{ $faq->updated_at->format('d/m/Y') }}</span>
+                                <span class="text-[10px] text-slate-500 font-semibold">{{ !empty($faq->updated_at) ? $faq->updated_at->format('d/m/Y') : date('d/m/Y') }}</span>
                             </div>
 
                             <h3 class="font-bold text-white text-sm line-clamp-1">{{ $faq->judul_permasalahan }}</h3>
