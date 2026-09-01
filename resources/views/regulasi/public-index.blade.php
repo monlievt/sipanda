@@ -145,5 +145,7 @@
         <p>&copy; {{ date('Y') }} Inspektorat Kabupaten Trenggalek &bull; Sistem Informasi Pengawasan Terintegrasi (SIPANDA)</p>
     </footer>
 
+    <!-- Global UAT Feedback & Bug Report Widget -->
+    <x-uat-feedback-widget />
 </body>
 </html>

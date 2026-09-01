@@ -27,6 +27,9 @@
         <div class="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/60 dark:shadow-none p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 relative z-10">
             {{ $slot }}
         </div>
+
+        <!-- Global UAT Feedback & Bug Report Widget -->
+        <x-uat-feedback-widget />
     </body>
 </html>
 
