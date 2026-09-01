@@ -24,13 +24,13 @@
         </span>
     </button>
 
-    <!-- 2. Chatbox Popup Window Drawer (TERBUKA KE ATAS / DI ATAS TOMBOL) -->
+    <!-- 2. Chatbox Popup Window Drawer (TERBUKA KE ATAS / DI ATAS TOMBOL, 100% SOLID OPAQUE) -->
     <div id="uatFeedbackPopupDrawer" 
-         style="position: fixed !important; bottom: 85px !important; right: 24px !important; width: 400px !important; max-width: calc(100vw - 32px) !important; max-height: calc(100vh - 105px) !important; z-index: 9999999 !important; display: none;" 
-         class="bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-xl border-2 border-amber-500/40 rounded-3xl shadow-2xl shadow-black/90 flex-col overflow-hidden transition-all duration-300">
+         style="position: fixed !important; bottom: 85px !important; right: 24px !important; width: 400px !important; max-width: calc(100vw - 32px) !important; max-height: calc(100vh - 105px) !important; z-index: 9999999 !important; display: none; background-color: #0f172a !important; background: #0f172a !important; opacity: 1 !important;" 
+         class="border-2 border-amber-500/50 rounded-3xl shadow-2xl shadow-black flex-col overflow-hidden transition-all duration-200">
         
-        <!-- Header Chat Drawer -->
-        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-4 border-b border-slate-700/80 flex items-center justify-between text-white shrink-0">
+        <!-- Header Chat Drawer (Solid Slate-950) -->
+        <div style="background-color: #020617 !important;" class="p-4 border-b border-slate-700 flex items-center justify-between text-white shrink-0">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg font-bold border border-amber-500/30">
                     🛠️
@@ -50,15 +50,15 @@
             </button>
         </div>
 
-        <!-- Chat Body / Scrollable Form -->
-        <div class="p-4 overflow-y-auto space-y-3.5 text-xs text-slate-200 custom-scrollbar flex-1" style="max-height: calc(100vh - 200px);">
+        <!-- Chat Body / Scrollable Form (Solid Slate-900) -->
+        <div style="background-color: #0f172a !important;" class="p-4 overflow-y-auto space-y-3.5 text-xs text-slate-200 custom-scrollbar flex-1">
             
             <!-- Intro Chat Bubble from Support -->
             <div class="flex items-start gap-2.5">
                 <div class="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold shrink-0 border border-amber-500/30">
                     🤖
                 </div>
-                <div class="p-3 bg-slate-800/90 rounded-2xl rounded-tl-sm border border-slate-700/60 text-[11px] text-slate-300 leading-relaxed shadow-sm">
+                <div style="background-color: #1e293b !important;" class="p-3 rounded-2xl rounded-tl-sm border border-slate-700 text-[11px] text-slate-200 leading-relaxed shadow-sm">
                     Halo! Tim pengembang siap menampung laporan kendala, pertanyaan alur, atau ide saran perbaikan Anda saat mencoba SIPANDA.
                 </div>
             </div>

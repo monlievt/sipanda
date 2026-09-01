@@ -19,6 +19,15 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
+
+    <!-- Theme Initialization (Dark/Light Mode) -->
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased font-sans">
     <div class="min-h-screen flex">
@@ -52,6 +61,21 @@
                             {{ auth()->user()->irban->nama_irban }}
                         </span>
                     @endif
+
+                    <!-- Dark / Light Theme Toggle Button -->
+                    <button type="button" 
+                            onclick="toggleThemeMode()" 
+                            class="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer" 
+                            title="Ganti Mode Terang / Gelap (Dark/Light Mode)">
+                        <!-- Moon Icon (Light mode -> Dark) -->
+                        <svg class="w-5 h-5 block dark:hidden text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                        <!-- Sun Icon (Dark mode -> Light) -->
+                        <svg class="w-5 h-5 hidden dark:block text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </button>
 
                     <!-- Notification Bell Dropdown Component -->
                     <div x-data="notificationDropdown()" x-init="init()" class="relative">
@@ -201,6 +225,17 @@
                     })
                     .catch(err => console.warn(err));
                 }
+            }
+        }
+
+        // Global Dark / Light Theme Mode Toggle
+        function toggleThemeMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
             }
         }
     </script>
