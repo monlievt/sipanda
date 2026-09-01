@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tindak_lanjut', function (Blueprint $table) {
-            //
-        });
+        if (!Schema::hasColumn('tindak_lanjut', 'nilai_diawasi_rp')) {
+            Schema::table('tindak_lanjut', function (Blueprint $table) {
+                $table->double('nilai_diawasi_rp')->default(0)->after('rekomendasi');
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tindak_lanjut', function (Blueprint $table) {
-            //
-        });
+        if (Schema::hasColumn('tindak_lanjut', 'nilai_diawasi_rp')) {
+            Schema::table('tindak_lanjut', function (Blueprint $table) {
+                $table->dropColumn('nilai_diawasi_rp');
+            });
+        }
     }
 };
