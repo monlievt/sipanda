@@ -37,7 +37,7 @@ class TindakLanjutController extends Controller
                 $q->whereYear('tgl_lhp', $tahun)
                   ->orWhereYear('created_at', $tahun)
                   ->orWhereHas('penugasan', function ($pq) use ($tahun) {
-                      $pq->whereYear('tanggal_spt', $tahun);
+                      $pq->whereYear('tanggal_mulai', $tahun);
                   });
             });
         }

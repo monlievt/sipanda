@@ -29,7 +29,7 @@ class DashboardController extends Controller
         $cacheKey = "dashboard_stats_{$tahun}_" . ($irbanId ?: 'all');
 
         $data = Cache::remember($cacheKey, 120, function () use ($tahun, $irbanId) {
-            $queryPenugasan = Penugasan::select(['id', 'status', 'jenis_penugasan_id', 'irban_id', 'tanggal_mulai', 'tanggal_spt'])
+            $queryPenugasan = Penugasan::select(['id', 'status', 'jenis_penugasan_id', 'irban_id', 'tanggal_mulai', 'tanggal_selesai'])
                 ->tahun($tahun);
 
             if ($irbanId) {

@@ -122,7 +122,7 @@ class ExportController extends Controller
             $query->where(function ($q) use ($tahun) {
                 $q->whereYear('tgl_lhp', $tahun)
                   ->orWhereYear('created_at', $tahun)
-                  ->orWhereHas('penugasan', fn($pq) => $pq->whereYear('tanggal_spt', $tahun));
+                  ->orWhereHas('penugasan', fn($pq) => $pq->whereYear('tanggal_mulai', $tahun));
             });
         }
 
