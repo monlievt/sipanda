@@ -14,6 +14,8 @@ class DatabaseSeeder extends Seeder
             MasterDataSeeder::class,      // 3. Jenis & sumber penugasan
             ObjekPenugasanSeeder::class,  // 4. Objek penugasan (OPD & Kecamatan Trenggalek)
             UserSeeder::class,            // 5. User dari data-pegawai.csv
+            RegulasiHukumSeeder::class,   // 6. Bank regulasi dasar hukum APIP
+            FaqArtikelSeeder::class,      // 7. Bank artikel tanya jawab resmi APIP
         ]);
 
         $this->command->info('');

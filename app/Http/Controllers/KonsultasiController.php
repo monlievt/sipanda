@@ -290,29 +290,40 @@ class KonsultasiController extends Controller
     }
 
     /**
-     * Bank QnA / FAQ Publik
+     * Bank QnA / FAQ Publik & Layanan Penasihat AI
      */
     public function faqIndex(Request $request): View
     {
         $search = $request->input('search');
         $area   = $request->input('area');
 
-        $query = Konsultasi::where('is_faq_public', true)->where('status', 'selesai');
-
+        // 1. Ambil FAQ resmi dari FaqArtikel
+        $faqArtikelQuery = \App\Models\FaqArtikel::with('regulasi')->published()->search($search);
         if ($area) {
-            $query->where('area_konsultasi', $area);
+            $faqArtikelQuery->where(function ($q) use ($area) {
+                $q->where('kategori', strtolower($area))
+                  ->orWhere('kategori', 'like', "%{$area}%");
+            });
         }
+        $faqArtikels = $faqArtikelQuery->orderBy('urutan', 'asc')->orderBy('created_at', 'desc')->get();
 
+        // 2. Ambil FAQ hasil publikasi e-Consulting
+        $konsultasiQuery = Konsultasi::where('is_faq_public', true)->where('status', 'selesai');
+        if ($area) {
+            $konsultasiQuery->where('area_konsultasi', $area);
+        }
         if ($search) {
-            $query->where(function ($q) use ($search) {
+            $konsultasiQuery->where(function ($q) use ($search) {
                 $q->where('judul_permasalahan', 'like', "%{$search}%")
                   ->orWhere('uraian_permasalahan', 'like', "%{$search}%")
                   ->orWhere('kesimpulan_advis', 'like', "%{$search}%");
             });
         }
+        $faqs = $konsultasiQuery->orderBy('updated_at', 'desc')->paginate(12)->withQueryString();
 
-        $faqs = $query->orderBy('updated_at', 'desc')->paginate(12)->withQueryString();
+        // 3. Ambil Dokumen Regulasi Populer
+        $regulasiPopuler = \App\Models\RegulasiHukum::publik()->orderBy('diunduh_count', 'desc')->take(6)->get();
 
-        return view('konsultasi.faq', compact('faqs', 'search', 'area'));
+        return view('konsultasi.faq', compact('faqs', 'faqArtikels', 'regulasiPopuler', 'search', 'area'));
     }
 }

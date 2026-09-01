@@ -48,4 +48,9 @@ return [
         'session'    => env('WAHA_SESSION', 'default'),
         'webhook_secret' => env('WAHA_WEBHOOK_SECRET', ''),
     ],
+
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY', ''),
+        'model'   => env('GEMINI_MODEL', 'gemini-1.5-flash'),
+    ],
 ];

@@ -24,6 +24,13 @@ use Illuminate\Support\Facades\Route;
 // Landing Page & Public Dashboard Transparansi (Tanpa Login)
 Route::get('/', [\App\Http\Controllers\PublicDashboardController::class, 'index'])->name('welcome');
 Route::get('/faq', [\App\Http\Controllers\KonsultasiController::class, 'faqIndex'])->name('faq.index');
+Route::get('/regulasi', [\App\Http\Controllers\RegulasiHukumController::class, 'publicIndex'])->name('regulasi.public.index');
+Route::get('/regulasi/{regulasi}/download', [\App\Http\Controllers\RegulasiHukumController::class, 'publicDownload'])->name('regulasi.public.download');
+
+// API Chatbot Asisten Penasihat Virtual APIP (Tanpa Login & OPD)
+Route::post('/api/ai/ask', [\App\Http\Controllers\Api\ApipAiChatController::class, 'ask'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->name('api.ai.ask');
 
 // Webhook Inbound WAHA WhatsApp Gateway (Tanpa CSRF)
 Route::post('/api/webhook/whatsapp', [\App\Http\Controllers\Api\WhatsAppWebhookController::class, 'handle'])
@@ -115,6 +122,19 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/master/jenis-penugasan/{jenis}', [MasterDataController::class, 'updateJenisPenugasan'])->middleware('can:master.edit')->name('master.jenis-penugasan.update');
     Route::delete('/master/jenis-penugasan/{jenis}', [MasterDataController::class, 'destroyJenisPenugasan'])->middleware('can:master.delete')->name('master.jenis-penugasan.destroy');
     Route::get('/audit-log', [MasterDataController::class, 'auditLog'])->middleware('can:audit_log.view')->name('audit-log.index');
+
+    // Master Bank Regulasi & Dasar Hukum APIP
+    Route::get('/master/regulasi', [\App\Http\Controllers\RegulasiHukumController::class, 'index'])->name('master.regulasi.index');
+    Route::post('/master/regulasi', [\App\Http\Controllers\RegulasiHukumController::class, 'store'])->name('master.regulasi.store');
+    Route::put('/master/regulasi/{regulasi}', [\App\Http\Controllers\RegulasiHukumController::class, 'update'])->name('master.regulasi.update');
+    Route::delete('/master/regulasi/{regulasi}', [\App\Http\Controllers\RegulasiHukumController::class, 'destroy'])->name('master.regulasi.destroy');
+    Route::get('/master/regulasi/{regulasi}/download', [\App\Http\Controllers\RegulasiHukumController::class, 'download'])->name('master.regulasi.download');
+
+    // Master Bank Artikel FAQ APIP
+    Route::get('/master/faq', [\App\Http\Controllers\FaqArtikelController::class, 'index'])->name('master.faq.index');
+    Route::post('/master/faq', [\App\Http\Controllers\FaqArtikelController::class, 'store'])->name('master.faq.store');
+    Route::put('/master/faq/{faq}', [\App\Http\Controllers\FaqArtikelController::class, 'update'])->name('master.faq.update');
+    Route::delete('/master/faq/{faq}', [\App\Http\Controllers\FaqArtikelController::class, 'destroy'])->name('master.faq.destroy');
 
     // Import Data Historis dari Spreadsheet / CSV
     Route::get('/import', [ImportController::class, 'index'])->middleware('can:master.create')->name('import.index');
