@@ -9,6 +9,7 @@ use App\Models\ObjekPenugasan;
 use App\Models\PenilaianRisiko;
 use App\Models\Penugasan;
 use App\Models\Pkppt;
+use App\Models\User;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -198,8 +199,8 @@ class PerencanaanPkptController extends Controller
         $pkppt->update(['status' => 'diusulkan']);
         ActivityLog::catat('pkppt', $pkppt->id, 'update', $sebelum, $pkppt->toArray());
 
-        // Kirim Notifikasi ke role admin & sekretaris
-        $pimpinan = User::aktif()->role(['admin', 'sekretaris', 'inspektur'])->get();
+        // Kirim Notifikasi ke role admin & sekretariat
+        $pimpinan = User::aktif()->role(['admin', 'sekretariat', 'inspektur'])->get();
         foreach ($pimpinan as $p) {
             try {
                 $p->notify(new \App\Notifications\PkpptStatusNotification($pkppt, 'diusulkan', auth()->user()->nama_display));
