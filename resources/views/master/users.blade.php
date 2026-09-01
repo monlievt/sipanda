@@ -4,16 +4,16 @@
     </x-slot>
 
     <!-- Filter & Search -->
-    <div class="mb-6 bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm">
-        <form method="GET" action="{{ route('master.users.index') }}" class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+    <div class="mb-6 bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <form method="GET" action="{{ route('master.users.index') }}" class="grid grid-cols-1 sm:grid-cols-4 gap-3.5 items-end text-sm">
             <div>
-                <label class="block font-semibold text-slate-500 mb-1">Cari Nama / NIP / Email</label>
-                <input type="text" name="search" value="{{ $search }}" placeholder="Nama / NIP / Email..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                <label class="block font-semibold text-xs text-slate-500 uppercase mb-1">Cari Nama / NIP / Email</label>
+                <input type="text" name="search" value="{{ $search }}" placeholder="Nama / NIP / Email..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
             </div>
 
             <div>
-                <label class="block font-semibold text-slate-500 mb-1">Filter Role</label>
-                <select name="role" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                <label class="block font-semibold text-xs text-slate-500 uppercase mb-1">Filter Role</label>
+                <select name="role" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                     <option value="">-- Semua Role --</option>
                     @foreach($roles as $r)
                         <option value="{{ $r->name }}" {{ $roleFilter === $r->name ? 'selected' : '' }}>{{ ucfirst($r->name) }}</option>
@@ -22,8 +22,8 @@
             </div>
 
             <div>
-                <label class="block font-semibold text-slate-500 mb-1">Filter Irban</label>
-                <select name="irban_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                <label class="block font-semibold text-xs text-slate-500 uppercase mb-1">Filter Irban</label>
+                <select name="irban_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                     <option value="">-- Semua Irban --</option>
                     @foreach($irbans as $irban)
                         <option value="{{ $irban->id }}" {{ $irbanFilter == $irban->id ? 'selected' : '' }}>{{ $irban->nama_irban }}</option>
@@ -31,8 +31,8 @@
                 </select>
             </div>
 
-            <div class="flex items-end gap-2">
-                <button type="submit" class="w-full py-2 px-3 bg-slate-800 text-white font-semibold rounded-xl text-xs">Filter</button>
+            <div class="flex items-center gap-2">
+                <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl text-sm shadow-xs transition-all cursor-pointer">Filter</button>
             </div>
         </form>
     </div>
@@ -75,16 +75,28 @@
                                 </span>
                             </td>
                             <td class="py-3 px-4 text-center whitespace-nowrap">
-                                @if($u->is_active)
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Aktif</span>
+                                @can('users.edit')
+                                <form method="POST" action="{{ route('master.users.toggle_status', $u->id) }}" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin mengubah status keaktifan {{ addslashes($u->nama_display) }}?');">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer shadow-xs {{ $u->is_active ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-rose-100 hover:bg-rose-200 text-rose-800 dark:bg-rose-950 dark:text-rose-300' }}" title="Klik untuk mengubah status">
+                                        {{ $u->is_active ? '● Aktif' : '○ Nonaktif' }}
+                                    </button>
+                                </form>
                                 @else
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">Nonaktif</span>
-                                @endif
+                                    @if($u->is_active)
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Aktif</span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">Nonaktif</span>
+                                    @endif
+                                @endcan
                             </td>
                             <td class="py-3 px-4 text-center whitespace-nowrap">
-                                <button onclick="openModalEditUser({{ $u->id }}, '{{ $u->roles->first()?->name }}', '{{ $u->irban_id }}', {{ $u->is_active ? 1 : 0 }})" class="px-2.5 py-1 bg-slate-800 text-white rounded-lg text-[10px] font-bold">
+                                @can('users.edit')
+                                <button onclick="openModalEditUser({{ $u->id }}, '{{ $u->roles->first()?->name }}', '{{ $u->irban_id }}', {{ $u->is_active ? 1 : 0 }})" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-[10px] font-bold transition-colors cursor-pointer">
                                     Edit Role
                                 </button>
+                                @endcan
                             </td>
                         </tr>
                     @empty

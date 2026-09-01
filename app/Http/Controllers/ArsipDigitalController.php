@@ -75,11 +75,15 @@ class ArsipDigitalController extends Controller
 
     public function destroy(ArsipDigital $arsip): RedirectResponse
     {
+        $sebelum = $arsip->toArray();
+
         if (Storage::disk('local')->exists($arsip->path_file)) {
             Storage::disk('local')->delete($arsip->path_file);
         }
 
         $arsip->delete();
+
+        ActivityLog::catat('arsip_digital', $arsip->id, 'delete', $sebelum, null);
 
         return back()->with('status', 'File arsip berhasil dihapus.');
     }

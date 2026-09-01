@@ -20,7 +20,8 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])
+        ->middleware('throttle:6,1');
 
     // Google SSO Routes
     Route::get('auth/google/redirect', [\App\Http\Controllers\Auth\GoogleController::class, 'redirectToGoogle'])

@@ -31,15 +31,15 @@
         </div>
 
         <!-- Filter Box -->
-        <form method="GET" action="{{ route('penugasan.index') }}" class="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 text-xs">
+        <form method="GET" action="{{ route('penugasan.index') }}" class="p-4 sm:p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5 items-end">
             <div>
-                <label class="block font-semibold text-slate-500 mb-1">Cari SPT / Uraian</label>
-                <input type="text" name="search" value="{{ $search }}" placeholder="No. SPT / Uraian..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                <label class="block font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase mb-1">Cari SPT / Uraian</label>
+                <input type="text" name="search" value="{{ $search }}" placeholder="No. SPT / Uraian..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
             </div>
 
             <div>
-                <label class="block font-semibold text-slate-500 mb-1">Tahun</label>
-                <select name="tahun" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                <label class="block font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase mb-1">Tahun</label>
+                <select name="tahun" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                     @foreach($tahunList as $t)
                         <option value="{{ $t }}" {{ $t == $tahun ? 'selected' : '' }}>{{ $t }}</option>
                     @endforeach
@@ -48,8 +48,8 @@
 
             @if(!auth()->user()->hasRole(['irban', 'admin_irban']))
             <div>
-                <label class="block font-semibold text-slate-500 mb-1">Irban</label>
-                <select name="irban_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                <label class="block font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase mb-1">Irban</label>
+                <select name="irban_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                     <option value="">-- Semua --</option>
                     @foreach($irbans as $irban)
                         <option value="{{ $irban->id }}" {{ $irbanId == $irban->id ? 'selected' : '' }}>{{ $irban->nama_irban }}</option>
@@ -59,8 +59,8 @@
             @endif
 
             <div>
-                <label class="block font-semibold text-slate-500 mb-1">Status</label>
-                <select name="status" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                <label class="block font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase mb-1">Status</label>
+                <select name="status" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                     <option value="">-- Semua Status --</option>
                     <option value="belum_berjalan" {{ $status === 'belum_berjalan' ? 'selected' : '' }}>Belum Berjalan</option>
                     <option value="berjalan" {{ $status === 'berjalan' ? 'selected' : '' }}>Berjalan</option>
@@ -69,8 +69,8 @@
             </div>
 
             <div>
-                <label class="block font-semibold text-slate-500 mb-1">Jenis Penugasan</label>
-                <select name="jenis_penugasan_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                <label class="block font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase mb-1">Jenis Penugasan</label>
+                <select name="jenis_penugasan_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                     <option value="">-- Semua Jenis --</option>
                     @foreach($jenisList as $j)
                         <option value="{{ $j->id }}" {{ $jenisId == $j->id ? 'selected' : '' }}>{{ $j->nama }}</option>
@@ -78,9 +78,15 @@
                 </select>
             </div>
 
-            <div class="flex items-end gap-2">
-                <button type="submit" class="w-full py-2 px-3 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-xs">Filter</button>
-                <a href="{{ route('penugasan.index') }}" class="py-2 px-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 font-semibold rounded-xl text-xs">Reset</a>
+            <div class="flex items-center gap-2">
+                <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-bold rounded-xl shadow-xs transition-all cursor-pointer">
+                    Cari
+                </button>
+                @if($search || $status || $jenisId || $irbanId)
+                <a href="{{ route('penugasan.index') }}" class="px-3.5 py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 text-sm font-bold rounded-xl">
+                    Reset
+                </a>
+                @endif
             </div>
         </form>
     </div>

@@ -5,8 +5,11 @@ use App\Http\Controllers\BebanKerjaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EvaluasiTahunanController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\GoogleCalendarController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\KegiatanPengawasanController;
 use App\Http\Controllers\MasterDataController;
+use App\Http\Controllers\NotifikasiController;
 use App\Http\Controllers\Opd\OpdAuthController;
 use App\Http\Controllers\Opd\OpdDashboardController;
 use App\Http\Controllers\OpdUserManagementController;
@@ -21,6 +24,11 @@ use Illuminate\Support\Facades\Route;
 // Landing Page & Public Dashboard Transparansi (Tanpa Login)
 Route::get('/', [\App\Http\Controllers\PublicDashboardController::class, 'index'])->name('welcome');
 Route::get('/faq', [\App\Http\Controllers\KonsultasiController::class, 'faqIndex'])->name('faq.index');
+
+// Webhook Inbound WAHA WhatsApp Gateway (Tanpa CSRF)
+Route::post('/api/webhook/whatsapp', [\App\Http\Controllers\Api\WhatsAppWebhookController::class, 'handle'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class, \Illuminate\Cookie\Middleware\EncryptCookies::class])
+    ->name('webhook.whatsapp');
 
 // ─── INTERNAL AREA (Guard: web) ──────────────────────────────────
 Route::middleware(['auth'])->group(function () {
@@ -38,6 +46,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pkppt/export', [ExportController::class, 'exportPkppt'])->name('pkppt.export');
     Route::post('/pkppt', [PkpptController::class, 'store'])->middleware('can:pkppt.create')->name('pkppt.store');
     Route::put('/pkppt/{pkppt}', [PkpptController::class, 'update'])->middleware('can:pkppt.edit')->name('pkppt.update');
+    Route::post('/pkppt/{pkppt}/revisi', [PkpptController::class, 'revisi'])->middleware('can:pkppt.edit')->name('pkppt.revisi');
     Route::delete('/pkppt/{pkppt}', [PkpptController::class, 'destroy'])->middleware('can:pkppt.delete')->name('pkppt.destroy');
 
     // Penugasan (SPT) & Export
@@ -56,7 +65,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Tindak Lanjut Result & Verifikasi Bukti OPD
     Route::get('/tindak-lanjut', [TindakLanjutController::class, 'index'])->name('tindak-lanjut.index');
-    Route::get('/tindak-lanjut/verifikasi-bukti', [VerifikasiBuktiController::class, 'index'])->name('tindak-lanjut.verifikasi-bukti');
+    Route::get('/tindak-lanjut/verifikasi-bukti', [VerifikasiBuktiController::class, 'index'])->middleware('can:bukti.verifikasi')->name('tindak-lanjut.verifikasi-bukti');
     Route::get('/tindak-lanjut/export/all', [ExportController::class, 'exportAllLhpMatrix'])->name('tindak-lanjut.export_all');
     Route::get('/tindak-lanjut/export/lhp/{tindakLanjut}', [ExportController::class, 'exportLhpMatrix'])->name('tindak-lanjut.export_lhp');
     Route::post('/tindak-lanjut', [TindakLanjutController::class, 'store'])->name('tindak-lanjut.store');
@@ -78,27 +87,39 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/beban-kerja', [BebanKerjaController::class, 'index'])->name('beban-kerja.index');
 
     // Perencanaan PKPT (Siklus N-1)
-    Route::get('/perencanaan', [PerencanaanPkptController::class, 'index'])->name('perencanaan.index');
+    Route::get('/perencanaan', [PerencanaanPkptController::class, 'index'])->middleware('can:perencanaan.view')->name('perencanaan.index');
     Route::post('/perencanaan/hitung-risiko', [PerencanaanPkptController::class, 'hitungRisiko'])->name('perencanaan.hitung_risiko');
     Route::post('/perencanaan/generate-draft', [PerencanaanPkptController::class, 'generateDraft'])->name('perencanaan.generate_draft');
     Route::post('/perencanaan/kapasitas-sdm', [PerencanaanPkptController::class, 'storeKapasitasSdm'])->name('perencanaan.kapasitas_sdm');
     Route::post('/pkppt/{pkppt}/usulkan', [PerencanaanPkptController::class, 'usulkan'])->name('pkppt.usulkan');
+    Route::post('/pkppt/{pkppt}/reviu', [PerencanaanPkptController::class, 'reviu'])->name('pkppt.reviu');
     Route::post('/pkppt/{pkppt}/tetapkan', [PerencanaanPkptController::class, 'tetapkan'])->name('pkppt.tetapkan');
 
     // Evaluasi Tahunan (Siklus N+1)
-    Route::get('/evaluasi', [EvaluasiTahunanController::class, 'index'])->name('evaluasi.index');
-    Route::post('/evaluasi/generate', [EvaluasiTahunanController::class, 'generate'])->name('evaluasi.generate');
+    Route::get('/evaluasi', [EvaluasiTahunanController::class, 'index'])->middleware('can:evaluasi.view')->name('evaluasi.index');
+    Route::post('/evaluasi/generate', [EvaluasiTahunanController::class, 'generate'])->middleware('can:evaluasi.generate')->name('evaluasi.generate');
 
     // Master Data
-    Route::get('/master/users', [MasterDataController::class, 'users'])->name('master.users.index');
-    Route::patch('/master/users/{user}', [MasterDataController::class, 'updateUserRole'])->name('master.users.update');
-    Route::get('/master/opd-users', [OpdUserManagementController::class, 'index'])->name('master.opd-users.index');
-    Route::post('/master/opd-users', [OpdUserManagementController::class, 'store'])->name('master.opd-users.store');
-    Route::get('/master/objek-penugasan', [MasterDataController::class, 'objekPenugasan'])->name('master.objek-penugasan.index');
-    Route::post('/master/objek-penugasan', [MasterDataController::class, 'storeObjekPenugasan'])->name('master.objek-penugasan.store');
-    Route::get('/master/jenis-penugasan', [MasterDataController::class, 'jenisPenugasan'])->name('master.jenis-penugasan.index');
-    Route::post('/master/jenis-penugasan', [MasterDataController::class, 'storeJenisPenugasan'])->name('master.jenis-penugasan.store');
-    Route::get('/audit-log', [MasterDataController::class, 'auditLog'])->name('audit-log.index');
+    Route::get('/master/users', [MasterDataController::class, 'users'])->middleware('can:users.view')->name('master.users.index');
+    Route::patch('/master/users/{user}', [MasterDataController::class, 'updateUserRole'])->middleware('can:users.edit')->name('master.users.update');
+    Route::patch('/master/users/{user}/toggle-status', [MasterDataController::class, 'toggleUserStatus'])->middleware('can:users.edit')->name('master.users.toggle_status');
+    Route::get('/master/opd-users', [OpdUserManagementController::class, 'index'])->middleware('can:opd_users.manage')->name('master.opd-users.index');
+    Route::post('/master/opd-users', [OpdUserManagementController::class, 'store'])->middleware('can:opd_users.manage')->name('master.opd-users.store');
+    Route::get('/master/objek-penugasan', [MasterDataController::class, 'objekPenugasan'])->middleware('can:master.view')->name('master.objek-penugasan.index');
+    Route::post('/master/objek-penugasan', [MasterDataController::class, 'storeObjekPenugasan'])->middleware('can:master.create')->name('master.objek-penugasan.store');
+    Route::put('/master/objek-penugasan/{objek}', [MasterDataController::class, 'updateObjekPenugasan'])->middleware('can:master.edit')->name('master.objek-penugasan.update');
+    Route::delete('/master/objek-penugasan/{objek}', [MasterDataController::class, 'destroyObjekPenugasan'])->middleware('can:master.delete')->name('master.objek-penugasan.destroy');
+    Route::get('/master/jenis-penugasan', [MasterDataController::class, 'jenisPenugasan'])->middleware('can:master.view')->name('master.jenis-penugasan.index');
+    Route::post('/master/jenis-penugasan', [MasterDataController::class, 'storeJenisPenugasan'])->middleware('can:master.create')->name('master.jenis-penugasan.store');
+    Route::put('/master/jenis-penugasan/{jenis}', [MasterDataController::class, 'updateJenisPenugasan'])->middleware('can:master.edit')->name('master.jenis-penugasan.update');
+    Route::delete('/master/jenis-penugasan/{jenis}', [MasterDataController::class, 'destroyJenisPenugasan'])->middleware('can:master.delete')->name('master.jenis-penugasan.destroy');
+    Route::get('/audit-log', [MasterDataController::class, 'auditLog'])->middleware('can:audit_log.view')->name('audit-log.index');
+
+    // Import Data Historis dari Spreadsheet / CSV
+    Route::get('/import', [ImportController::class, 'index'])->middleware('can:master.create')->name('import.index');
+    Route::get('/import/template/{type}', [ImportController::class, 'template'])->name('import.template');
+    Route::post('/import/preview', [ImportController::class, 'preview'])->middleware('can:master.create')->name('import.preview');
+    Route::post('/import/execute', [ImportController::class, 'store'])->middleware('can:master.create')->name('import.store');
 
     // E-Consulting & QnA APIP (Internal)
     Route::get('/konsultasi', [\App\Http\Controllers\KonsultasiController::class, 'index'])->name('konsultasi.index');
@@ -108,6 +129,19 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/konsultasi/{konsultasi}/terbitkan-ba', [\App\Http\Controllers\KonsultasiController::class, 'terbitkanBa'])->name('konsultasi.terbitkan_ba');
     Route::patch('/konsultasi/{konsultasi}/toggle-faq', [\App\Http\Controllers\KonsultasiController::class, 'toggleFaq'])->name('konsultasi.toggle_faq');
     Route::get('/konsultasi/{konsultasi}/cetak-ba', [\App\Http\Controllers\KonsultasiController::class, 'cetakBa'])->name('konsultasi.cetak_ba');
+
+    // Notifikasi In-App
+    Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
+    Route::get('/notifikasi/unread-json', [NotifikasiController::class, 'getUnreadList'])->name('notifikasi.unread_json');
+    Route::get('/notifikasi/{notifikasi}/baca', [NotifikasiController::class, 'markAsRead'])->name('notifikasi.read');
+    Route::post('/notifikasi/tandai-semua-dibaca', [NotifikasiController::class, 'markAllAsRead'])->name('notifikasi.mark_all_read');
+    Route::delete('/notifikasi/{notifikasi}', [NotifikasiController::class, 'destroy'])->name('notifikasi.destroy');
+
+    // Google Calendar Integration
+    Route::get('/google-calendar/connect', [GoogleCalendarController::class, 'connect'])->name('google.connect');
+    Route::get('/google-calendar/callback', [GoogleCalendarController::class, 'callback'])->name('google.callback');
+    Route::post('/google-calendar/disconnect', [GoogleCalendarController::class, 'disconnect'])->name('google.disconnect');
+    Route::post('/penugasan/{penugasan}/sync-calendar', [GoogleCalendarController::class, 'syncPenugasan'])->name('penugasan.sync_calendar');
 });
 
 // ─── PORTAL OPD (Guard: opd, Area: /opd/*) ─────────────────────
@@ -115,9 +149,15 @@ Route::prefix('opd')->name('opd.')->group(function () {
     // Guest OPD
     Route::middleware('guest:opd')->group(function () {
         Route::get('/login', [OpdAuthController::class, 'showLogin'])->name('login');
-        Route::post('/login', [OpdAuthController::class, 'login'])->name('login.store');
+        Route::post('/login', [OpdAuthController::class, 'login'])->name('login.store')->middleware('throttle:5,1');
         Route::get('/undangan/{token}', [OpdAuthController::class, 'showSetPassword'])->name('undangan');
         Route::post('/undangan/{token}', [OpdAuthController::class, 'storePassword'])->name('undangan.store');
+
+        // Lupa Password OPD
+        Route::get('/lupa-password', [OpdAuthController::class, 'showForgotPassword'])->name('password.request');
+        Route::post('/lupa-password', [OpdAuthController::class, 'sendResetLink'])->name('password.email')->middleware('throttle:5,1');
+        Route::get('/reset-password/{token}', [OpdAuthController::class, 'showResetPassword'])->name('password.reset');
+        Route::post('/reset-password', [OpdAuthController::class, 'resetPassword'])->name('password.update')->middleware('throttle:5,1');
     });
 
     // Authenticated OPD

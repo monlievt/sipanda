@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\EvaluasiTahunan;
 use App\Models\Irban;
 use App\Models\Penugasan;
@@ -78,6 +79,13 @@ class EvaluasiTahunanController extends Controller
                 'dibuat_oleh'                   => auth()->id(),
             ]
         );
+
+        ActivityLog::catat('evaluasi_tahunan', $evaluasi->id ?? 0, 'create', null, [
+            'tahun_evaluasi'                => $tahun,
+            'persen_objek_terealisasi'      => $persenObjek,
+            'persen_laporan_tepat_waktu'    => $persenTepatWaktu,
+            'persen_tindak_lanjut_selesai'  => $persenTLSelesai,
+        ]);
 
         return back()->with('status', "Evaluasi tahunan untuk tahun {$tahun} berhasil disimpan.");
     }

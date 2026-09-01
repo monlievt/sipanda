@@ -10,6 +10,7 @@ use App\Models\KonsultasiTim;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class KonsultasiController extends Controller
@@ -142,6 +143,33 @@ class KonsultasiController extends Controller
 
         ActivityLog::catat('konsultasi', $konsultasi->id, 'update', $sebelum, $konsultasi->toArray());
 
+        // Kirim Notifikasi (Email + WA + In-App) ke Tim yang Didisposisikan
+        $timUserIds = array_unique(array_merge(
+            $request->input('tim_pj', []),
+            $request->input('tim_daltek', []),
+            $request->input('tim_ketua', []),
+            $request->input('tim_anggota', [])
+        ));
+
+        $auditors = User::whereIn('id', $timUserIds)->aktif()->get();
+        foreach ($auditors as $auditor) {
+            \App\Models\Notifikasi::create([
+                'user_id'    => $auditor->id,
+                'jenis'      => 'info_lain',
+                'judul'      => 'Disposisi Konsultasi APIP',
+                'pesan'      => "Konsultasi topik '{$konsultasi->topik}' didisposisikan kepada Anda.",
+                'url_target' => route('konsultasi.show', $konsultasi->id),
+                'status'     => 'terkirim',
+                'dikirim_pada' => now(),
+            ]);
+
+            try {
+                $auditor->notify(new \App\Notifications\KonsultasiNotifikasiNotification($konsultasi, 'disposisi'));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif disposisi konsultasi ke {$auditor->id}: " . $e->getMessage());
+            }
+        }
+
         return back()->with('status', 'Disposisi Tim Konsultasi APIP & Metode Konsultasi berhasil ditetapkan.');
     }
 
@@ -161,8 +189,8 @@ class KonsultasiController extends Controller
         $filePath = null;
         if ($request->hasFile('lampiran_file')) {
             $file = $request->file('lampiran_file');
-            $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
-            $filePath = $file->storeAs('berkas_konsultasi', $fileName, 'public');
+            $fileName = Str::uuid() . '.' . $file->extension();
+            $filePath = $file->storeAs('berkas_konsultasi/' . date('Y/m'), $fileName);
         }
 
         $userId = auth()->id() ?? 1;
@@ -177,6 +205,20 @@ class KonsultasiController extends Controller
 
         if ($konsultasi->status === 'menunggu_disposisi') {
             $konsultasi->update(['status' => 'berjalan']);
+        }
+
+        // Notifikasi ke pemohon OPD
+        if ($konsultasi->user) {
+            try {
+                $konsultasi->user->notify(new \App\Notifications\KonsultasiNotifikasiNotification(
+                    $konsultasi,
+                    'chat_baru',
+                    auth()->user()->nama_display ?? 'Auditor APIP',
+                    $request->pesan
+                ));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif chat ke OPD: " . $e->getMessage());
+            }
         }
 
         return back()->with('status', 'Pesan balasan konsultasi berhasil dikirim.');
@@ -201,6 +243,18 @@ class KonsultasiController extends Controller
         ]);
 
         ActivityLog::catat('konsultasi', $konsultasi->id, 'update', $sebelum, $konsultasi->toArray());
+
+        // Notifikasi ke pemohon OPD bahwa BA telah terbit
+        if ($konsultasi->user) {
+            try {
+                $konsultasi->user->notify(new \App\Notifications\KonsultasiNotifikasiNotification(
+                    $konsultasi,
+                    'ba_terbit'
+                ));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif BA ke OPD: " . $e->getMessage());
+            }
+        }
 
         return back()->with('status', 'Kesimpulan advis & Berita Acara Konsultasi resmi berhasil diterbitkan.');
     }

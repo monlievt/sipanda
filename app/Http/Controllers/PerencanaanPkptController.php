@@ -194,20 +194,80 @@ class PerencanaanPkptController extends Controller
     /** Alur persetujuan: Irban mengusulkan PKPPT */
     public function usulkan(Pkppt $pkppt): RedirectResponse
     {
+        $sebelum = $pkppt->toArray();
         $pkppt->update(['status' => 'diusulkan']);
-        ActivityLog::catat('pkppt', $pkppt->id, 'update', null, ['status' => 'diusulkan']);
+        ActivityLog::catat('pkppt', $pkppt->id, 'update', $sebelum, $pkppt->toArray());
+
+        // Kirim Notifikasi ke role admin & sekretaris
+        $pimpinan = User::aktif()->role(['admin', 'sekretaris', 'inspektur'])->get();
+        foreach ($pimpinan as $p) {
+            try {
+                $p->notify(new \App\Notifications\PkpptStatusNotification($pkppt, 'diusulkan', auth()->user()->nama_display));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif PKPT usulkan ke {$p->id}: " . $e->getMessage());
+            }
+        }
+
         return back()->with('status', "PKPPT '{$pkppt->area_pengawasan}' berhasil diusulkan.");
+    }
+
+    /** Alur persetujuan: Sekretariat / Tim Review mereviu PKPPT */
+    public function reviu(Request $request, Pkppt $pkppt): RedirectResponse
+    {
+        $validated = $request->validate([
+            'catatan_revisi' => ['nullable', 'string'],
+        ]);
+
+        $sebelum = $pkppt->toArray();
+        $pkppt->update([
+            'status'         => 'direviu',
+            'direviu_oleh'   => auth()->id(),
+            'direviu_pada'   => now(),
+            'catatan_revisi' => $validated['catatan_revisi'] ?? $pkppt->catatan_revisi,
+        ]);
+
+        ActivityLog::catat('pkppt', $pkppt->id, 'update', $sebelum, $pkppt->toArray());
+
+        // Kirim Notifikasi ke Inspektur & Irban terkait
+        $recipients = User::aktif()->where(function ($q) use ($pkppt) {
+            $q->role('inspektur');
+            if ($pkppt->irban_id) {
+                $q->orWhere(fn($iq) => $iq->where('irban_id', $pkppt->irban_id)->role(['irban', 'admin_irban']));
+            }
+        })->get();
+
+        foreach ($recipients as $r) {
+            try {
+                $r->notify(new \App\Notifications\PkpptStatusNotification($pkppt, 'direviu', auth()->user()->nama_display));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif PKPT reviu ke {$r->id}: " . $e->getMessage());
+            }
+        }
+
+        return back()->with('status', "PKPPT '{$pkppt->area_pengawasan}' telah DIREVIU dan siap ditetapkan oleh Inspektur.");
     }
 
     /** Alur persetujuan: Inspektur menetapkan PKPPT */
     public function tetapkan(Pkppt $pkppt): RedirectResponse
     {
+        $sebelum = $pkppt->toArray();
         $pkppt->update([
             'status'             => 'ditetapkan',
             'ditetapkan_oleh'    => auth()->id(),
             'tanggal_ditetapkan' => now(),
         ]);
-        ActivityLog::catat('pkppt', $pkppt->id, 'update', null, ['status' => 'ditetapkan']);
+        ActivityLog::catat('pkppt', $pkppt->id, 'update', $sebelum, $pkppt->toArray());
+
+        // Kirim Notifikasi ke seluruh Irban & Admin
+        $allIrbans = User::aktif()->role(['irban', 'admin_irban', 'admin'])->get();
+        foreach ($allIrbans as $u) {
+            try {
+                $u->notify(new \App\Notifications\PkpptStatusNotification($pkppt, 'ditetapkan', auth()->user()->nama_display));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif PKPT tetapkan ke {$u->id}: " . $e->getMessage());
+            }
+        }
+
         return back()->with('status', "PKPPT '{$pkppt->area_pengawasan}' resmi DITETAPKAN oleh Inspektur.");
     }
 }

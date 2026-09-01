@@ -20,8 +20,13 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/backups/*
+!/storage/backups/.gitkeep
+/database/*.sqlite
+/database/*.sqlite-journal
 /vendor
 _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+

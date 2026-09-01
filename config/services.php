@@ -41,4 +41,11 @@ return [
         'redirect'      => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
+    'waha' => [
+        'enabled'    => env('WAHA_ENABLED', true),
+        'url'        => env('WAHA_API_URL', 'http://127.0.0.1:3000'),
+        'api_key'    => env('WAHA_API_KEY', ''),
+        'session'    => env('WAHA_SESSION', 'default'),
+        'webhook_secret' => env('WAHA_WEBHOOK_SECRET', ''),
+    ],
 ];

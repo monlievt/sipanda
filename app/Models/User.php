@@ -101,4 +101,9 @@ class User extends Authenticatable
     {
         return $this->token_kedaluwarsa && $this->token_kedaluwarsa->isFuture();
     }
+
+    public function routeNotificationForWhatsApp(): ?string
+    {
+        return $this->no_hp;
+    }
 }

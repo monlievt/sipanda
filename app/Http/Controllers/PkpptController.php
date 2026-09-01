@@ -12,25 +12,41 @@ use Illuminate\View\View;
 class PkpptController extends Controller
 {
     /**
-     * Tampilkan daftar rencana PKPPT tahunan.
+     * Tampilkan daftar rencana PKPPT tahunan beserta status versi & alur reviu.
      */
     public function index(Request $request): View
     {
-        $tahun = $request->input('tahun', date('Y'));
+        $tahun   = $request->input('tahun', date('Y'));
         $irbanId = $request->input('irban_id');
+        $status  = $request->input('status');
 
-        $query = Pkppt::with(['irban', 'pembuatData', 'penugasan'])
-            ->where('tahun', $tahun);
+        $query = Pkppt::with([
+            'irban',
+            'pembuatData',
+            'penugasan',
+            'pkpptInduk',
+            'direviuOleh',
+            'ditetapkanOleh',
+            'riwayatRevisi'
+        ])->where('tahun', $tahun);
 
         if ($irbanId) {
             $query->where('irban_id', $irbanId);
         }
 
+        if ($status) {
+            $query->where('status', $status);
+        } else {
+            // Sembunyikan versi lama yang sudah diarsipkan secara default
+            $query->where('status', '!=', 'diarsipkan');
+        }
+
         $listPkppt = $query->orderBy('rencana_mulai', 'asc')->get();
         $irbans = Irban::all();
         $tahunList = range(date('Y') + 1, 2022);
+        $jenisList = \App\Models\JenisPenugasan::orderBy('kategori')->orderBy('nama')->get();
 
-        return view('pkppt.index', compact('listPkppt', 'irbans', 'tahun', 'irbanId', 'tahunList'));
+        return view('pkppt.index', compact('listPkppt', 'irbans', 'tahun', 'irbanId', 'status', 'tahunList', 'jenisList'));
     }
 
     /**
@@ -49,8 +65,9 @@ class PkpptController extends Controller
             'irban_id'                => ['nullable', 'exists:irbans,id'],
         ]);
 
-        $validated['dibuat_oleh'] = auth()->id();
-        $validated['status'] = 'draft';
+        $validated['dibuat_oleh']  = auth()->id();
+        $validated['status']       = 'draft';
+        $validated['versi_revisi'] = 1;
 
         $pkppt = Pkppt::create($validated);
 
@@ -85,6 +102,53 @@ class PkpptController extends Controller
     }
 
     /**
+     * Buat revisi / penyesuaian PKPPT (Histori Versi).
+     * PKPPT versi sebelumnya diarsipkan, dibuatkan versi baru (v+1) berstatus draft.
+     */
+    public function revisi(Request $request, Pkppt $pkppt): RedirectResponse
+    {
+        $validated = $request->validate([
+            'catatan_revisi'          => ['required', 'string'],
+            'area_pengawasan'         => ['required', 'string', 'max:150'],
+            'jenis_pengawasan'        => ['required', 'string', 'max:100'],
+            'sasaran'                 => ['nullable', 'string', 'max:150'],
+            'rencana_mulai'           => ['required', 'date'],
+            'rencana_selesai_laporan' => ['required', 'date', 'after_or_equal:rencana_mulai'],
+            'jumlah_laporan_rencana'  => ['required', 'integer', 'min:1'],
+            'irban_id'                => ['nullable', 'exists:irbans,id'],
+        ]);
+
+        $sebelumLama = $pkppt->toArray();
+
+        // 1. Arsipkan versi lama
+        $pkppt->update(['status' => 'diarsipkan']);
+        ActivityLog::catat('pkppt', $pkppt->id, 'update', $sebelumLama, $pkppt->toArray());
+
+        // 2. Buat versi baru
+        $versiBaru = Pkppt::create([
+            'tahun'                   => $pkppt->tahun,
+            'area_pengawasan'         => $validated['area_pengawasan'],
+            'jenis_pengawasan'        => $validated['jenis_pengawasan'],
+            'sasaran'                 => $validated['sasaran'],
+            'rencana_mulai'           => $validated['rencana_mulai'],
+            'rencana_selesai_laporan' => $validated['rencana_selesai_laporan'],
+            'jumlah_laporan_rencana'  => $validated['jumlah_laporan_rencana'],
+            'irban_id'                => $validated['irban_id'],
+            'skor_risiko_acuan'       => $pkppt->skor_risiko_acuan,
+            'status'                  => 'draft',
+            'versi_revisi'            => $pkppt->versi_revisi + 1,
+            'pkppt_induk_id'          => $pkppt->id,
+            'catatan_revisi'          => $validated['catatan_revisi'],
+            'dibuat_oleh'             => auth()->id(),
+        ]);
+
+        ActivityLog::catat('pkppt', $versiBaru->id, 'create', null, $versiBaru->toArray());
+
+        return redirect()->route('pkppt.index', ['tahun' => $versiBaru->tahun])
+            ->with('status', "Revisi PKPPT Versi {$versiBaru->versi_revisi} berhasil dibuat (Draft). Silakan diusulkan kembali.");
+    }
+
+    /**
      * Hapus baris PKPPT (hanya jika belum ada penugasan terkait).
      */
     public function destroy(Pkppt $pkppt): RedirectResponse
@@ -104,3 +168,4 @@ class PkpptController extends Controller
             ->with('status', 'Rencana PKPPT berhasil dihapus.');
     }
 }
+

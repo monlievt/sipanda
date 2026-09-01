@@ -74,7 +74,7 @@ class MasterDataController extends Controller
      */
     public function objekPenugasan(): View
     {
-        $listObjek = ObjekPenugasan::orderBy('kategori')->orderBy('nama')->paginate(20);
+        $listObjek = ObjekPenugasan::withCount(['penugasan', 'akunOpd'])->orderBy('kategori')->orderBy('nama')->paginate(20);
         return view('master.objek-penugasan', compact('listObjek'));
     }
 
@@ -91,12 +91,41 @@ class MasterDataController extends Controller
         return back()->with('status', "Objek penugasan '{$objek->nama}' berhasil ditambahkan.");
     }
 
+    public function updateObjekPenugasan(Request $request, ObjekPenugasan $objek): RedirectResponse
+    {
+        $validated = $request->validate([
+            'nama'      => ['required', 'string', 'max:150', 'unique:objek_penugasan,nama,' . $objek->id],
+            'kategori'  => ['required', 'in:opd,kecamatan,desa,kelurahan,lainnya'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        $sebelum = $objek->toArray();
+        $objek->update($validated);
+        ActivityLog::catat('objek_penugasan', $objek->id, 'update', $sebelum, $objek->toArray());
+
+        return back()->with('status', "Objek penugasan '{$objek->nama}' berhasil diperbarui.");
+    }
+
+    public function destroyObjekPenugasan(ObjekPenugasan $objek): RedirectResponse
+    {
+        if ($objek->penugasan()->exists() || $objek->akunOpd()->exists()) {
+            return back()->with('error', "Objek '{$objek->nama}' tidak dapat dihapus karena sudah memiliki riwayat penugasan atau akun OPD terkait. Anda dapat menonaktifkannya.");
+        }
+
+        $sebelum = $objek->toArray();
+        $nama = $objek->nama;
+        $objek->delete();
+        ActivityLog::catat('objek_penugasan', $sebelum['id'], 'delete', $sebelum, null);
+
+        return back()->with('status', "Objek penugasan '{$nama}' berhasil dihapus.");
+    }
+
     /**
      * Master Data: Jenis Penugasan (Assurance / Consulting).
      */
     public function jenisPenugasan(): View
     {
-        $listJenis = JenisPenugasan::orderBy('kategori')->orderBy('nama')->get();
+        $listJenis = JenisPenugasan::withCount('penugasan')->orderBy('kategori')->orderBy('nama')->get();
         return view('master.jenis-penugasan', compact('listJenis'));
     }
 
@@ -113,12 +142,94 @@ class MasterDataController extends Controller
         return back()->with('status', "Jenis penugasan baru '{$jenis->nama}' ({$jenis->kategori}) berhasil ditambahkan!");
     }
 
-    /**
-     * Audit Log Viewer (Admin & Inspektur).
-     */
-    public function auditLog(): View
+    public function updateJenisPenugasan(Request $request, JenisPenugasan $jenis): RedirectResponse
     {
-        $logs = ActivityLog::with('user')->orderBy('created_at', 'desc')->paginate(25);
-        return view('master.audit-log', compact('logs'));
+        $validated = $request->validate([
+            'nama'     => ['required', 'string', 'max:100', 'unique:jenis_penugasan,nama,' . $jenis->id],
+            'kategori' => ['required', 'in:assurance,consulting'],
+        ]);
+
+        $sebelum = $jenis->toArray();
+        $jenis->update($validated);
+        ActivityLog::catat('jenis_penugasan', $jenis->id, 'update', $sebelum, $jenis->toArray());
+
+        return back()->with('status', "Jenis penugasan '{$jenis->nama}' berhasil diperbarui.");
+    }
+
+    public function destroyJenisPenugasan(JenisPenugasan $jenis): RedirectResponse
+    {
+        if ($jenis->penugasan()->exists()) {
+            return back()->with('error', "Jenis penugasan '{$jenis->nama}' tidak dapat dihapus karena telah digunakan pada SPT penugasan.");
+        }
+
+        $sebelum = $jenis->toArray();
+        $nama = $jenis->nama;
+        $jenis->delete();
+        ActivityLog::catat('jenis_penugasan', $sebelum['id'], 'delete', $sebelum, null);
+
+        return back()->with('status', "Jenis penugasan '{$nama}' berhasil dihapus.");
+    }
+
+    /**
+     * Quick Toggle Status Aktif / Nonaktif Pengguna
+     */
+    public function toggleUserStatus(User $user): RedirectResponse
+    {
+        $sebelum = $user->toArray();
+        $user->is_active = ! $user->is_active;
+        $user->save();
+
+        ActivityLog::catat('users', $user->id, 'update', $sebelum, $user->toArray());
+
+        $statusText = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        return back()->with('status', "Status pengguna '{$user->nama_display}' berhasil {$statusText}.");
+    }
+
+    /**
+     * Audit Log Viewer (Admin & Inspektur) dengan Fitur Filter Lengkap.
+     */
+    public function auditLog(Request $request): View
+    {
+        $tabel = $request->input('tabel');
+        $aksi  = $request->input('aksi');
+        $dari  = $request->input('dari');
+        $sampai = $request->input('sampai');
+        $userId = $request->input('user_id');
+        $search = $request->input('search');
+
+        $query = ActivityLog::with('user')->orderBy('created_at', 'desc');
+
+        if ($tabel) {
+            $query->where('tabel', $tabel);
+        }
+        if ($aksi) {
+            $query->where('aksi', $aksi);
+        }
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+        if ($dari) {
+            $query->whereDate('created_at', '>=', $dari);
+        }
+        if ($sampai) {
+            $query->whereDate('created_at', '<=', $sampai);
+        }
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('ip_address', 'like', "%{$search}%")
+                  ->orWhere('record_id', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($uq) use ($search) {
+                      $uq->where('nama', 'like', "%{$search}%")
+                         ->orWhere('nip', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $logs = $query->paginate(25)->withQueryString();
+
+        $tabelList = ActivityLog::distinct()->orderBy('tabel')->pluck('tabel');
+        $userList  = User::internal()->orderBy('nama')->get();
+
+        return view('master.audit-log', compact('logs', 'tabelList', 'userList', 'tabel', 'aksi', 'dari', 'sampai', 'userId', 'search'));
     }
 }

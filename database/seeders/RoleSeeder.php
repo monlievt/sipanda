@@ -91,7 +91,7 @@ class RoleSeeder extends Seeder
         $adminIrban = Role::firstOrCreate(['name' => 'admin_irban', 'guard_name' => 'web']);
         $adminIrban->syncPermissions([
             'master.view',
-            'pkppt.view',
+            'pkppt.view','pkppt.create','pkppt.edit','pkppt.usulkan',
             'penugasan.view','penugasan.create','penugasan.edit','penugasan.update_status',
             'tindak_lanjut.view','tindak_lanjut.create','tindak_lanjut.edit',
             'arsip.view','arsip.upload',
@@ -104,7 +104,7 @@ class RoleSeeder extends Seeder
         $irban = Role::firstOrCreate(['name' => 'irban', 'guard_name' => 'web']);
         $irban->syncPermissions([
             'master.view',
-            'pkppt.view','pkppt.usulkan',
+            'pkppt.view','pkppt.create','pkppt.edit','pkppt.usulkan',
             'penugasan.view','penugasan.create','penugasan.edit','penugasan.update_status',
             'tindak_lanjut.view','tindak_lanjut.create','tindak_lanjut.edit',
             'arsip.view','arsip.upload',

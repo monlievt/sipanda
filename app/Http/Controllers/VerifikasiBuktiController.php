@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\BuktiTindakLanjut;
 use App\Models\TindakLanjut;
+use App\Notifications\BuktiVerifikasiNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class VerifikasiBuktiController extends Controller
@@ -76,6 +78,16 @@ class VerifikasiBuktiController extends Controller
         }
 
         ActivityLog::catat('bukti_tindak_lanjut', $bukti->id, 'update', $sebelum, $bukti->toArray());
+
+        // Kirim notifikasi email ke OPD yang mengunggah bukti
+        $pengunggah = $bukti->pengunggah;
+        if ($pengunggah && $pengunggah->email) {
+            try {
+                $pengunggah->notify(new BuktiVerifikasiNotification($bukti, $validated['status_verifikasi']));
+            } catch (\Throwable $e) {
+                Log::warning("[SIPANDA Verifikasi] Gagal kirim email notifikasi ke OPD {$pengunggah->email}: " . $e->getMessage());
+            }
+        }
 
         return back()->with('status', $pesan);
     }

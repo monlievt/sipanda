@@ -11,6 +11,7 @@ use App\Models\TindakLanjut;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class TindakLanjutController extends Controller
@@ -91,33 +92,27 @@ class TindakLanjutController extends Controller
             ];
         })->values();
 
-        $penugasanList = Penugasan::orderBy('no_spt', 'desc')->get();
+        $penugasanList = Penugasan::select(['id', 'no_spt', 'uraian_penugasan'])->orderBy('no_spt', 'desc')->get();
 
         // Daftar Pilihan Tahun untuk Filter
-        $availableYears = TindakLanjut::whereNotNull('tgl_lhp')
-            ->pluck('tgl_lhp')
-            ->map(fn($d) => $d->format('Y'))
-            ->merge([date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3])
-            ->unique()
-            ->sortDesc()
-            ->values();
+        $availableYears = range(date('Y') + 1, 2020);
 
-        // 📊 Metrik Ringkasan Banner Atas
-        $allTl = TindakLanjut::with('rincianPenyetoran')->get();
-        $totalRekomendasi  = $allTl->count();
-        $countSesuai       = $allTl->where('status_tindak_lanjut', 'selesai')->count();
-        $countBelumSesuai  = $allTl->whereIn('status_tindak_lanjut', ['proses', 'menunggu_verifikasi'])->count();
-        $countBelum        = $allTl->where('status_tindak_lanjut', 'belum')->count();
-        $countTdt          = $allTl->where('status_tindak_lanjut', 'tdt')->count();
+        // 📊 Metrik Ringkasan Banner Atas (Di-cache 60 detik)
+        $metrics = \Illuminate\Support\Facades\Cache::remember('tlhp_top_banner_metrics', 60, function () {
+            return [
+                'totalRekomendasi'      => TindakLanjut::count(),
+                'countSesuai'           => TindakLanjut::where('status_tindak_lanjut', 'selesai')->count(),
+                'countBelumSesuai'      => TindakLanjut::whereIn('status_tindak_lanjut', ['proses', 'menunggu_verifikasi'])->count(),
+                'countBelum'            => TindakLanjut::where('status_tindak_lanjut', 'belum')->count(),
+                'countTdt'              => TindakLanjut::where('status_tindak_lanjut', 'tdt')->count(),
+                'totalNilaiRekomendasi' => (float) TindakLanjut::sum('nilai_rekomendasi_rp'),
+                'totalRealisasiSetor'   => (float) RincianPenyetoranTl::sum('nilai_setor_rp'),
+            ];
+        });
 
-        $totalNilaiRekomendasi = $allTl->sum('nilai_rekomendasi_rp');
-        $totalRealisasiSetor   = RincianPenyetoranTl::sum('nilai_setor_rp');
-
-        return view('tindak-lanjut.index', compact(
-            'groupedLhp', 'penugasanList', 'status', 'search', 'tahun', 'availableYears',
-            'totalRekomendasi', 'countSesuai', 'countBelumSesuai', 'countBelum', 'countTdt',
-            'totalNilaiRekomendasi', 'totalRealisasiSetor'
-        ));
+        return view('tindak-lanjut.index', array_merge($metrics, compact(
+            'groupedLhp', 'penugasanList', 'status', 'search', 'tahun', 'availableYears'
+        )));
     }
 
     /**
@@ -202,17 +197,17 @@ class TindakLanjutController extends Controller
         // 2. Simpan Lampiran File Bukti
         if ($request->hasFile('berkas_bukti')) {
             $file = $request->file('berkas_bukti');
-            $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
-            $filePath = $file->storeAs('bukti_tl', $fileName, 'public');
+            $fileName = Str::uuid() . '.' . $file->extension();
+            $filePath = $file->storeAs('bukti_tl/' . date('Y/m'), $fileName);
 
             ArsipDigital::create([
                 'penugasan_id'          => $tindakLanjut->penugasan_id,
                 'tindak_lanjut_id'      => $tindakLanjut->id,
                 'bukti_tindak_lanjut_id'=> $bukti->id,
-                'nama_file'             => $fileName,
+                'nama_file'             => $file->getClientOriginalName(), // nama asli disimpan di DB untuk display
                 'path_file'             => $filePath,
                 'ukuran_kb'             => round($file->getSize() / 1024) . ' KB',
-                'mime_type'             => $file->getClientMimeType(),
+                'mime_type'             => $file->getMimeType(), // getMimeType() baca dari server, bukan client
                 'kategori'              => 'Bukti Tindak Lanjut',
                 'diunggah_oleh'         => $userId,
             ]);
@@ -304,15 +299,15 @@ class TindakLanjutController extends Controller
 
         if ($request->hasFile('berkas_dasar_lhp')) {
             $file = $request->file('berkas_dasar_lhp');
-            $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
-            $filePath = $file->storeAs('berkas_lhp', $fileName, 'public');
+            $fileName = Str::uuid() . '.' . $file->extension();
+            $filePath = $file->storeAs('berkas_lhp/' . date('Y/m'), $fileName);
 
             ArsipDigital::create([
                 'penugasan_id'  => $penugasan->id,
-                'nama_file'     => $fileName,
+                'nama_file'     => $file->getClientOriginalName(), // nama asli untuk display
                 'path_file'     => $filePath,
                 'ukuran_kb'     => round($file->getSize() / 1024) . ' KB',
-                'mime_type'     => $file->getClientMimeType(),
+                'mime_type'     => $file->getMimeType(),
                 'kategori'      => 'Laporan Hasil Pengawasan (LHP)',
                 'diunggah_oleh' => $userId,
             ]);
@@ -437,8 +432,8 @@ class TindakLanjutController extends Controller
 
         if ($request->hasFile('berkas_dasar_lhp')) {
             $file = $request->file('berkas_dasar_lhp');
-            $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
-            $filePath = $file->storeAs('berkas_lhp', $fileName, 'public');
+            $fileName = Str::uuid() . '.' . $file->extension();
+            $filePath = $file->storeAs('berkas_lhp/' . date('Y/m'), $fileName);
             $validated['berkas_dasar_lhp'] = $filePath;
         }
 

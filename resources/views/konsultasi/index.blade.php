@@ -56,14 +56,14 @@
         </div>
 
         <!-- Filter Form -->
-        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-            <form method="GET" action="{{ route('konsultasi.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+        <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+            <form method="GET" action="{{ route('konsultasi.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-center">
                 <div class="sm:col-span-3">
-                    <input type="text" name="search" value="{{ $search }}" placeholder="Cari No. Tiket / Permasalahan..." class="w-full text-xs rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                    <input type="text" name="search" value="{{ $search }}" placeholder="Cari No. Tiket / Permasalahan..." class="w-full text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                 </div>
 
                 <div class="sm:col-span-3">
-                    <select name="status" onchange="this.form.submit()" class="w-full text-xs rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                    <select name="status" onchange="this.form.submit()" class="w-full text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                         <option value="">-- Semua Status --</option>
                         <option value="menunggu_disposisi" {{ $status === 'menunggu_disposisi' ? 'selected' : '' }}>Menunggu Disposisi Irban</option>
                         <option value="berjalan" {{ $status === 'berjalan' ? 'selected' : '' }}>Sedang Berjalan</option>
@@ -73,7 +73,7 @@
 
                 @if(!auth()->user()->hasRole(['irban', 'admin_irban']))
                 <div class="sm:col-span-3">
-                    <select name="irban_id" onchange="this.form.submit()" class="w-full text-xs rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                    <select name="irban_id" onchange="this.form.submit()" class="w-full text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                         <option value="">-- Semua Irban --</option>
                         @foreach($irbans as $irb)
                             <option value="{{ $irb->id }}" {{ $irbanId == $irb->id ? 'selected' : '' }}>{{ $irb->nama_irban }}</option>
@@ -83,11 +83,11 @@
                 @endif
 
                 <div class="sm:col-span-3 flex items-center gap-2">
-                    <button type="submit" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl shadow-xs">
+                    <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-bold rounded-xl shadow-xs transition-all cursor-pointer">
                         Filter Tiket
                     </button>
                     @if($status || $irbanId || $search)
-                        <a href="{{ route('konsultasi.index') }}" class="px-3 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 text-xs font-bold rounded-xl">
+                        <a href="{{ route('konsultasi.index') }}" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 text-sm font-bold rounded-xl transition-all">
                             Reset
                         </a>
                     @endif

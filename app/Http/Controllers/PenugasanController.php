@@ -220,6 +220,37 @@ class PenugasanController extends Controller
 
         ActivityLog::catat('penugasan', $penugasan->id, 'create', null, $penugasan->toArray());
 
+        // Kirim Notifikasi (Email + WhatsApp + In-App) ke Seluruh Anggota Tim
+        $penugasan->load(['objekPenugasan', 'tim.user']);
+        foreach ($penugasan->tim as $member) {
+            if ($member->user) {
+                $peranTitle = match($member->peran) {
+                    'wakil_penanggung_jawab' => 'Wakil Penanggung Jawab',
+                    'pengendali_teknis'      => 'Pengendali Teknis',
+                    'ketua_tim'              => 'Ketua Tim',
+                    default                  => 'Anggota Tim',
+                };
+
+                // In-App Notification
+                \App\Models\Notifikasi::create([
+                    'user_id'      => $member->user_id,
+                    'penugasan_id' => $penugasan->id,
+                    'jenis'        => 'info_lain',
+                    'judul'        => 'Penerbitan SPT Baru: ' . $penugasan->no_spt,
+                    'pesan'        => "Anda ditugaskan sebagai {$peranTitle} pada penugasan {$penugasan->no_spt} ({$penugasan->uraian_penugasan}).",
+                    'status'       => 'terkirim',
+                    'dikirim_pada' => now(),
+                ]);
+
+                // Email & WhatsApp Notification
+                try {
+                    $member->user->notify(new \App\Notifications\PenugasanBaruNotification($penugasan, $peranTitle));
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif SPT baru ke user {$member->user_id}: " . $e->getMessage());
+                }
+            }
+        }
+
         $pesanPerpanjangan = $penugasan->penugasan_induk_id ? " (Merupakan ST Perpanjangan dari No. SPT {$penugasan->penugasanInduk?->no_spt})" : "";
 
         return redirect()->route('penugasan.index')

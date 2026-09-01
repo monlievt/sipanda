@@ -56,9 +56,12 @@
                     <input id="remember" type="checkbox" name="remember" class="rounded border-slate-300 text-teal-600 focus:ring-teal-500">
                     <span class="ms-2 text-xs text-slate-600 dark:text-slate-400">Ingat sesi ini</span>
                 </label>
+                <a href="{{ route('opd.password.request') }}" class="text-xs font-semibold text-teal-600 hover:text-teal-700 dark:text-teal-400 hover:underline">
+                    Lupa kata sandi?
+                </a>
             </div>
 
-            <button type="submit" class="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-semibold text-sm rounded-xl shadow-lg shadow-teal-600/25 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <button type="submit" class="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-semibold text-sm rounded-xl shadow-lg shadow-teal-600/25 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer">
                 Masuk ke Portal OPD
             </button>
         </form>

@@ -9,6 +9,7 @@ use App\Models\BuktiTindakLanjut;
 use App\Models\TindakLanjut;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class OpdDashboardController extends Controller
@@ -81,16 +82,17 @@ class OpdDashboardController extends Controller
         // Simpan file jika ada
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $path = $file->store('arsip', 'local');
+            $fileName = Str::uuid() . '.' . $file->extension();
+            $path = $file->storeAs('arsip/' . date('Y/m'), $fileName);
 
             ArsipDigital::create([
                 'penugasan_id'           => $tindakLanjut->penugasan_id,
                 'tindak_lanjut_id'       => $tindakLanjut->id,
                 'bukti_tindak_lanjut_id' => $bukti->id,
-                'nama_file'              => $file->getClientOriginalName(),
+                'nama_file'              => $file->getClientOriginalName(), // nama asli untuk display
                 'path_file'              => $path,
                 'ukuran_kb'              => round($file->getSize() / 1024) . ' KB',
-                'mime_type'              => $file->getClientMimeType(),
+                'mime_type'              => $file->getMimeType(),
                 'kategori'               => 'Bukti Tindak Lanjut OPD',
                 'diunggah_oleh'          => $user->id,
             ]);
@@ -100,6 +102,42 @@ class OpdDashboardController extends Controller
         $tindakLanjut->update(['status_tindak_lanjut' => 'menunggu_verifikasi']);
 
         ActivityLog::catat('bukti_tindak_lanjut', $bukti->id, 'create', null, $bukti->toArray());
+
+        // Kirim Notifikasi (Email + WhatsApp + In-App) ke Tim Irban / Pembuat Penugasan
+        $tindakLanjut->load(['penugasan.irban', 'penugasan.tim.user', 'penugasan.pembuatData']);
+        $namaOpd = $user->objekPenugasan?->nama ?? $user->nama_display ?? 'OPD';
+
+        $recipients = collect();
+        if ($tindakLanjut->penugasan?->pembuatData) {
+            $recipients->push($tindakLanjut->penugasan->pembuatData);
+        }
+        foreach ($tindakLanjut->penugasan?->tim ?? [] as $tm) {
+            if ($tm->user && in_array($tm->peran, ['ketua_tim', 'pengendali_teknis'])) {
+                $recipients->push($tm->user);
+            }
+        }
+        $recipients = $recipients->unique('id');
+
+        foreach ($recipients as $auditor) {
+            // In-App Notification
+            \App\Models\Notifikasi::create([
+                'user_id'      => $auditor->id,
+                'penugasan_id' => $tindakLanjut->penugasan_id,
+                'jenis'        => 'bukti_diunggah',
+                'judul'        => "Bukti Baru dari {$namaOpd}",
+                'pesan'        => "PIC {$namaOpd} mengunggah bukti baru untuk rekomendasi LHP {$tindakLanjut->no_lhp}.",
+                'url_target'   => route('tindak-lanjut.show', $tindakLanjut->id),
+                'status'       => 'terkirim',
+                'dikirim_pada' => now(),
+            ]);
+
+            // Email & WhatsApp
+            try {
+                $auditor->notify(new \App\Notifications\BuktiBaruDiunggahNotification($bukti, $namaOpd));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif bukti baru ke auditor {$auditor->id}: " . $e->getMessage());
+            }
+        }
 
         return back()->with('status', 'Bukti tindak lanjut berhasil dikirim! Menunggu verifikasi dari Inspektorat.');
     }

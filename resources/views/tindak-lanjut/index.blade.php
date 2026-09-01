@@ -134,18 +134,18 @@
         </div>
 
         <!-- Filter Box -->
-        <form method="GET" action="{{ route('tindak-lanjut.index') }}" class="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
+        <form method="GET" action="{{ route('tindak-lanjut.index') }}" class="p-4 sm:p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-3 text-sm">
             <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                <input type="text" name="search" value="{{ $search }}" placeholder="Cari No. LHP / Judul LHP / Uraian..." class="rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs w-72">
+                <input type="text" name="search" value="{{ $search }}" placeholder="Cari No. LHP / Judul LHP / Uraian..." class="rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-200 px-3.5 py-2.5 w-72 focus:ring-2 focus:ring-emerald-500">
 
-                <select name="tahun" onchange="this.form.submit()" class="rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                <select name="tahun" onchange="this.form.submit()" class="rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                     <option value="">-- Semua Tahun --</option>
                     @foreach($availableYears as $y)
                         <option value="{{ $y }}" {{ (string)$tahun === (string)$y ? 'selected' : '' }}>Tahun {{ $y }}</option>
                     @endforeach
                 </select>
 
-                <select name="status" onchange="this.form.submit()" class="rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                <select name="status" onchange="this.form.submit()" class="rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                     <option value="">-- Semua Status TL --</option>
                     <option value="selesai" {{ $status === 'selesai' ? 'selected' : '' }}>SESUAI</option>
                     <option value="proses" {{ $status === 'proses' ? 'selected' : '' }}>BELUM SESUAI</option>
@@ -153,8 +153,8 @@
                     <option value="tdt" {{ $status === 'tdt' ? 'selected' : '' }}>TIDAK DAPAT DITINDAKLANJUTI</option>
                 </select>
 
-                <button type="submit" class="py-2 px-3 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-xs">Filter</button>
-                <a href="{{ route('tindak-lanjut.index') }}" class="py-2 px-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 font-semibold rounded-xl text-xs">Reset</a>
+                <button type="submit" class="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm transition-all cursor-pointer">Filter</button>
+                <a href="{{ route('tindak-lanjut.index') }}" class="py-2.5 px-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 text-sm font-bold rounded-xl transition-all">Reset</a>
             </div>
         </form>
     </div>
@@ -422,38 +422,38 @@
                             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                                 <span class="font-black text-emerald-700 dark:text-emerald-400 text-xs flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                    <span x-text="'TEMUAN ' + (tIndex + 1)"></span>
+                                    <span x-text="'TEMUAN ' + (tIndex + 1) + ' / CATATAN ' + (tIndex + 1)"></span>
                                 </span>
                                 <button type="button" @click="removeTemuan(tIndex)" x-show="items.length > 1" class="text-rose-600 hover:text-rose-800 text-xs font-semibold flex items-center gap-1">
-                                    &times; Hapus Temuan ini
+                                    &times; Hapus Temuan / Catatan ini
                                 </button>
                             </div>
 
                             <div>
-                                <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300" x-text="'Uraian Temuan ' + (tIndex + 1) + ' *'"></label>
-                                <textarea :name="'items[' + tIndex + '][temuan]'" x-model="tItem.temuan" required rows="2" placeholder="Tuliskan uraian temuan hasil pemeriksaan di sini..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500"></textarea>
+                                <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300" x-text="'Uraian Temuan ' + (tIndex + 1) + ' / Catatan ' + (tIndex + 1) + ' *'"></label>
+                                <textarea :name="'items[' + tIndex + '][temuan]'" x-model="tItem.temuan" required rows="2" placeholder="Tuliskan uraian temuan / catatan hasil pemeriksaan di sini..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500"></textarea>
                             </div>
 
                             <div class="pl-3 border-l-2 border-emerald-500/40 space-y-3 mt-3">
-                                <label class="block font-bold text-slate-800 dark:text-slate-200 text-[11px]" x-text="'Rekomendasi untuk Temuan ' + (tIndex + 1) + ':'"></label>
+                                <label class="block font-bold text-slate-800 dark:text-slate-200 text-[11px]" x-text="'Rekomendasi / Saran untuk Temuan ' + (tIndex + 1) + ' / Catatan ' + (tIndex + 1) + ':'"></label>
 
                                 <template x-for="(rItem, rIndex) in tItem.rekomendasi" :key="rIndex">
                                     <div class="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                                         <div class="flex items-center justify-between">
-                                            <span class="font-semibold text-slate-600 dark:text-slate-300 text-[10px]" x-text="'Rekomendasi ' + (rIndex + 1)"></span>
+                                            <span class="font-semibold text-slate-600 dark:text-slate-300 text-[10px]" x-text="'Rekomendasi / Saran ' + (rIndex + 1)"></span>
                                             <button type="button" @click="removeRekomendasi(tIndex, rIndex)" x-show="tItem.rekomendasi.length > 1" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold">
-                                                &times; Hapus Rekomendasi
+                                                &times; Hapus Rekomendasi / Saran
                                             </button>
                                         </div>
 
                                         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
                                             <div class="sm:col-span-6">
-                                                <label class="block text-[10px] text-slate-500 mb-0.5">Uraian Rekomendasi <span class="text-rose-500">*</span></label>
-                                                <input type="text" :name="'items[' + tIndex + '][rekomendasi][' + rIndex + '][uraian]'" x-model="rItem.uraian" required placeholder="Uraian rekomendasi wajib..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                                                <label class="block text-[10px] text-slate-500 mb-0.5">Uraian Rekomendasi / Saran <span class="text-rose-500">*</span></label>
+                                                <input type="text" :name="'items[' + tIndex + '][rekomendasi][' + rIndex + '][uraian]'" x-model="rItem.uraian" required placeholder="Uraian rekomendasi / saran wajib..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
                                             </div>
 
                                             <div class="sm:col-span-3">
-                                                <label class="block text-[10px] font-bold text-emerald-700 dark:text-emerald-400 mb-0.5">Nilai Rekomendasi (Rp)</label>
+                                                <label class="block text-[10px] font-bold text-emerald-700 dark:text-emerald-400 mb-0.5">Nilai Rekomendasi / Saran (Rp)</label>
                                                 <input type="text" oninput="formatRupiahInput(this)" :name="'items[' + tIndex + '][rekomendasi][' + rIndex + '][nilai_rekomendasi_rp]'" x-model="rItem.nilai_rekomendasi_rp" placeholder="0" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-emerald-600">
                                             </div>
 
@@ -466,7 +466,7 @@
                                 </template>
 
                                 <button type="button" @click="addRekomendasi(tIndex)" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 hover:bg-emerald-100 font-semibold rounded-xl text-[10px] flex items-center gap-1 border border-emerald-200 dark:border-emerald-800">
-                                    + Tambah Rekomendasi (Rekomendasi <span x-text="tItem.rekomendasi.length + 1"></span>)
+                                    + Tambah Rekomendasi / Saran (Rekomendasi / Saran <span x-text="tItem.rekomendasi.length + 1"></span>)
                                 </button>
                             </div>
                         </div>
@@ -475,12 +475,12 @@
 
                 <div class="pt-2 flex items-center justify-between border-t border-slate-200 dark:border-slate-800">
                     <button type="button" @click="addTemuan()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-sm">
-                        <span>+ Tambah Temuan Lain (Temuan <span x-text="items.length + 1"></span>)</span>
+                        <span>+ Tambah Temuan / Catatan Lain (Temuan / Catatan <span x-text="items.length + 1"></span>)</span>
                     </button>
 
                     <div class="flex items-center gap-3">
                         <button type="button" onclick="document.getElementById('modalTambahTemuanMulti').classList.add('hidden')" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold rounded-xl">Batal</button>
-                        <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md shadow-emerald-600/20">Simpan Semua Temuan & Rekomendasi</button>
+                        <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md shadow-emerald-600/20">Simpan Semua Temuan / Catatan & Rekomendasi / Saran</button>
                     </div>
                 </div>
             </form>

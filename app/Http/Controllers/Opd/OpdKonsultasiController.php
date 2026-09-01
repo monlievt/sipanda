@@ -8,6 +8,7 @@ use App\Models\KonsultasiChat;
 use App\Models\ObjekPenugasan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class OpdKonsultasiController extends Controller
@@ -84,8 +85,8 @@ class OpdKonsultasiController extends Controller
         $filePath = null;
         if ($request->hasFile('berkas_pendukung')) {
             $file = $request->file('berkas_pendukung');
-            $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
-            $filePath = $file->storeAs('berkas_konsultasi', $fileName, 'public');
+            $fileName = Str::uuid() . '.' . $file->extension();
+            $filePath = $file->storeAs('berkas_konsultasi/' . date('Y/m'), $fileName);
         }
 
         $konsultasi = Konsultasi::create([
@@ -156,8 +157,8 @@ class OpdKonsultasiController extends Controller
         $filePath = null;
         if ($request->hasFile('lampiran_file')) {
             $file = $request->file('lampiran_file');
-            $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
-            $filePath = $file->storeAs('berkas_konsultasi', $fileName, 'public');
+            $fileName = Str::uuid() . '.' . $file->extension();
+            $filePath = $file->storeAs('berkas_konsultasi/' . date('Y/m'), $fileName);
         }
 
         KonsultasiChat::create([

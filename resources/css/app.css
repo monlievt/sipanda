@@ -4,4 +4,34 @@
     body {
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
+
+    /* Override WebKit Autofill styles to prevent white-on-white or low contrast text */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill,
+    select:-webkit-autofill {
+        -webkit-text-fill-color: inherit !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
+    /* Fallback default text colors for input fields */
+    input, select, textarea {
+        color: inherit;
+    }
+
+    /* Standardize form controls font-size, padding, and height globally */
+    input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]),
+    select,
+    textarea {
+        font-size: 0.875rem !important; /* 14px text-sm font size */
+        padding-top: 0.625rem !important; /* 10px top padding */
+        padding-bottom: 0.625rem !important; /* 10px bottom padding */
+        padding-left: 0.875rem !important; /* 14px left padding */
+        padding-right: 0.875rem !important; /* 14px right padding */
+        line-height: 1.25rem !important;
+        min-height: 2.625rem !important; /* 42px comfortable target height */
+    }
 }
+
+

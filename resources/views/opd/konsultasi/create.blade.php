@@ -32,16 +32,16 @@
                 <p class="text-xs text-slate-500 mt-0.5">Isikan rincian permasalahan atau pertanyaan pengawasan yang ingin dikonsultasikan kepada Inspektorat Kabupaten Trenggalek.</p>
             </div>
 
-            <form method="POST" action="{{ route('opd.konsultasi.store') }}" enctype="multipart/form-data" class="space-y-4 text-xs">
+            <form method="POST" action="{{ route('opd.konsultasi.store') }}" enctype="multipart/form-data" class="space-y-4 text-sm">
                 @csrf
                 <div>
-                    <label class="block font-bold text-slate-800 dark:text-slate-200 mb-1">Perangkat Daerah (OPD) Pemohon</label>
-                    <input type="text" value="{{ $objek?->nama ?? $opdUser->nama }}" disabled class="w-full rounded-xl border-slate-200 bg-slate-100 dark:bg-slate-800 font-bold text-slate-600">
+                    <label class="block font-bold text-sm text-slate-800 dark:text-slate-200 mb-1">Perangkat Daerah (OPD) Pemohon</label>
+                    <input type="text" value="{{ $objek?->nama ?? $opdUser->nama }}" disabled class="w-full rounded-xl border-slate-200 bg-slate-100 dark:bg-slate-800 font-bold text-slate-600 dark:text-slate-300 text-sm px-3.5 py-2.5">
                 </div>
 
                 <div>
-                    <label class="block font-bold text-teal-700 dark:text-teal-400 mb-1">Pilih Area / Topik Konsultasi *</label>
-                    <select name="area_konsultasi" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold">
+                    <label class="block font-bold text-sm text-teal-700 dark:text-teal-400 mb-1">Pilih Area / Topik Konsultasi *</label>
+                    <select name="area_konsultasi" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-bold px-3.5 py-2.5 focus:ring-2 focus:ring-teal-500">
                         <option value="">-- Pilih Area Konsultasi --</option>
                         @foreach($areas as $ar)
                             <option value="{{ $ar }}">{{ $ar }}</option>
@@ -50,13 +50,13 @@
                 </div>
 
                 <div>
-                    <label class="block font-bold text-slate-800 dark:text-slate-200 mb-1">Judul Ringkas Permasalahan *</label>
-                    <input type="text" name="judul_permasalahan" required placeholder="mis. Konsultasi Prosedur Pengadaan Barang/Jasa Dana Alokasi Khusus..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                    <label class="block font-bold text-sm text-slate-800 dark:text-slate-200 mb-1">Judul Ringkas Permasalahan *</label>
+                    <input type="text" name="judul_permasalahan" required placeholder="mis. Konsultasi Prosedur Pengadaan Barang/Jasa Dana Alokasi Khusus..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold px-3.5 py-2.5 focus:ring-2 focus:ring-teal-500">
                 </div>
 
                 <div>
-                    <label class="block font-bold text-slate-800 dark:text-slate-200 mb-1">Uraian Permasalahan / Pertanyaan Detail *</label>
-                    <textarea name="uraian_permasalahan" rows="6" required placeholder="Jelaskan kronologi, latar belakang masalah, dan poin pertanyaan yang ingin dikonsultasikan secara rinci..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-teal-500"></textarea>
+                    <label class="block font-bold text-sm text-slate-800 dark:text-slate-200 mb-1">Uraian Permasalahan / Pertanyaan Detail *</label>
+                    <textarea name="uraian_permasalahan" rows="6" required placeholder="Jelaskan kronologi, latar belakang masalah, dan poin pertanyaan yang ingin dikonsultasikan secara rinci..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm px-3.5 py-2.5 focus:ring-2 focus:ring-teal-500"></textarea>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

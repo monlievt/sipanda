@@ -5,21 +5,21 @@
 
     <!-- Filter Form -->
     <div class="mb-6 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
-        <form method="GET" action="{{ route('beban-kerja.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 text-xs">
+        <form method="GET" action="{{ route('beban-kerja.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end text-sm">
             <div>
-                <label class="block font-semibold text-slate-600 dark:text-slate-400 mb-1">Tanggal Awal</label>
-                <input type="date" name="tanggal_awal" value="{{ $tglAwal }}" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                <label class="block font-semibold text-xs text-slate-600 dark:text-slate-400 uppercase mb-1">Tanggal Awal</label>
+                <input type="date" name="tanggal_awal" value="{{ $tglAwal }}" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
             </div>
 
             <div>
-                <label class="block font-semibold text-slate-600 dark:text-slate-400 mb-1">Tanggal Akhir</label>
-                <input type="date" name="tanggal_akhir" value="{{ $tglAkhir }}" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                <label class="block font-semibold text-xs text-slate-600 dark:text-slate-400 uppercase mb-1">Tanggal Akhir</label>
+                <input type="date" name="tanggal_akhir" value="{{ $tglAkhir }}" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
             </div>
 
             @if(!auth()->user()->hasRole(['irban', 'admin_irban']))
             <div>
-                <label class="block font-semibold text-slate-600 dark:text-slate-400 mb-1">Irban</label>
-                <select name="irban_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                <label class="block font-semibold text-xs text-slate-600 dark:text-slate-400 uppercase mb-1">Irban</label>
+                <select name="irban_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                     <option value="">-- Semua Irban --</option>
                     @foreach($irbans as $irban)
                         <option value="{{ $irban->id }}" {{ $irbanId == $irban->id ? 'selected' : '' }}>{{ $irban->nama_irban }}</option>
@@ -29,8 +29,8 @@
             @endif
 
             <div>
-                <label class="block font-semibold text-slate-600 dark:text-slate-400 mb-1">Pilih Personil</label>
-                <select name="user_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                <label class="block font-semibold text-xs text-slate-600 dark:text-slate-400 uppercase mb-1">Pilih Personil</label>
+                <select name="user_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                     <option value="">-- Semua Personil --</option>
                     @foreach($allUsers as $u)
                         <option value="{{ $u->id }}" {{ $selectedUserId == $u->id ? 'selected' : '' }}>{{ $u->nama_display }}</option>
@@ -38,8 +38,8 @@
                 </select>
             </div>
 
-            <div class="flex items-end gap-2">
-                <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow-md">Tampilkan Rekap</button>
+            <div class="flex items-center gap-2">
+                <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-md transition-all cursor-pointer">Tampilkan Rekap</button>
             </div>
         </form>
     </div>
