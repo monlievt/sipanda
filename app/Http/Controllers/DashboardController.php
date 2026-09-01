@@ -86,7 +86,7 @@ class DashboardController extends Controller
             ];
         });
 
-        $irbans = Cache::remember('all_irbans', 3600, fn() => Irban::all());
+        $irbans = Irban::all();
         $tahunList = range(date('Y') + 1, 2022);
 
         return view('dashboard', array_merge($data, compact('irbans', 'tahun', 'irbanId', 'tahunList')));

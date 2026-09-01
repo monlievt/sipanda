@@ -27,7 +27,13 @@
                 <select name="irban_id" onchange="this.form.submit()" class="text-xs font-semibold rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-emerald-500 shadow-xs">
                     <option value="">-- Semua Irban --</option>
                     @foreach($irbans as $irban)
-                        <option value="{{ $irban->id }}" {{ $irbanId == $irban->id ? 'selected' : '' }}>{{ $irban->nama_irban }}</option>
+                        @php
+                            $iId = is_object($irban) ? $irban->id : ($irban['id'] ?? null);
+                            $iNama = is_object($irban) ? $irban->nama_irban : ($irban['nama_irban'] ?? (string)$irban);
+                        @endphp
+                        @if($iId)
+                            <option value="{{ $iId }}" {{ $irbanId == $iId ? 'selected' : '' }}>{{ $iNama }}</option>
+                        @endif
                     @endforeach
                 </select>
             </div>
