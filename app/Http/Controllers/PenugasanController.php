@@ -146,8 +146,8 @@ class PenugasanController extends Controller
             'jenis_penugasan_id'  => ['required', 'exists:jenis_penugasan,id'],
             'tanggal_mulai'       => ['required', 'date'],
             'tanggal_selesai'     => ['required', 'date', 'after_or_equal:tanggal_mulai'],
-            'is_sesuai_pkppt'     => ['required', 'boolean'],
-            'pkppt_id'            => ['nullable', 'required_if:is_sesuai_pkppt,1', 'exists:pkppt,id'],
+            'is_sesuai_pkppt'     => ['nullable', 'boolean'],
+            'pkppt_id'            => ['nullable', 'exists:pkppt,id'],
             'is_perpanjangan'     => ['required', 'boolean'],
             'penugasan_induk_id'  => ['nullable', 'required_if:is_perpanjangan,1', 'exists:penugasan,id'],
             // Multi-Irban Selection
@@ -174,7 +174,6 @@ class PenugasanController extends Controller
             'tanggal_mulai.required'        => 'Tanggal mulai penugasan wajib diisi.',
             'tanggal_selesai.required'      => 'Tanggal selesai penugasan wajib diisi.',
             'tanggal_selesai.after_or_equal'=> 'Tanggal selesai tidak boleh sebelum tanggal mulai.',
-            'pkppt_id.required_if'          => 'Karena penugasan ini Sesuai PKPPT, Anda wajib memilih baris Rencana PKPPT Terkait.',
             'penugasan_induk_id.required_if'=> 'Karena ini adalah ST Perpanjangan, Anda wajib memilih Surat Tugas Indikator (ST Induk) yang diperpanjang.',
             'irban_ids.required'            => 'Minimal 1 Irban Penanggung Jawab wajib dipilih.',
             'objek_ids.required'            => 'Minimal 1 Objek Penugasan (OPD/Kecamatan) wajib dipilih.',
@@ -196,6 +195,16 @@ class PenugasanController extends Controller
         $tglMulai = \Carbon\Carbon::parse($validated['tanggal_mulai'])->startOfDay();
         $statusOtomatis = now()->startOfDay()->gte($tglMulai) ? 'berjalan' : 'belum_berjalan';
 
+        // Jika ST Perpanjangan, otomatis warisi relasi PKPPT dari ST Induk
+        if ($validated['is_perpanjangan'] && !empty($validated['penugasan_induk_id'])) {
+            $parentSt = Penugasan::find($validated['penugasan_induk_id']);
+            $isSesuaiPkppt = $parentSt ? (bool) $parentSt->is_sesuai_pkppt : false;
+            $pkpptId = $parentSt ? $parentSt->pkppt_id : null;
+        } else {
+            $isSesuaiPkppt = (bool) ($validated['is_sesuai_pkppt'] ?? false);
+            $pkpptId = $isSesuaiPkppt ? ($validated['pkppt_id'] ?? null) : null;
+        }
+
         $penugasan = Penugasan::create([
             'no_spt'              => $validated['no_spt'],
             'uraian_penugasan'    => $validated['uraian_penugasan'],
@@ -205,8 +214,8 @@ class PenugasanController extends Controller
             'tanggal_selesai'     => $validated['tanggal_selesai'],
             'status'              => $statusOtomatis,
             'progres_persen'      => 0,
-            'is_sesuai_pkppt'     => (bool) $validated['is_sesuai_pkppt'],
-            'pkppt_id'            => $validated['is_sesuai_pkppt'] ? $validated['pkppt_id'] : null,
+            'is_sesuai_pkppt'     => $isSesuaiPkppt,
+            'pkppt_id'            => $pkpptId,
             'penugasan_induk_id'  => $validated['is_perpanjangan'] ? $validated['penugasan_induk_id'] : null,
             'irban_id'            => $primaryIrbanId,
             'dibuat_oleh'         => $user->id,
@@ -324,8 +333,8 @@ class PenugasanController extends Controller
             'tanggal_mulai'       => ['required', 'date'],
             'tanggal_selesai'     => ['required', 'date', 'after_or_equal:tanggal_mulai'],
             'status'              => ['required', 'in:belum_berjalan,berjalan,selesai'],
-            'is_sesuai_pkppt'     => ['required', 'boolean'],
-            'pkppt_id'            => ['nullable', 'required_if:is_sesuai_pkppt,1', 'exists:pkppt,id'],
+            'is_sesuai_pkppt'     => ['nullable', 'boolean'],
+            'pkppt_id'            => ['nullable', 'exists:pkppt,id'],
             'is_perpanjangan'     => ['required', 'boolean'],
             'penugasan_induk_id'  => ['nullable', 'required_if:is_perpanjangan,1', 'exists:penugasan,id'],
             'irban_ids'           => ['required', 'array', 'min:1'],
@@ -345,6 +354,16 @@ class PenugasanController extends Controller
         $sebelum = $penugasan->toArray();
         $primaryIrbanId = $validated['irban_ids'][0];
 
+        // Jika ST Perpanjangan, otomatis warisi relasi PKPPT dari ST Induk
+        if ($validated['is_perpanjangan'] && !empty($validated['penugasan_induk_id'])) {
+            $parentSt = Penugasan::find($validated['penugasan_induk_id']);
+            $isSesuaiPkppt = $parentSt ? (bool) $parentSt->is_sesuai_pkppt : false;
+            $pkpptId = $parentSt ? $parentSt->pkppt_id : null;
+        } else {
+            $isSesuaiPkppt = (bool) ($validated['is_sesuai_pkppt'] ?? false);
+            $pkpptId = $isSesuaiPkppt ? ($validated['pkppt_id'] ?? null) : null;
+        }
+
         $penugasan->update([
             'no_spt'              => $validated['no_spt'],
             'uraian_penugasan'    => $validated['uraian_penugasan'],
@@ -353,8 +372,8 @@ class PenugasanController extends Controller
             'tanggal_mulai'       => $validated['tanggal_mulai'],
             'tanggal_selesai'     => $validated['tanggal_selesai'],
             'status'              => $validated['status'],
-            'is_sesuai_pkppt'     => (bool) $validated['is_sesuai_pkppt'],
-            'pkppt_id'            => $validated['is_sesuai_pkppt'] ? $validated['pkppt_id'] : null,
+            'is_sesuai_pkppt'     => $isSesuaiPkppt,
+            'pkppt_id'            => $pkpptId,
             'penugasan_induk_id'  => $validated['is_perpanjangan'] ? $validated['penugasan_induk_id'] : null,
             'irban_id'            => $primaryIrbanId,
             'diperbarui_oleh'     => $user->id,

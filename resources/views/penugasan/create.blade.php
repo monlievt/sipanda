@@ -8,7 +8,8 @@
             @csrf
 
             <!-- Card 1: Informasi Umum SPT -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800"
+                x-data="{ isPerpanjangan: '{{ old('is_perpanjangan', '0') }}', isPkppt: '{{ old('is_sesuai_pkppt', '1') }}' }">
                 <h3 class="font-bold text-slate-900 dark:text-white text-base mb-4 flex items-center gap-2">
                     <span class="w-3 h-3 bg-emerald-500 rounded-full"></span>
                     1. Informasi Umum Penugasan & Nomor SPT
@@ -87,9 +88,7 @@
                 </div>
 
                 <!-- ST Perpanjangan Flag & Alpine.js Searchable Combobox -->
-                <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs"
-                    x-data="{ isPerpanjangan: '{{ old('is_perpanjangan', '0') }}' }">
-                    
+                <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
                     <label class="block font-semibold mb-2">Apakah ini Surat Tugas Perpanjangan?</label>
                     <div class="flex items-center gap-6">
                         <label class="inline-flex items-center cursor-pointer">
@@ -167,13 +166,17 @@
                                 </div>
                             </div>
                         </div>
-                        <p class="text-[10px] text-slate-400 mt-1">LHP dan Tindak Lanjut akan otomatis terikat antara ST Baru dengan ST Induk.</p>
+                        
+                        <div class="mt-2.5 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-emerald-800 dark:text-emerald-300 text-[11px] flex items-center gap-2">
+                            <span class="text-base">💡</span>
+                            <span><strong>Info Otomatis:</strong> Data PKPPT dan LHP akan otomatis terhubung ke ST Induk yang dipilih, sehingga realisasi PKPPT tidak terhitung ganda.</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Flag Sesuai PKPPT & Alpine.js Searchable Combobox -->
+                <!-- Flag Sesuai PKPPT & Alpine.js Searchable Combobox (Hanya tampil jika BUKAN ST Perpanjangan) -->
                 <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs"
-                    x-data="{ isPkppt: '{{ old('is_sesuai_pkppt', '1') }}' }">
+                    x-show="isPerpanjangan == '0'" x-transition>
                     
                     <label class="block font-semibold mb-2">Kesesuaian dengan PKPPT</label>
                     <div class="flex items-center gap-6">
@@ -220,7 +223,7 @@
                         <label class="block font-semibold mb-1">Pilih Baris Rencana PKPPT Terkait <span class="text-rose-500">*</span></label>
 
                         <!-- Hidden Real Input -->
-                        <input type="hidden" name="pkppt_id" :value="isPkppt == '1' ? selectedId : ''">
+                        <input type="hidden" name="pkppt_id" :value="(isPerpanjangan == '0' && isPkppt == '1') ? selectedId : ''">
 
                         <div class="relative">
                             <!-- Trigger Button -->

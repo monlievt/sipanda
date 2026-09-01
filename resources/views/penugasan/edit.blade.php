@@ -4,7 +4,8 @@
     </x-slot>
 
     <div class="max-w-4xl mx-auto">
-        <form method="POST" action="{{ route('penugasan.update', $penugasan->id) }}" class="space-y-6">
+        <form method="POST" action="{{ route('penugasan.update', $penugasan->id) }}" class="space-y-6"
+            x-data="{ isPerpanjangan: '{{ old('is_perpanjangan', $penugasan->penugasan_induk_id ? '1' : '0') }}', isPkppt: '{{ old('is_sesuai_pkppt', $penugasan->is_sesuai_pkppt ? '1' : '0') }}' }">
             @csrf
             @method('PUT')
 
@@ -32,7 +33,7 @@
 
                     <!-- Multi-Irban Penanggung Jawab -->
                     <div>
-                        <label class="block font-semibold mb-1">Irban Penanggung Jawab <span class="text-rose-500">*</span></label>
+                        <label class="block font-semibold mb-1">Irban Penanggung Jawab <span class="text-rose-500">*</span> (Dapat memilih lebih dari 1)</label>
                         <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1 max-h-36 overflow-y-auto">
                             @foreach($irbans as $irban)
                                 <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
@@ -73,11 +74,11 @@
                     </div>
 
                     <div>
-                        <label class="block font-semibold mb-1">Status Pelaksanaan <span class="text-rose-500">*</span></label>
-                        <select name="status" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold focus:ring-emerald-500">
-                            <option value="belum_berjalan" {{ old('status', $penugasan->status) === 'belum_berjalan' ? 'selected' : '' }}>Belum Berjalan</option>
-                            <option value="berjalan" {{ old('status', $penugasan->status) === 'berjalan' ? 'selected' : '' }}>Berjalan</option>
-                            <option value="selesai" {{ old('status', $penugasan->status) === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                        <label class="block font-semibold mb-1">Status Penugasan <span class="text-rose-500">*</span></label>
+                        <select name="status" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
+                            <option value="belum_berjalan" {{ old('status', $penugasan->status) == 'belum_berjalan' ? 'selected' : '' }}>Belum Berjalan</option>
+                            <option value="berjalan" {{ old('status', $penugasan->status) == 'berjalan' ? 'selected' : '' }}>Berjalan</option>
+                            <option value="selesai" {{ old('status', $penugasan->status) == 'selesai' ? 'selected' : '' }}>Selesai</option>
                         </select>
                     </div>
                 </div>
@@ -93,8 +94,7 @@
                     </div>
                 </div>
 
-                <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs"
-                    x-data="{ isPerpanjangan: '{{ old('is_perpanjangan', $penugasan->penugasan_induk_id ? '1' : '0') }}' }">
+                <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
                     <label class="block font-semibold mb-2">Apakah ini Surat Tugas Perpanjangan?</label>
                     <div class="flex items-center gap-6">
                         <label class="inline-flex items-center cursor-pointer">
@@ -107,8 +107,8 @@
                         </label>
                     </div>
 
-                    <div x-show="isPerpanjangan == '1'" class="mt-3">
-                        <label class="block font-semibold mb-1">Pilih Surat Tugas Induk</label>
+                    <div x-show="isPerpanjangan == '1'" x-transition class="mt-3">
+                        <label class="block font-semibold mb-1 text-emerald-700 dark:text-emerald-400">Pilih Surat Tugas Induk (ST yang diperpanjang) <span class="text-rose-500">*</span></label>
                         <select name="penugasan_induk_id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
                             <option value="">-- Pilih ST Induk --</option>
                             @foreach($parentStList as $parentSt)
@@ -117,13 +117,17 @@
                                 </option>
                             @endforeach
                         </select>
+                        
+                        <div class="mt-2.5 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-emerald-800 dark:text-emerald-300 text-[11px] flex items-center gap-2">
+                            <span class="text-base">💡</span>
+                            <span><strong>Info Otomatis:</strong> Data PKPPT dan LHP otomatis terhubung ke ST Induk yang dipilih, sehingga realisasi PKPPT tidak terhitung ganda.</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Card 2: Objek Penugasan & PKPPT Match -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 text-xs"
-                x-data="{ isPkppt: '{{ old('is_sesuai_pkppt', $penugasan->is_sesuai_pkppt ? '1' : '0') }}' }">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 text-xs">
                 
                 <h3 class="font-bold text-slate-900 dark:text-white text-base mb-4 flex items-center gap-2">
                     <span class="w-3 h-3 bg-emerald-500 rounded-full"></span>
@@ -144,7 +148,8 @@
                     </div>
                 </div>
 
-                <div>
+                <!-- PKPPT Selection (Hanya jika BUKAN ST Perpanjangan) -->
+                <div x-show="isPerpanjangan == '0'" x-transition>
                     <label class="block font-semibold mb-2">Kategori Perencanaan PKPPT</label>
                     <div class="flex items-center gap-6">
                         <label class="inline-flex items-center cursor-pointer">
