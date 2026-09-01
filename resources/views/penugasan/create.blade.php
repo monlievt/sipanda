@@ -297,9 +297,10 @@
                 <!-- Wakil Penanggung Jawab -->
                 <div>
                     <label class="block font-semibold mb-1">Wakil Penanggung Jawab <span class="text-rose-500">*</span></label>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
+                    <input type="text" onkeyup="filterPersonil(this, 'containerWakilPj')" placeholder="🔍 Cari nama / NIP Wakil Penanggung Jawab..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
+                    <div id="containerWakilPj" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
                         @foreach($usersList as $u)
-                            <label class="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                            <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
                                 <input type="checkbox" name="tim_wakil_pj[]" value="{{ $u->id }}"
                                     {{ is_array(old('tim_wakil_pj')) && in_array($u->id, old('tim_wakil_pj')) ? 'checked' : '' }}
                                     class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
@@ -312,9 +313,10 @@
                 <!-- Pengendali Teknis -->
                 <div>
                     <label class="block font-semibold mb-1">Pengendali Teknis <span class="text-rose-500">*</span></label>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
+                    <input type="text" onkeyup="filterPersonil(this, 'containerDaltek')" placeholder="🔍 Cari nama / NIP Pengendali Teknis (Dalnis)..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
+                    <div id="containerDaltek" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
                         @foreach($usersList as $u)
-                            <label class="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                            <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
                                 <input type="checkbox" name="tim_daltek[]" value="{{ $u->id }}"
                                     {{ is_array(old('tim_daltek')) && in_array($u->id, old('tim_daltek')) ? 'checked' : '' }}
                                     class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
@@ -327,9 +329,10 @@
                 <!-- Ketua Tim -->
                 <div>
                     <label class="block font-semibold mb-1">Ketua Tim <span class="text-rose-500">*</span></label>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
+                    <input type="text" onkeyup="filterPersonil(this, 'containerKetua')" placeholder="🔍 Cari nama / NIP Ketua Tim..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
+                    <div id="containerKetua" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
                         @foreach($usersList as $u)
-                            <label class="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                            <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
                                 <input type="checkbox" name="tim_ketua[]" value="{{ $u->id }}"
                                     {{ is_array(old('tim_ketua')) && in_array($u->id, old('tim_ketua')) ? 'checked' : '' }}
                                     class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
@@ -342,9 +345,10 @@
                 <!-- Anggota Tim -->
                 <div>
                     <label class="block font-semibold mb-1">Anggota Tim <span class="text-rose-500">*</span></label>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-40 overflow-y-auto space-y-1">
+                    <input type="text" onkeyup="filterPersonil(this, 'containerAnggota')" placeholder="🔍 Cari nama / NIP Anggota Tim..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
+                    <div id="containerAnggota" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-40 overflow-y-auto space-y-1">
                         @foreach($usersList as $u)
-                            <label class="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                            <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
                                 <input type="checkbox" name="tim_anggota[]" value="{{ $u->id }}"
                                     {{ is_array(old('tim_anggota')) && in_array($u->id, old('tim_anggota')) ? 'checked' : '' }}
                                     class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
@@ -401,7 +405,7 @@
         </div>
     </div>
 
-    <!-- JavaScript Filter Logic untuk Objek -->
+    <!-- JavaScript Filter Logic untuk Objek & Personil -->
     <script>
         function filterObjekOptions() {
             const input = document.getElementById('searchObjek');
@@ -416,6 +420,32 @@
                     item.style.display = "none";
                 }
             });
+        }
+
+        function filterPersonil(input, containerId) {
+            const filter = input.value.toLowerCase().trim();
+            const container = document.getElementById(containerId);
+            const items = container.querySelectorAll('.item-personil');
+            let hasMatch = false;
+
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.indexOf(filter) > -1) {
+                    item.style.display = "flex";
+                    hasMatch = true;
+                } else {
+                    item.style.display = "none";
+                }
+            });
+
+            let emptyMsg = container.querySelector('.empty-msg');
+            if (!emptyMsg) {
+                emptyMsg = document.createElement('div');
+                emptyMsg.className = 'empty-msg p-2 text-center text-slate-400 text-[11px]';
+                emptyMsg.innerText = 'Tidak ada nama / NIP personil yang cocok.';
+                container.appendChild(emptyMsg);
+            }
+            emptyMsg.style.display = hasMatch ? 'none' : 'block';
         }
     </script>
 </x-app-layout>
