@@ -1,17 +1,66 @@
+@php
+    $parentStOptions = $parentStList->map(function($pst) {
+        return [
+            'id' => (string) $pst->id,
+            'label' => 'No. SPT: ' . $pst->no_spt . ' — ' . \Illuminate\Support\Str::limit($pst->uraian_penugasan, 50),
+            'no_spt' => $pst->no_spt,
+            'uraian' => $pst->uraian_penugasan,
+            'jenis' => $pst->jenisPenugasan?->nama ?? '-',
+            'sumber' => $pst->sumberPenugasan?->nama ?? '-',
+            'irban' => $pst->irbans->pluck('nama_irban')->join(', ') ?: ($pst->irban?->nama_irban ?? '-'),
+            'objek' => $pst->objekPenugasan->pluck('nama')->join(', ') ?: '-',
+            'tim' => $pst->tim->map(fn($t) => ($t->user?->nama_display ?? $t->user?->nama ?? '-') . ' (' . str_replace('_', ' ', ucfirst($t->peran)) . ')')->join(', '),
+        ];
+    });
+@endphp
+
 <x-app-layout>
     <x-slot name="header">
         Edit Penugasan — {{ $penugasan->no_spt }}
     </x-slot>
 
-    <div class="max-w-4xl mx-auto">
-        <form method="POST" action="{{ route('penugasan.update', $penugasan->id) }}" class="space-y-6"
-            x-data="{ isPerpanjangan: '{{ old('is_perpanjangan', $penugasan->penugasan_induk_id ? '1' : '0') }}', isPkppt: '{{ old('is_sesuai_pkppt', $penugasan->is_sesuai_pkppt ? '1' : '0') }}' }">
+    <div class="max-w-4xl mx-auto"
+        x-data="{
+            isPerpanjangan: '{{ old('is_perpanjangan', $penugasan->penugasan_induk_id ? '1' : '0') }}',
+            isPkppt: '{{ old('is_sesuai_pkppt', $penugasan->is_sesuai_pkppt ? '1' : '0') }}',
+            selectedParentId: '{{ old('penugasan_induk_id', $penugasan->penugasan_induk_id) }}',
+            parentOptions: {{ Js::from($parentStOptions) }},
+            get selectedParent() {
+                return this.parentOptions.find(p => p.id == this.selectedParentId) || null;
+            }
+        }">
+
+        <form method="POST" action="{{ route('penugasan.update', $penugasan->id) }}" class="space-y-6">
             @csrf
             @method('PUT')
 
+            <!-- Banner Mode ST Perpanjangan vs ST Standar -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-800">
+                <label class="block font-bold text-slate-900 dark:text-white text-sm mb-2">Status Klasifikasi Penugasan</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all"
+                        :class="isPerpanjangan == '0' ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 shadow-xs font-bold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'">
+                        <input type="radio" name="is_perpanjangan" value="0" x-model="isPerpanjangan" class="text-emerald-600 focus:ring-emerald-500">
+                        <div>
+                            <p class="text-xs font-bold">📄 Surat Tugas Standar (Reguler)</p>
+                            <p class="text-[11px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">Penugasan mandiri dengan susunan objek dan tim kustom.</p>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all"
+                        :class="isPerpanjangan == '1' ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 text-blue-950 dark:text-blue-200 shadow-xs font-bold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'">
+                        <input type="radio" name="is_perpanjangan" value="1" x-model="isPerpanjangan" class="text-blue-600 focus:ring-blue-500">
+                        <div>
+                            <p class="text-xs font-bold">🔄 Surat Tugas Perpanjangan</p>
+                            <p class="text-[11px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">Mewarisi data Objek, Tim, PKPPT & Irban otomatis dari ST Induk.</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
             <!-- Card 1: Informasi Umum SPT -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
-                <h3 class="font-bold text-slate-900 dark:text-white text-base mb-4 flex items-center gap-2">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 space-y-4 text-xs">
+                <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
                     <span class="w-3 h-3 bg-emerald-500 rounded-full"></span>
                     1. Informasi Penugasan & Nomor SPT
                 </h3>
@@ -25,14 +74,44 @@
                     </div>
                 @endif
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <!-- Pilihan ST Induk (Hanya jika ST Perpanjangan) -->
+                <div x-show="isPerpanjangan == '1'" x-transition class="p-4 bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-2xl space-y-3">
+                    <label class="block font-bold text-blue-900 dark:text-blue-300 text-xs">Pilih Surat Tugas Induk (ST yang Diperpanjang) <span class="text-rose-500">*</span></label>
+                    <select name="penugasan_induk_id" x-model="selectedParentId" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold focus:ring-blue-500">
+                        <option value="">-- Pilih ST Induk --</option>
+                        @foreach($parentStList as $parentSt)
+                            <option value="{{ $parentSt->id }}" {{ old('penugasan_induk_id', $penugasan->penugasan_induk_id) == $parentSt->id ? 'selected' : '' }}>
+                                {{ $parentSt->no_spt }} — {{ Str::limit($parentSt->uraian_penugasan, 60) }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <!-- Panel Info Otomatis Pewarisan Data ST Induk -->
+                    <template x-if="selectedParent">
+                        <div class="p-3.5 bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl space-y-2.5">
+                            <div class="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5 text-xs">
+                                <span>✨ Data yang Otomatis Diwarisi dari ST Induk:</span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-700 dark:text-slate-300">
+                                <div><strong>🏢 Objek Sasaran:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.objek"></span></div>
+                                <div><strong>🏛️ Irban:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.irban"></span></div>
+                                <div><strong>📑 Jenis Pengawasan:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.jenis"></span></div>
+                                <div><strong>📌 Sumber:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.sumber"></span></div>
+                                <div class="sm:col-span-2"><strong>👥 Susunan Tim:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.tim"></span></div>
+                            </div>
+                            <p class="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">💡 Data Objek dan Tim otomatis disinkronkan dari ST Induk.</p>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block font-semibold mb-1">Nomor SPT <span class="text-rose-500">*</span></label>
                         <input type="text" name="no_spt" value="{{ old('no_spt', $penugasan->no_spt) }}" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
                     </div>
 
-                    <!-- Multi-Irban Penanggung Jawab -->
-                    <div>
+                    <!-- Multi-Irban Penanggung Jawab (Hanya jika BUKAN ST Perpanjangan) -->
+                    <div x-show="isPerpanjangan == '0'" x-transition>
                         <label class="block font-semibold mb-1">Irban Penanggung Jawab <span class="text-rose-500">*</span> (Dapat memilih lebih dari 1)</label>
                         <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1 max-h-36 overflow-y-auto">
                             @foreach($irbans as $irban)
@@ -47,15 +126,15 @@
                     </div>
                 </div>
 
-                <div class="mt-4 text-xs">
-                    <label class="block font-semibold mb-1">Uraian Penugasan <span class="text-rose-500">*</span></label>
+                <div>
+                    <label class="block font-semibold mb-1">Uraian / Alasan Penugasan <span class="text-rose-500">*</span></label>
                     <textarea name="uraian_penugasan" rows="3" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">{{ old('uraian_penugasan', $penugasan->uraian_penugasan) }}</textarea>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 text-xs">
-                    <div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div x-show="isPerpanjangan == '0'" x-transition>
                         <label class="block font-semibold mb-1">Jenis Penugasan <span class="text-rose-500">*</span></label>
-                        <select name="jenis_penugasan_id" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
+                        <select name="jenis_penugasan_id" :required="isPerpanjangan == '0'" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
                             @foreach($jenisList as $j)
                                 <option value="{{ $j->id }}" {{ old('jenis_penugasan_id', $penugasan->jenis_penugasan_id) == $j->id ? 'selected' : '' }}>
                                     [{{ ucfirst($j->kategori) }}] {{ $j->nama }}
@@ -64,16 +143,16 @@
                         </select>
                     </div>
 
-                    <div>
+                    <div x-show="isPerpanjangan == '0'" x-transition>
                         <label class="block font-semibold mb-1">Sumber Penugasan <span class="text-rose-500">*</span></label>
-                        <select name="sumber_penugasan_id" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
+                        <select name="sumber_penugasan_id" :required="isPerpanjangan == '0'" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
                             @foreach($sumberList as $s)
                                 <option value="{{ $s->id }}" {{ old('sumber_penugasan_id', $penugasan->sumber_penugasan_id) == $s->id ? 'selected' : '' }}>{{ $s->nama }}</option>
                             @endforeach
                         </select>
                     </div>
 
-                    <div>
+                    <div :class="isPerpanjangan == '1' ? 'sm:col-span-3' : ''">
                         <label class="block font-semibold mb-1">Status Penugasan <span class="text-rose-500">*</span></label>
                         <select name="status" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
                             <option value="belum_berjalan" {{ old('status', $penugasan->status) == 'belum_berjalan' ? 'selected' : '' }}>Belum Berjalan</option>
@@ -83,7 +162,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block font-semibold mb-1">Tanggal Mulai <span class="text-rose-500">*</span></label>
                         <input type="date" name="tanggal_mulai" value="{{ old('tanggal_mulai', $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->format('Y-m-d') : '') }}" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
@@ -93,41 +172,10 @@
                         <input type="date" name="tanggal_selesai" value="{{ old('tanggal_selesai', $penugasan->tanggal_selesai ? $penugasan->tanggal_selesai->format('Y-m-d') : '') }}" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
                     </div>
                 </div>
-
-                <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
-                    <label class="block font-semibold mb-2">Apakah ini Surat Tugas Perpanjangan?</label>
-                    <div class="flex items-center gap-6">
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" name="is_perpanjangan" value="0" x-model="isPerpanjangan" class="text-emerald-600 focus:ring-emerald-500">
-                            <span class="ms-2 font-medium">Bukan (Surat Tugas Standar)</span>
-                        </label>
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" name="is_perpanjangan" value="1" x-model="isPerpanjangan" class="text-emerald-600 focus:ring-emerald-500">
-                            <span class="ms-2 font-medium">Ya (ST Perpanjangan)</span>
-                        </label>
-                    </div>
-
-                    <div x-show="isPerpanjangan == '1'" x-transition class="mt-3">
-                        <label class="block font-semibold mb-1 text-emerald-700 dark:text-emerald-400">Pilih Surat Tugas Induk (ST yang diperpanjang) <span class="text-rose-500">*</span></label>
-                        <select name="penugasan_induk_id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                            <option value="">-- Pilih ST Induk --</option>
-                            @foreach($parentStList as $parentSt)
-                                <option value="{{ $parentSt->id }}" {{ old('penugasan_induk_id', $penugasan->penugasan_induk_id) == $parentSt->id ? 'selected' : '' }}>
-                                    {{ $parentSt->no_spt }} — {{ Str::limit($parentSt->uraian_penugasan, 50) }}
-                                </option>
-                            @endforeach
-                        </select>
-                        
-                        <div class="mt-2.5 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-emerald-800 dark:text-emerald-300 text-[11px] flex items-center gap-2">
-                            <span class="text-base">💡</span>
-                            <span><strong>Info Otomatis:</strong> Data PKPPT dan LHP otomatis terhubung ke ST Induk yang dipilih, sehingga realisasi PKPPT tidak terhitung ganda.</span>
-                        </div>
-                    </div>
-                </div>
             </div>
 
-            <!-- Card 2: Objek Penugasan & PKPPT Match -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 text-xs">
+            <!-- Card 2: Objek Penugasan & PKPPT Match (Hanya jika BUKAN ST Perpanjangan) -->
+            <div x-show="isPerpanjangan == '0'" x-transition class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 text-xs">
                 
                 <h3 class="font-bold text-slate-900 dark:text-white text-base mb-4 flex items-center gap-2">
                     <span class="w-3 h-3 bg-emerald-500 rounded-full"></span>
@@ -149,7 +197,7 @@
                 </div>
 
                 <!-- PKPPT Selection (Hanya jika BUKAN ST Perpanjangan) -->
-                <div x-show="isPerpanjangan == '0'" x-transition>
+                <div>
                     <label class="block font-semibold mb-2">Kategori Perencanaan PKPPT</label>
                     <div class="flex items-center gap-6">
                         <label class="inline-flex items-center cursor-pointer">
@@ -176,8 +224,8 @@
                 </div>
             </div>
 
-            <!-- Card 3: Susunan Personil Tim Pengawasan -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 text-xs space-y-4">
+            <!-- Card 3: Susunan Personil Tim Pengawasan (Hanya jika BUKAN ST Perpanjangan) -->
+            <div x-show="isPerpanjangan == '0'" x-transition class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 text-xs space-y-4">
                 <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
                     <span class="w-3 h-3 bg-emerald-500 rounded-full"></span>
                     3. Susunan Personil Tim Pengawasan
