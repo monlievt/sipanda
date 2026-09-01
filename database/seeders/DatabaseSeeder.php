@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,            // 5. User dari data-pegawai.csv
             RegulasiHukumSeeder::class,   // 6. Bank regulasi dasar hukum APIP
             FaqArtikelSeeder::class,      // 7. Bank artikel tanya jawab resmi APIP
+            UatFeedbackSeeder::class,     // 8. Contoh masukan kotak UAT
         ]);
 
         $this->command->info('');

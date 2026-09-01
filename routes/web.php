@@ -37,6 +37,9 @@ Route::post('/api/webhook/whatsapp', [\App\Http\Controllers\Api\WhatsAppWebhookC
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class, \Illuminate\Cookie\Middleware\EncryptCookies::class])
     ->name('webhook.whatsapp');
 
+// Submit Feedback & Bug Report UAT (Dapat dikirim oleh Internal, OPD, maupun Tester)
+Route::post('/feedback/submit', [\App\Http\Controllers\UatFeedbackController::class, 'submit'])->name('feedback.submit');
+
 // ─── INTERNAL AREA (Guard: web) ──────────────────────────────────
 Route::middleware(['auth'])->group(function () {
 
@@ -136,6 +139,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/master/faq', [\App\Http\Controllers\FaqArtikelController::class, 'store'])->name('master.faq.store');
     Route::put('/master/faq/{faq}', [\App\Http\Controllers\FaqArtikelController::class, 'update'])->name('master.faq.update');
     Route::delete('/master/faq/{faq}', [\App\Http\Controllers\FaqArtikelController::class, 'destroy'])->name('master.faq.destroy');
+
+    // Kotak Masukan, Saran & Bug Report UAT
+    Route::get('/master/feedback', [\App\Http\Controllers\UatFeedbackController::class, 'index'])->name('master.feedback.index');
+    Route::patch('/master/feedback/{feedback}/status', [\App\Http\Controllers\UatFeedbackController::class, 'updateStatus'])->name('master.feedback.update_status');
+    Route::delete('/master/feedback/{feedback}', [\App\Http\Controllers\UatFeedbackController::class, 'destroy'])->name('master.feedback.destroy');
 
     // Import Data Historis dari Spreadsheet / CSV
     Route::get('/import', [ImportController::class, 'index'])->middleware('can:master.create')->name('import.index');

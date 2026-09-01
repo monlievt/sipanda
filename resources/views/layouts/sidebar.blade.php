@@ -208,6 +208,22 @@
                     </svg>
                     <span>Import Data CSV</span>
                 </a>
+                <a href="/master/feedback" class="flex items-center justify-between px-3 py-2 rounded-lg transition-all {{ request()->is('master/feedback*') ? 'bg-emerald-600 text-white font-semibold shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                        </svg>
+                        <span>Kotak Saran & Bug UAT</span>
+                    </div>
+                    @php
+                        $unreadFeedbackCount = \App\Models\UatFeedback::where('status', 'baru')->count();
+                    @endphp
+                    @if($unreadFeedbackCount > 0)
+                        <span class="px-1.5 py-0.5 bg-amber-500 text-slate-950 font-black text-[10px] rounded-full animate-pulse">
+                            {{ $unreadFeedbackCount }}
+                        </span>
+                    @endif
+                </a>
                 @hasrole('admin')
                 <a href="/audit-log" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all {{ request()->is('audit-log*') ? 'bg-emerald-600 text-white font-semibold shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

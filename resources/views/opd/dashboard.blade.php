@@ -115,5 +115,8 @@
             </div>
         </div>
     </main>
+
+    <!-- Global UAT Feedback & Bug Report Widget -->
+    <x-uat-feedback-widget />
 </body>
 </html>
