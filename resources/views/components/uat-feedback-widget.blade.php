@@ -114,16 +114,21 @@
                     <div id="uatPasteZone" class="border border-dashed border-slate-700 hover:border-amber-500/60 rounded-2xl p-2.5 text-center bg-slate-800/60 transition-colors relative cursor-pointer" onclick="document.getElementById('uatFileInput').click()">
                         <input type="file" id="uatFileInput" name="screenshot" accept="image/*" class="hidden" onchange="handleUatFileSelect(this)">
                         
+                        <!-- Upload Prompt -->
                         <div id="uatUploadPrompt" class="space-y-0.5 py-1">
                             <div class="text-slate-300 text-xs font-semibold">📷 Klik pilih file atau tekan <kbd class="px-1 py-0.5 bg-slate-700 rounded text-slate-200 font-mono text-[9px]">Ctrl+V</kbd></div>
                             <div class="text-[9px] text-slate-500">JPG, PNG, WEBP (Maks. 10MB)</div>
                         </div>
 
-                        <!-- Preview -->
-                        <div id="uatPreviewContainer" class="hidden relative inline-block mt-1">
-                            <img id="uatImagePreview" src="" alt="Pratinjau Screenshot" class="max-h-28 rounded-xl border border-slate-700 shadow-md mx-auto">
-                            <button type="button" onclick="clearUatScreenshot(event)" class="absolute -top-2 -right-2 bg-rose-600 hover:bg-rose-700 text-white rounded-full p-1 shadow-md transition-colors" title="Hapus Gambar">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <!-- Preview Box (Default: Hidden via display: none) -->
+                        <div id="uatPreviewContainer" style="display: none;" class="relative inline-block mt-1">
+                            <img id="uatImagePreview" alt="Pratinjau Screenshot" class="max-h-28 rounded-xl border border-slate-700 shadow-md mx-auto object-contain">
+                            <button type="button" 
+                                    onclick="clearUatScreenshot(event)" 
+                                    style="position: absolute; top: -8px; right: -8px; z-index: 20;" 
+                                    class="bg-rose-600 hover:bg-rose-700 text-white rounded-full p-1 shadow-lg transition-transform hover:scale-110 cursor-pointer" 
+                                    title="Hapus Gambar">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
                         </div>
                     </div>
@@ -198,18 +203,23 @@
     }
 
     function showUatImagePreview(src) {
-        document.getElementById('uatImagePreview').src = src;
-        document.getElementById('uatUploadPrompt').classList.add('hidden');
-        document.getElementById('uatPreviewContainer').classList.remove('hidden');
+        const img = document.getElementById('uatImagePreview');
+        img.src = src;
+        document.getElementById('uatUploadPrompt').style.display = 'none';
+        document.getElementById('uatPreviewContainer').style.display = 'inline-block';
     }
 
     function clearUatScreenshot(e) {
-        if (e) e.stopPropagation();
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         document.getElementById('uatFileInput').value = '';
         document.getElementById('uatFeedbackScreenshotB64').value = '';
-        document.getElementById('uatImagePreview').src = '';
-        document.getElementById('uatUploadPrompt').classList.remove('hidden');
-        document.getElementById('uatPreviewContainer').classList.add('hidden');
+        const img = document.getElementById('uatImagePreview');
+        img.removeAttribute('src');
+        document.getElementById('uatUploadPrompt').style.display = 'block';
+        document.getElementById('uatPreviewContainer').style.display = 'none';
     }
 
     async function submitUatFeedback(e) {
