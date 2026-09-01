@@ -126,9 +126,14 @@ class RoleSeeder extends Seeder
             'dashboard.view',
         ]);
 
-        // ─── 1 Role Eksternal (guard opd) ─────────────────────────
+        // ─── 1 Role Eksternal (guard opd & web) ─────────────────────────
+        Permission::firstOrCreate(['name' => 'opd.view_rekomendasi', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'opd.upload_bukti',     'guard_name' => 'web']);
         Permission::firstOrCreate(['name' => 'opd.view_rekomendasi', 'guard_name' => 'opd']);
         Permission::firstOrCreate(['name' => 'opd.upload_bukti',     'guard_name' => 'opd']);
+
+        $opdRoleWeb = Role::firstOrCreate(['name' => 'opd', 'guard_name' => 'web']);
+        $opdRoleWeb->syncPermissions(['opd.view_rekomendasi', 'opd.upload_bukti']);
 
         $opdRole = Role::firstOrCreate(['name' => 'opd', 'guard_name' => 'opd']);
         $opdRole->syncPermissions(['opd.view_rekomendasi', 'opd.upload_bukti']);

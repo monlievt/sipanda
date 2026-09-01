@@ -143,8 +143,44 @@ class UserSeeder extends Seeder
             $adminUser->syncRoles(['admin']);
         }
 
+        // ─── Akun Sampel OPD untuk Pengujian Portal OPD ───────────
+        $dinkes = \App\Models\ObjekPenugasan::where('nama', 'like', '%Kesehatan%')->first();
+        if ($dinkes) {
+            $opdDinkes = User::firstOrCreate(
+                ['email' => 'pic.dinkes@trenggalek.go.id'],
+                [
+                    'nama'               => 'PIC Dinas Kesehatan',
+                    'nama_tanpa_gelar'   => 'PIC Dinkes',
+                    'password'           => Hash::make('sipanda2025'),
+                    'tipe_akun'          => 'opd',
+                    'objek_penugasan_id' => $dinkes->id,
+                    'is_active'          => true,
+                    'status_undangan'    => 'aktif',
+                ]
+            );
+            $opdDinkes->assignRole('opd');
+        }
+
+        $dikpora = \App\Models\ObjekPenugasan::where('nama', 'like', '%Pendidikan%')->first();
+        if ($dikpora) {
+            $opdDikpora = User::firstOrCreate(
+                ['email' => 'pic.dikpora@trenggalek.go.id'],
+                [
+                    'nama'               => 'PIC Dinas Pendidikan',
+                    'nama_tanpa_gelar'   => 'PIC Dikpora',
+                    'password'           => Hash::make('sipanda2025'),
+                    'tipe_akun'          => 'opd',
+                    'objek_penugasan_id' => $dikpora->id,
+                    'is_active'          => true,
+                    'status_undangan'    => 'aktif',
+                ]
+            );
+            $opdDikpora->assignRole('opd');
+        }
+
         $this->command->info("✓ UserSeeder selesai: {$created} user dibuat, {$skipped} dilewati.");
-        $this->command->warn('⚠ Password awal semua pegawai: sipanda2025 — minta semua pengguna ganti setelah login pertama.');
+        $this->command->warn('⚠ Password awal semua pegawai & akun sampel OPD: sipanda2025');
         $this->command->warn('⚠ Admin default: admin@inspektorat.trenggalek.go.id | Admin@sipanda2025!');
+        $this->command->warn('⚠ Sampel PIC OPD: pic.dinkes@trenggalek.go.id | sipanda2025');
     }
 }
