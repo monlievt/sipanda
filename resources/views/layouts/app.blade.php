@@ -20,12 +20,19 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 
-    <!-- Theme Initialization (Dark/Light Mode) -->
+    <!-- Theme Initialization & Global Toggle Function (Dark/Light Mode) -->
     <script>
+        // Inisialisasi awal saat load
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
+        }
+
+        // Fungsi Global Toggle 1-Klik
+        function toggleThemeMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
     </script>
 </head>
