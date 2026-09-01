@@ -4,24 +4,25 @@
 
 ---
 
-**Versi Dokumen:** 1.0  
+**Versi Dokumen:** 2.0 (Edisi Pemutakhiran Fitur AI & Bank Regulasi)  
 **Tanggal Rilis:** 1 September 2026  
-**Klasifikasi:** Dokumen Panduan Pengujian & Operasional Pengguna  
-**Target Pembaca:** Inspektur, Sekretaris, Para Irban, Pengendali Teknis, Ketua Tim, Anggota Tim Auditor/PPUPD, dan PIC OPD se-Kabupaten Trenggalek.
+**Klasifikasi:** Dokumen Panduan Pengujian & Operasional Pengguna Resmi  
+**Target Pembaca:** Inspektur, Sekretaris, Para Irban, Pengendali Teknis, Ketua Tim, Anggota Tim Auditor/PPUPD, Admin Sistem, dan PIC OPD se-Kabupaten Trenggalek.
 
 ---
 
 ## 🌐 1. INFORMASI ALAMAT PORTAL SIPANDA
 
-* **Portal Internal (Auditor & Manajemen):** `https://sipanda.inspektorat.trenggalekkab.go.id/login`
-* **Portal Eksternal OPD (Tindak Lanjut & Konsultasi):** `https://sipanda.inspektorat.trenggalekkab.go.id/opd/login`
-* **Dashboard Transparansi Publik & Bank FAQ:** `https://sipanda.inspektorat.trenggalekkab.go.id`
+* **Portal Internal APIP (Auditor, Irban, Manajemen):** `https://sipanda.inspektorat.trenggalekkab.go.id/login`
+* **Portal Eksternal Auditi OPD (Tindak Lanjut & e-Consulting):** `https://sipanda.inspektorat.trenggalekkab.go.id/opd/login`
+* **Dashboard Transparansi Publik & Bank FAQ APIP:** `https://sipanda.inspektorat.trenggalekkab.go.id/faq`
+* **Pusat Unduhan Regulasi Pengawasan & Juknis:** `https://sipanda.inspektorat.trenggalekkab.go.id/regulasi`
 
 ---
 
 ## 🔑 2. DAFTAR AKUN & KREDENSIAL PENGUJIAN PER ROLE
 
-> ⚠️ **Catatan Keamanan:** Seluruh pegawai dan PIC OPD menggunakan password awal default. Pengguna dapat mengubah kata sandi mandiri melalui menu **Profil Pengguna**.
+> ⚠️ **Catatan Keamanan:** Seluruh akun pengujian menggunakan password default awal. Pengguna dapat mengubah kata sandi mandiri melalui menu **Profil Pengguna**.
 
 | No | Peran / Role | Nama Pengguna | NIP / Jabatan | Email Login | Password Default |
 |:---:|---|---|---|---|---|
@@ -52,28 +53,30 @@
 │                 │ • Evaluasi Kinerja Pengawasan Tahunan                │
 ├─────────────────┼──────────────────────────────────────────────────────┤
 │ Sekretariat     │ • Reviu & Verifikasi Draf PKPT dari Para Irban       │
-│                 │ • Kelola Master Data Penugasan & Kalender            │
+│                 │ • Kelola Master Data Penugasan, SBM, & Regulasi PDF  │
 │                 │ • Import Data Historis CSV & Arsip Digital           │
 ├─────────────────┼──────────────────────────────────────────────────────┤
 │ Irban (I - V)   │ • Susun Draf PKPT Berbasis Risiko & Usulkan ke Sekr. │
 │                 │ • Terbitkan Surat Perintah Tugas (SPT) Penugasan     │
 │                 │ • Disposisi Permohonan Konsultasi (e-Consulting)     │
 │                 │ • Verifikasi Bukti Tindak Lanjut (Diterima/Tolak/TDT)│
+│                 │ • Kelola & Publikasikan Bank FAQ Regulasi            │
 ├─────────────────┼──────────────────────────────────────────────────────┤
 │ Tim Auditor     │ • Pelaksanaan Audit/Reviu/Evaluasi Lapangan          │
 │ (Daltek/Ketua/  │ • Input Matriks Temuan & Rekomendasi LHP             │
 │  Anggota)       │ • Unggah KKP & Laporan Hasil Pengawasan (LHP)        │
 │                 │ • Respon Chat Konsultasi & Terbitkan Berita Acara    │
+│                 │ • Unggah & Perbarui Referensi Dasar Hukum / Juknis   │
 ├─────────────────┼──────────────────────────────────────────────────────┤
 │ PIC OPD         │ • Unggah Dokumen Bukti Tindak Lanjut TLRHP           │
 │ (Auditi)        │ • Ajukan Permohonan Konsultasi Online ke APIP        │
-│                 │ • Pantau Status Kepatuhan & Unduh Berita Acara       │
+│                 │ • Tanya Asisten AI Regulasi 24/7 & Unduh Perbup      │
 └─────────────────┴──────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🧪 4. SKENARIO PENGUJIAN USER ACCEPTANCE TEST (UAT)
+## 🧪 4. SKENARIO PENGUJIAN USER ACCEPTANCE TEST (UAT) (14 SKENARIO)
 
 ---
 
@@ -227,12 +230,38 @@ c. **TDT (Tidak Dapat Ditindaklanjuti):** Status menjadi `TDT`. | Auditor / Irba
 
 ---
 
+### 📌 SKENARIO 13: Pengelolaan Bank Regulasi PDF & Pusat Unduhan Publik
+* **Aktor:** Admin / Auditor → OPD / Publik
+* **Tujuan:** Mengunggah berkas PDF Perbup/Juknis pengawasan baru dan memastikan publik dapat mengunduhnya.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 13.1 | Login portal internal → buka menu **Bank Regulasi & Juknis** (`/master/regulasi`) → klik **"Unggah Dokumen Regulasi"**. | Admin (`admin@inspektorat.trenggalek.go.id`) | Modal form unggah dokumen terbuka. | [ ] |
+| 13.2 | Isi Judul (*Standar Biaya Masukan 2026*), Nomor (*Perbup No. 50/2026*), Tahun, Kategori (*Keuangan*), Poin-poin pasal penting, Visibilitas (*Publik*), dan lampirkan berkas PDF uji coba. Klik **"Simpan & Indeks Regulasi"**. | Admin | Dokumen tersimpan ke database & storage, counter unduh mulai dari 0, dan ringkasan terindeks untuk AI. | [ ] |
+| 13.3 | Buka browser baru (tanpa login) ke **Pusat Regulasi Publik** (`https://sipanda.inspektorat.trenggalekkab.go.id/regulasi`). | Publik / OPD | Kartu regulasi baru langsung tampil di grid dengan badge kategori. | [ ] |
+| 13.4 | Klik tombol **"Unduh PDF"** pada kartu regulasi tersebut. | Publik / OPD | File PDF terunduh sempurna ke komputer dan counter unduh bertambah 1x. | [ ] |
+
+---
+
+### 📌 SKENARIO 14: Konsultasi Cerdas 24/7 dengan "Asisten AI Penasihat APIP"
+* **Aktor:** PIC OPD / Auditor / Publik
+* **Tujuan:** Menguji asisten virtual AI dalam menjawab pertanyaan hukum/regulasi pengawasan strictly berbasis dokumen.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 14.1 | Buka halaman FAQ publik (`https://sipanda.inspektorat.trenggalekkab.go.id/faq`). Klik tombol mengambang hijau **"Tanya AI APIP"** di pojok kanan bawah. | PIC OPD / Publik | Kotak interaktif Asisten Virtual APIP terbuka di layar. | [ ] |
+| 14.2 | Klik salah satu pertanyaan cepat: *"Berapa batas nilai pengadaan langsung barang dan jasa pemerintah?"*. | PIC OPD / Publik | Indikator *loading* memindai dokumen tampil, lalu AI menjawab rujukan **Perpres No. 12/2021 Pasal 38 (Rp200 Juta)** lengkap dengan tombol unduh dokumen terkait. | [ ] |
+| 14.3 | Ketik pertanyaan kasus lain: *"Bolehkah PNS menjadi narasumber di kantornya sendiri dan menerima honor?"*. | PIC OPD / Publik | AI menjawab merujuk pada **Perbup SBM No. 42/2025 Lampiran I** bahwa tidak diperbolehkan jika merupakan tupoksi reguler internal. | [ ] |
+| 14.4 | Ketik pertanyaan di luar regulasi yang ada (misal: *"Resep membuat masakan khas Trenggalek"*). | PIC OPD / Publik | AI secara sopan menolak menjawab hal di luar regulasi pengawasan (*Strict Document Guardrail*). | [ ] |
+
+---
+
 ## 🖨️ 5. PETUNJUK KONVERSI KE FORMAT PDF (CETAK RESMI)
 
 Dokumen ini dirancang dengan standar **GitHub Flavored Markdown** yang siap dicetak/dikonversi ke PDF:
 
 1. **Menggunakan Browser Chrome / Edge / Safari:**
-   - Buka file markdown ini menggunakan text viewer / markdown preview (atau di GitHub repository).
+   - Buka tautan file di GitHub: [docs/08-SKENARIO-PENGUJIAN-DAN-USER-GUIDE.md](https://github.com/monlievt/sipanda/blob/main/docs/08-SKENARIO-PENGUJIAN-DAN-USER-GUIDE.md)
    - Tekan `Ctrl + P` (Windows) atau `Cmd + P` (Mac).
    - Pada opsi printer tujuan, pilih **Save as PDF** (Simpan sebagai PDF).
    - Pastikan mencentang opsi **Background graphics** agar warna tabel dan badge tercetak jelas.
