@@ -22,7 +22,7 @@ class PublicDashboardController extends Controller
 
         $data = Cache::remember("public_dashboard_stats_{$tahun}", 300, function () use ($tahun) {
             // Realisasi PKPPT & Penugasan
-            $totalPkppt = Pkppt::where('tahun', $tahun)->sum('target_laporan');
+            $totalPkppt = Pkppt::where('tahun', $tahun)->sum('jumlah_laporan_rencana');
             $totalPenugasan = Penugasan::whereYear('tanggal_mulai', $tahun)->count();
             $penugasanBerjalan = Penugasan::whereYear('tanggal_mulai', $tahun)->where('status', 'berjalan')->count();
             $penugasanSelesai = Penugasan::whereYear('tanggal_mulai', $tahun)->where('status', 'selesai')->count();
