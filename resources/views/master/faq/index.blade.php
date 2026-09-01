@@ -5,7 +5,11 @@
                 <h1 class="text-xl font-bold text-slate-900 dark:text-white">Kelola Bank Artikel FAQ APIP</h1>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Basis Pengetahuan Tanya-Jawab Resmi untuk Publik, OPD, dan Penasihat Virtual AI</p>
             </div>
-            <div>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('faq.index') }}" target="_blank" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs transition-all border border-slate-200 dark:border-slate-700">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    Lihat Tampilan Publik ↗
+                </a>
                 <button onclick="openModalCreateFaq()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-xl text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     Tambah Artikel FAQ
