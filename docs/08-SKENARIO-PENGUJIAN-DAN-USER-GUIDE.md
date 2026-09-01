@@ -256,6 +256,45 @@ c. **TDT (Tidak Dapat Ditindaklanjuti):** Status menjadi `TDT`. | Auditor / Irba
 
 ---
 
+### 📌 SKENARIO 15: Generator Cetak Surat Perintah Tugas (SPT) Format Pemkab Trenggalek
+* **Aktor:** Auditor / Irban / Sekretariat
+* **Tujuan:** Menguji generator naskah dinas resmi SPT siap cetak A4/PDF bertanda tangan Inspektur.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 15.1 | Buka menu **Data Penugasan** (`/penugasan`) atau **Detail Penugasan** (`/penugasan/1`). | Ketua Tim Auditor (`bennohera100@gmail.com`) | Tabel penugasan / detail penugasan tampil dengan tombol **"🖨️ Cetak"**. | [ ] |
+| 15.2 | Klik tombol **"🖨️ Cetak"** / **"Cetak Surat Tugas (SPT)"**. | Ketua Tim Auditor | Halaman naskah dinas A4 resmi terbuka di tab baru lengkap dengan Kop Pemkab Trenggalek, Dasar PKPT, Tabel Susunan Tim, Uraian Tugas, Tanda Tangan Plt. Inspektur, dan Tembusan. | [ ] |
+| 15.3 | Klik tombol **"Cetak / Simpan PDF Resmi"** di toolbar atas. | Ketua Tim Auditor | Dialog print browser terbuka, layout dokumen rapi tanpa terpotong (*page margin A4*), siap disimpan sebagai PDF atau dicetak ke printer. | [ ] |
+
+---
+
+### 📌 SKENARIO 16: Pengiriman Kritik, Saran & Laporan Bug UAT via Floating Widget
+* **Aktor:** Seluruh Pengguna (Auditor, Irban, Sekretariat, PIC OPD)
+* **Tujuan:** Menguji pengiriman masukan langsung dari halaman manapun dengan fitur cerdas paste tangkapan layar (*Ctrl+V*).
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 16.1 | Login ke portal internal atau portal OPD. Perhatikan tombol melayang di pojok kiri bawah: **"Kritik, Saran & Bug UAT"**. | Semua Role | Tombol melayang kuning-oranye tampil stabil di seluruh halaman dengan animasi pulse. | [ ] |
+| 16.2 | Klik tombol **"Kritik, Saran & Bug UAT"**. | Semua Role | Modal popup form feedback terbuka, URL halaman saat ini dan info browser/layar otomatis terdeteksi. | [ ] |
+| 16.3 | Pilih Jenis Masukan (*🐞 Bug / Kendala Error*), Tingkat Urgensi (*⚠️ Tinggi*), isi Judul dan Deskripsi kronologi masalah. | Semua Role | Kolom terisi lengkap dan valid. | [ ] |
+| 16.4 | Lakukan screenshot layar menggunakan tombol *PrintScreen* atau *Snipping Tool*, lalu tekan **`Ctrl + V`** (atau `Cmd + V`) di dalam form modal. | Semua Role | Gambar screenshot otomatis tertempel ke dropzone dan menampilkan pratinjau thumbnail instan. | [ ] |
+| 16.5 | Klik tombol **"Kirim Masukan"**. | Semua Role | Animasi loading tampil sebentar, muncul pesan konfirmasi sukses, dan formulir otomatis ter-reset. | [ ] |
+
+---
+
+### 📌 SKENARIO 17: Pengelolaan Kotak Saran & Laporan Bug UAT oleh Administrator
+* **Aktor:** Administrator Sistem
+* **Tujuan:** Memantau laporan kendala pengujian dari para pengguna, melihat screenshot, dan memperbarui status perbaikan.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 17.1 | Login sebagai Admin (`admin@inspektorat.trenggalek.go.id`), periksa sidebar menu **"Kotak Saran & Bug UAT"** (`/master/feedback`). | Administrator | Badge counter menampilkan jumlah feedback baru yang belum ditinjau. | [ ] |
+| 17.2 | Buka menu `/master/feedback`. Tinjau 4 kartu ringkasan (Total Masukan, Perlu Ditelaah, Bug Kritis, Sudah Diperbaiki). | Administrator | Seluruh data statistik feedback terakumulasi akurat. | [ ] |
+| 17.3 | Klik thumbnail screenshot pada salah satu baris feedback. | Administrator | Modal *Lightbox* terbuka menampilkan screenshot ukuran penuh (*full-size*) untuk analisis teknis. | [ ] |
+| 17.4 | Klik tombol **"⚙️ Tindak Lanjut"** pada baris laporan. Ubah status menjadi **"Sudah Diperbaiki"** dan masukkan Catatan Solusi Admin. Klik **"Simpan Tindak Lanjut"**. | Administrator | Status feedback berubah menjadi hijau (`Sudah Diperbaiki`), catatan admin tersimpan, dan counter laporan baru otomatis berkurang. | [ ] |
+
+---
+
 ## 🖨️ 5. PETUNJUK KONVERSI KE FORMAT PDF (CETAK RESMI)
 
 Dokumen ini dirancang dengan standar **GitHub Flavored Markdown** yang siap dicetak/dikonversi ke PDF:

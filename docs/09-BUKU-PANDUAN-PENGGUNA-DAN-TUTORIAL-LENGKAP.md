@@ -36,7 +36,8 @@
 10. [BAB X: PANDUAN MODUL MASTER DATA, PENGGUNA, & IMPORTER CSV](#bab-x-panduan-modul-master-data-pengguna--importer-csv)
 11. [BAB XI: PANDUAN PORTAL KHUSUS AUDITI / PERANGKAT DAERAH (OPD)](#bab-xi-panduan-portal-khusus-auditi--perangkat-daerah-opd)
 12. [BAB XII: PANDUAN ADMINISTRASI SISTEM, AUDIT LOG & OTOMASI WHATSAPP (WAHA)](#bab-xii-panduan-administrasi-sistem-audit-log--otomasi-whatsapp-waha)
-13. [BAB XIII: PEMECAHAN MASALAH (TROUBLESHOOTING) & PANDUAN CETAK PDF](#bab-xiii-pemecahan-masalah-troubleshooting--panduan-cetak-pdf)
+13. [BAB XIII: PANDUAN PUSAT MASUKAN, SARAN & LAPORAN BUG UAT (FEEDBACK HUB)](#bab-xiii-panduan-pusat-masukan-saran--laporan-bug-uat-feedback-hub)
+14. [BAB XIV: PEMECAHAN MASALAH (TROUBLESHOOTING) & PANDUAN CETAK PDF](#bab-xiv-pemecahan-masalah-troubleshooting--panduan-cetak-pdf)
 
 ---
 
@@ -392,7 +393,52 @@ php artisan optimize:clear
 
 ---
 
-# BAB XIII: PEMECAHAN MASALAH (TROUBLESHOOTING) & PANDUAN CETAK PDF
+# BAB XIII: PANDUAN PUSAT MASUKAN, SARAN & LAPORAN BUG UAT (FEEDBACK HUB)
+
+Fitur **UAT Feedback & Bug Tracking Hub** disediakan untuk memfasilitasi pengujian interaktif (*User Acceptance Testing*). Setiap pengguna yang menemukan kendala, kebingungan alur, atau ide perbaikan dapat langsung mengirimkannya secara instan dari halaman manapun.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│           ALUR PENGIRIMAN & TINDAK LANJUT FEEDBACK          │
+├─────────────────────────────────────────────────────────────┤
+│ 1. Pengguna klik Tombol Melayang "Kritik, Saran & Bug UAT"  │
+│ 2. Form otomatis mendeteksi URL halaman & Browser pengguna  │
+│ 3. Pengguna mengisi uraian + Paste Screenshot (Ctrl + V)    │
+│ 4. Laporan tersimpan ke database & muncul di Panel Admin    │
+│ 5. Admin meninjau screenshot & update status: Diperbaiki    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 13.1 Cara Mengirim Masukan dari Halaman Apapun (Pengguna)
+1. Klik tombol melayang berwarna oranye di **pojok kiri bawah**: **`Kritik, Saran & Bug UAT`**.
+2. Pilih **Jenis Masukan**:
+   - 🐞 *Bug / Kendala Error*
+   - 💡 *Ide & Saran Perbaikan*
+   - ❓ *Pertanyaan Alur / Bingung*
+   - ⭐ *Apresiasi / Ulasan UX*
+3. Tentukan **Tingkat Urgensi** (*Rendah, Sedang, Tinggi, atau Kritis*).
+4. Tuliskan **Judul Singkat** dan **Uraian Kronologi Masalah**.
+5. **Menyertakan Tangkapan Layar (Screenshot):**
+   - 💡 **Cara Tercepat (Paste Clipboard):** Ambil screenshot layar menggunakan tombol `PrintScreen` / *Snipping Tool*, lalu langsung tekan **`Ctrl + V`** (atau `Cmd + V`) di dalam formulir modal. Gambar otomatis tertempel dan pratinjau muncul instan!
+   - Atau klik kotak lampiran untuk memilih file gambar dari komputer Anda.
+6. Klik tombol **"Kirim Masukan"**. Laporan Anda langsung tercatat di database tim pengembang.
+
+### 13.2 Pengelolaan & Tindak Lanjut oleh Administrator
+1. Buka menu **Master Data & Sistem** &rarr; **Kotak Saran & Bug UAT** (`/master/feedback`).
+2. Periksa kartu statistik ringkasan:
+   - **Total Masukan Masuk**
+   - **Perlu Ditelaah (Baru)**
+   - **Bug & Kendala Kritis**
+   - **Sudah Diperbaiki**
+3. Klik thumbnail screenshot untuk membuka **Lightbox Preview Full-Size** (melihat detail screenshot beresolusi tinggi).
+4. Klik tombol **"⚙️ Tindak Lanjut"** pada baris laporan:
+   - Ubah status: `🆕 Baru Masuk` &rarr; `🔍 Sedang Ditelaah` &rarr; `✅ Sudah Diperbaiki` &rarr; `📁 Ditutup / Arsip`.
+   - Masukkan **Catatan Respon / Solusi Admin** (misal: *"Bug tombol cetak telah diperbaiki pada commit v2.1"*).
+5. Klik **"Simpan Tindak Lanjut"**.
+
+---
+
+# BAB XIV: PEMECAHAN MASALAH (TROUBLESHOOTING) & PANDUAN CETAK PDF
 
 | Gejala Permasalahan | Kemungkinan Akar Masalah | Solusi Cepat |
 |---|---|---|
