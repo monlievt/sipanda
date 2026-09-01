@@ -156,8 +156,11 @@
                             </td>
                             <td class="py-3 px-4 text-center whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-1">
-                                    <a href="{{ route('penugasan.show', $item->id) }}" class="px-2.5 py-1 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 hover:bg-blue-100 rounded-lg text-[10px] font-bold border border-blue-200 shadow-xs" title="Lihat Rincian Isi Surat Tugas">
-                                        👁️ Lihat
+                                    <a href="{{ route('penugasan.show', $item->id) }}" class="px-2.5 py-1 bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-100 rounded-lg text-[10px] font-bold border border-slate-300 shadow-xs" title="Lihat Rincian Isi Surat Tugas">
+                                        👁️ Detail
+                                    </a>
+                                    <a href="{{ route('penugasan.cetak', $item->id) }}" target="_blank" class="px-2.5 py-1 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 hover:bg-blue-100 rounded-lg text-[10px] font-bold border border-blue-300 shadow-xs" title="Cetak Naskah Dinas SPT Resmi">
+                                        🖨️ Cetak
                                     </a>
                                     @can('penugasan.edit')
                                     <a href="{{ route('penugasan.edit', $item->id) }}" class="px-2.5 py-1 bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300 hover:bg-amber-100 rounded-lg text-[10px] font-bold border border-amber-300 shadow-xs" title="Edit Surat Tugas">

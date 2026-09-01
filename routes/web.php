@@ -62,6 +62,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/penugasan/create', [PenugasanController::class, 'create'])->middleware('can:penugasan.create')->name('penugasan.create');
     Route::post('/penugasan', [PenugasanController::class, 'store'])->middleware('can:penugasan.create')->name('penugasan.store');
     Route::get('/penugasan/{penugasan}', [PenugasanController::class, 'show'])->name('penugasan.show');
+    Route::get('/penugasan/{penugasan}/cetak', [PenugasanController::class, 'cetak'])->name('penugasan.cetak');
     Route::get('/penugasan/{penugasan}/edit', [PenugasanController::class, 'edit'])->middleware('can:penugasan.edit')->name('penugasan.edit');
     Route::put('/penugasan/{penugasan}', [PenugasanController::class, 'update'])->middleware('can:penugasan.edit')->name('penugasan.update');
     Route::delete('/penugasan/{penugasan}', [PenugasanController::class, 'destroy'])->middleware('can:penugasan.delete')->name('penugasan.destroy');

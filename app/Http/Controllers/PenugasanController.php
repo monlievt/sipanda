@@ -94,6 +94,22 @@ class PenugasanController extends Controller
     }
 
     /**
+     * Cetak Naskah Dinas Surat Perintah Tugas (SPT) Resmi Format Pemkab Trenggalek.
+     */
+    public function cetak(Penugasan $penugasan): View
+    {
+        $penugasan->load([
+            'irban', 'irbans', 'jenisPenugasan', 'sumberPenugasan',
+            'objekPenugasan', 'tim.user', 'pkppt', 'pembuatData',
+            'penugasanInduk'
+        ]);
+
+        $inspektur = User::role('inspektur')->first();
+
+        return view('penugasan.cetak-spt', compact('penugasan', 'inspektur'));
+    }
+
+    /**
      * Tampilkan form Input Penugasan baru.
      */
     public function create(): View
