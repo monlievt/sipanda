@@ -1,0 +1,211 @@
+# PANDUAN PENGUJIAN & SKENARIO UAT LENGKAP
+## SISTEM INFORMASI PENGAWASAN TERINTEGRASI (SIPANDA)
+### INSPEKTORAT KABUPATEN TRENGGALEK
+
+---
+
+**Versi Dokumen:** 1.0  
+**Tanggal Rilis:** 1 September 2026  
+**Klasifikasi:** Dokumen Panduan Pengujian & Operasional Pengguna  
+**Target Pembaca:** Inspektur, Sekretaris, Para Irban, Pengendali Teknis, Ketua Tim, Anggota Tim Auditor/PPUPD, dan PIC OPD se-Kabupaten Trenggalek.
+
+---
+
+## 🌐 1. INFORMASI ALAMAT PORTAL SIPANDA
+
+* **Portal Internal (Auditor & Manajemen):** `https://sipanda.inspektorat.trenggalekkab.go.id/login`
+* **Portal Eksternal OPD (Tindak Lanjut & Konsultasi):** `https://sipanda.inspektorat.trenggalekkab.go.id/opd/login`
+* **Dashboard Transparansi Publik & Bank FAQ:** `https://sipanda.inspektorat.trenggalekkab.go.id`
+
+---
+
+## 🔑 2. DAFTAR AKUN & KREDENSIAL PENGUJIAN PER ROLE
+
+> ⚠️ **Catatan Keamanan:** Seluruh pegawai dan PIC OPD menggunakan password awal default. Pengguna dapat mengubah kata sandi mandiri melalui menu **Profil Pengguna**.
+
+| No | Peran / Role | Nama Pengguna | NIP / Jabatan | Email Login | Password Default |
+|:---:|---|---|---|---|---|
+| **1** | **Administrator Sistem** | Administrator SIPANDA | Pranata Komputer | `admin@inspektorat.trenggalek.go.id` | `Admin@sipanda2025!` |
+| **2** | **Inspektur** | Ir. WIJIONO, S.T., M.MKes. | 197308051997031007 (Plt. Inspektur) | `onowiji2@gmail.com` | `sipanda2025` |
+| **3** | **Sekretaris / Sekretariat** | NUGRAHENI RAHAYU S, SE,M.Si | 197211141994022001 (Kasubbag Umum & Kepegawaian) | `nugrahenisetya72@gmail.com` | `sipanda2025` |
+| **4** | **Irban I** | GATOT SUPRIYANTO, SH. | 197308111993031002 (Irban I) | `gatotsupriyanto.gs@gmail.com` | `sipanda2025` |
+| **5** | **Irban II** | SIGIT PRASETYO, S.IP., MAP | 197310211993101001 (Irban II) | `sigit.prasetyo1973@gmail.com` | `sipanda2025` |
+| **6** | **Irban III** | SUYATNO, SH | 196906221992021001 (Irban III) | `ytnos69@gmail.com` | `sipanda2025` |
+| **7** | **Irban IV** | AGUNG YUDYANA, S.H., M.H | 196805241997031001 (Irban IV) | `yudyanaagung@gmail.com` | `sipanda2025` |
+| **8** | **Irban Khusus / Investigasi** | DIDIK AGIT W, SE.MAP | 196612061992031009 (Plt. Irban Khusus) | `diekagita@gmail.com` | `sipanda2025` |
+| **9** | **Pengendali Teknis (Daltek)** | DIDIK SUPRIYANTO, S.Sos.M.Si | 196612221992021001 (PPUPD Ahli Madya) | `didieks@yahoo.co.id` | `sipanda2025` |
+| **10** | **Ketua Tim Auditor** | Ir. BENNO HERA T. | 196706162006041010 (Auditor Ahli Madya) | `bennohera100@gmail.com` | `sipanda2025` |
+| **11** | **Anggota Tim Auditor** | UTARI PRASETYANI, SE | 197101042010012003 (Auditor Ahli Muda) | `utariprasetyani@gmail.com` | `sipanda2025` |
+| **12** | **PIC OPD (Dinas Kesehatan)** | PIC Dinas Kesehatan | Perangkat Daerah Dinkes | `pic.dinkes@trenggalek.go.id` | `sipanda2025` |
+| **13** | **PIC OPD (Dinas Pendidikan)** | PIC Dinas Pendidikan | Perangkat Daerah Dikpora | `pic.dikpora@trenggalek.go.id` | `sipanda2025` |
+
+---
+
+## 🏛️ 3. MATRIKS TUPOKSI & HAK AKSES SISTEM
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                   STRUKTUR PERAN & WEWENANG SIPANDA                    │
+├─────────────────┬──────────────────────────────────────────────────────┤
+│ Inspektur       │ • Menetapkan PKPT Resmi Tahunan                      │
+│                 │ • Memantau Dashboard Strategis & Beban Kerja Auditor │
+│                 │ • Evaluasi Kinerja Pengawasan Tahunan                │
+├─────────────────┼──────────────────────────────────────────────────────┤
+│ Sekretariat     │ • Reviu & Verifikasi Draf PKPT dari Para Irban       │
+│                 │ • Kelola Master Data Penugasan & Kalender            │
+│                 │ • Import Data Historis CSV & Arsip Digital           │
+├─────────────────┼──────────────────────────────────────────────────────┤
+│ Irban (I - V)   │ • Susun Draf PKPT Berbasis Risiko & Usulkan ke Sekr. │
+│                 │ • Terbitkan Surat Perintah Tugas (SPT) Penugasan     │
+│                 │ • Disposisi Permohonan Konsultasi (e-Consulting)     │
+│                 │ • Verifikasi Bukti Tindak Lanjut (Diterima/Tolak/TDT)│
+├─────────────────┼──────────────────────────────────────────────────────┤
+│ Tim Auditor     │ • Pelaksanaan Audit/Reviu/Evaluasi Lapangan          │
+│ (Daltek/Ketua/  │ • Input Matriks Temuan & Rekomendasi LHP             │
+│  Anggota)       │ • Unggah KKP & Laporan Hasil Pengawasan (LHP)        │
+│                 │ • Respon Chat Konsultasi & Terbitkan Berita Acara    │
+├─────────────────┼──────────────────────────────────────────────────────┤
+│ PIC OPD         │ • Unggah Dokumen Bukti Tindak Lanjut TLRHP           │
+│ (Auditi)        │ • Ajukan Permohonan Konsultasi Online ke APIP        │
+│                 │ • Pantau Status Kepatuhan & Unduh Berita Acara       │
+└─────────────────┴──────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🧪 4. SKENARIO PENGUJIAN USER ACCEPTANCE TEST (UAT)
+
+---
+
+### 📌 SKENARIO 1: Perencanaan PKPT Berbasis Penilaian Risiko
+* **Aktor:** Irban → Sekretariat → Inspektur
+* **Tujuan:** Menguji siklus penyusunan PKPT dari Draf, Reviu, Penetapan, hingga Pembuatan Versi Revisi.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 1.1 | Login dan buka menu **Perencanaan PKPT** (`/pkppt`). Klik **"+ Tambah PKPT"** atau gunakan tombol **"Hitung Penilaian Risiko Otomatis"**. | Irban (`sigit.prasetyo1973@gmail.com`) | Draf PKPT baru berhasil dibuat dengan status `DRAFT`. | [ ] |
+| 1.2 | Pada baris draf PKPT, klik tombol **"Usulkan"** ke Sekretariat. | Irban | Status berubah menjadi `DIUSULKAN`. Notifikasi terkirim ke Sekretaris. | [ ] |
+| 1.3 | Login sebagai Sekretariat, buka menu **Perencanaan PKPT**, klik tombol **"Reviu"**, masukkan catatan telaah, lalu simpan. | Sekretariat (`nugrahenisetya72@gmail.com`) | Status berubah menjadi `DIREVIU`. Notifikasi siap penetapan terkirim ke Inspektur. | [ ] |
+| 1.4 | Login sebagai Inspektur, buka menu **Perencanaan PKPT**, klik tombol **"Tetapkan PKPT"**. | Inspektur (`onowiji2@gmail.com`) | Status berubah menjadi `DITETAPKAN` (Hijau). PKPT resmi terkunci. | [ ] |
+| 1.5 | Uji Fitur Revisi: Klik tombol **"Revisi PKPT"** pada item yang sudah ditetapkan. | Admin / Irban | Sistem mengarsipkan v1 (read-only) dan membuat draf **v2** secara otomatis. | [ ] |
+
+---
+
+### 📌 SKENARIO 2: Penerbitan Surat Perintah Tugas (SPT) Baru
+* **Aktor:** Irban / Admin Sistem
+* **Tujuan:** Menerbitkan SPT pengawasan lengkap dengan alokasi multi-irban, objek sasaran, dan penugasan tim.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 2.1 | Buka menu **Penugasan (SPT)** (`/penugasan`) → klik **"+ Tambah Penugasan"**. | Irban (`ytnos69@gmail.com`) | Formulir pembuatan SPT terbuka. | [ ] |
+| 2.2 | Isi Nomor SPT (contoh: `700.1.1/045/406.050/2026`), pilih Jenis Pengawasan (Audit Kinerja), Objek Penugasan (Dinas Kesehatan), Tanggal Pelaksanaan, dan pilih Tim Auditor (Daltek, Ketua, Anggota). | Irban | Validasi form berjalan normal. | [ ] |
+| 2.3 | Klik tombol **"Simpan Penugasan"**. | Irban | SPT berhasil diterbitkan. Seluruh anggota tim menerima notifikasi WhatsApp, Email, dan Lonceng In-App. | [ ] |
+| 2.4 | Buka detail penugasan (`/penugasan/{id}`). Cek integrasi tab: Ringkasan Tim, Matriks Temuan, Arsip Digital KKP, dan Activity Log. | Tim Auditor (`bennohera100@gmail.com`) | Seluruh tab termuat cepat dengan data akurat. | [ ] |
+
+---
+
+### 📌 SKENARIO 3: Input Matriks Temuan LHP & Rekomendasi TLRHP
+* **Aktor:** Ketua Tim Auditor / Daltek
+* **Tujuan:** Menginput temuan hasil pemeriksaan, rekomendasi perbaikan, nilai kerugian/setoran, dan batas waktu 60 hari.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 3.1 | Buka menu **Tindak Lanjut (LHP)** (`/tindak-lanjut`) → klik **"+ Tambah Rekomendasi LHP"**. | Ketua Tim (`bennohera100@gmail.com`) | Form input temuan & rekomendasi terbuka. | [ ] |
+| 3.2 | Pilih Penugasan terkait, isi No LHP, Judul Temuan, Uraian Rekomendasi, Nilai Rekomendasi Rp (misal: `15.000.000`), Nilai Diawasi Rp (misal: `150.000.000`), dan Tanggal Target Penyelesaian (60 hari). | Ketua Tim | Format Rupiah terformat otomatis. | [ ] |
+| 3.3 | Klik **"Simpan Rekomendasi"**. | Ketua Tim | Rekomendasi tersimpan dengan status `BELUM DITINDAKLANJUTI`. | [ ] |
+
+---
+
+### 📌 SKENARIO 4: Portal OPD — Respon Temuan & Unggah Bukti Tindak Lanjut
+* **Aktor:** PIC OPD (Dinas Kesehatan)
+* **Tujuan:** OPD login ke portal khusus dan mengunggah dokumen pertanggungjawaban/setoran STS.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 4.1 | Buka URL Portal OPD: `https://sipanda.inspektorat.trenggalekkab.go.id/opd/login`. Masukkan kredensial `pic.dinkes@trenggalek.go.id` / `sipanda2025`. | PIC OPD (`pic.dinkes@trenggalek.go.id`) | Berhasil masuk ke Dashboard Khusus OPD Dinas Kesehatan. | [ ] |
+| 4.2 | Buka menu **Daftar Rekomendasi Temuan**. Klik detail pada temuan yang belum selesai. | PIC OPD | Muncul rincian rekomendasi temuan dari Inspektorat. | [ ] |
+| 4.3 | Masukkan uraian tindak lanjut OPD, lampirkan berkas bukti (PDF Surat Tindak Lanjut / Bukti Setor STS Bank Jatim), lalu klik **"Kirim Bukti Tindak Lanjut"**. | PIC OPD | File terunggah aman (UUID). Status berubah menjadi `MENUNGGU VERIFIKASI`. Notifikasi terkirim ke Auditor. | [ ] |
+
+---
+
+### 📌 SKENARIO 5: Verifikasi Bukti Tindak Lanjut oleh Inspektorat
+* **Aktor:** Auditor / Irban
+* **Tujuan:** Memeriksa dokumen bukti dari OPD dan memberikan keputusan status kepatuhan.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 5.1 | Login ke portal internal, klik lonceng notifikasi *"Bukti Baru dari Dinas Kesehatan"*. | Auditor (`didieks@yahoo.co.id`) | Langsung dialihkan (*deep link*) ke lembar verifikasi bukti terkait. | [ ] |
+| 5.2 | Unduh dan periksa berkas lampiran bukti dari OPD. | Auditor | File PDF terbuka dengan baik dan preview dokumen tampil. | [ ] |
+| 5.3 | Pilih keputusan verifikasi:  
+a. **Diterima (Sesuai):** Status rekomendasi berubah menjadi `SESUAI` (100%).  
+b. **Ditolak / Belum Sesuai:** Masukkan catatan revisi, status kembali ke OPD.  
+c. **TDT (Tidak Dapat Ditindaklanjuti):** Status menjadi `TDT`. | Auditor / Irban | Keputusan tersimpan, log audit tercatat, dan PIC OPD otomatis menerima notifikasi WhatsApp hasil verifikasi. | [ ] |
+
+---
+
+### 📌 SKENARIO 6: Layanan Konsultasi & Pendampingan APIP (e-Consulting)
+* **Aktor:** PIC OPD → Irban → Tim Auditor
+* **Tujuan:** Pengajuan konsultasi online/tatap muka, percakapan dua arah, hingga penerbitan Berita Acara.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 6.1 | Login ke Portal OPD → Buka menu **Layanan Konsultasi** → Klik **"Ajukan Konsultasi Baru"**. Isi Topik (misal: *Tata Cara Pengadaan Langsung BLUD*), Kategori, dan Deskripsi. | PIC OPD | Konsultasi terkirim dengan status `MENUNGGU DISPOSISI`. | [ ] |
+| 6.2 | Login sebagai Irban, buka menu **e-Consulting** (`/konsultasi`). Klik detail permohonan, pilih metode (*Online/Tatap Muka*), dan tentukan Tim APIP penanggap. Klik **"Tetapkan Disposisi"**. | Irban | Tim Auditor menerima notifikasi disposisi tugas konsultasi. | [ ] |
+| 6.3 | Tim Auditor dan PIC OPD saling berbalas pesan dan mengirim berkas lampiran di ruang chat interaktif. | Auditor & PIC OPD | Pesan chat real-time tersimpan rapi dan notifikasi WA masuk ke ponsel pengguna. | [ ] |
+| 6.4 | Auditor mengisi **Form Kesimpulan Advis** dan klik **"Terbitkan Berita Acara Konsultasi"**. | Auditor | Status menjadi `SELESAI`. Dokumen Berita Acara (BA) resmi terbit dan dapat diunduh oleh OPD. | [ ] |
+
+---
+
+### 📌 SKENARIO 7: Import Data Historis Spreadsheet / CSV
+* **Aktor:** Administrator Sistem / Sekretariat
+* **Tujuan:** Memasukkan data massal SPT, Matriks LHP, dan Master OPD lama tanpa input satu per satu.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 7.1 | Buka menu **Master Data & Sistem** → **Import Data CSV** (`/import`). | Admin (`admin@inspektorat.trenggalek.go.id`) | Halaman dashboard importer terbuka. | [ ] |
+| 7.2 | Unduh salah satu template CSV (misal: *Template Penugasan SPT*). Buka di Excel/Numbers dan isi 2-3 baris data uji. | Admin | File CSV terunduh dalam format standar delimiter koma/titik-koma. | [ ] |
+| 7.3 | Unggah file CSV tersebut pada form upload. | Admin | Halaman **Pratinjau Data (Preview)** menampilkan 10 baris pertama dengan validasi status baris (*Valid / Siap Import*). | [ ] |
+| 7.4 | Klik tombol **"Eksekusi Import Data"**. | Admin | Data tersimpan ke database dalam 1 transaksi aman (*DB Transaction*). Notifikasi sukses tampil. | [ ] |
+
+---
+
+### 📌 SKENARIO 8: Kelola Pengguna, Tambah Pegawai Baru & Audit Log
+* **Aktor:** Administrator Sistem
+* **Tujuan:** Menambah pegawai baru manual, mengatur hak akses role, dan memantau jejak audit log.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 8.1 | Buka menu **Kelola Pengguna Internal** (`/master/users`). Klik tombol **"+ Tambah Pegawai Baru"**. | Admin | Modal form pendaftaran pegawai baru terbuka. | [ ] |
+| 8.2 | Isi Nama Lengkap, NIP, Email, Nomor WhatsApp, Jabatan, Golongan, Unit Irban, dan Role Akses. Klik **"Simpan Pegawai"**. | Admin | Pegawai baru berhasil terdaftar di database dan langsung bisa login. | [ ] |
+| 8.3 | Klik tombol **Edit** pada baris pegawai untuk memperbarui data / ganti password / ubah unit kerja. | Admin | Data terupdate instan dan Activity Log mencatat perubahan tersebut. | [ ] |
+| 8.4 | Buka menu **Master Data & Sistem** → **Log Aktivitas Sistem** (`/master/audit-log`). | Admin | Seluruh riwayat aksi (Create, Update, Delete, Login) tercatat lengkap dengan filter multi-kriteria dan modal **Diff JSON Viewer**. | [ ] |
+
+---
+
+### 📌 SKENARIO 9: Pengujian Otomasi Notifikasi WhatsApp (WAHA)
+* **Aktor:** Administrator Sistem (via Terminal / Scheduler)
+* **Tujuan:** Memastikan gateway WhatsApp mengirim pesan secara instan.
+
+| No | Langkah Pengujian | Perintah / Aksi | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 9.1 | Uji coba kirim pesan langsung dari CLI ke nomor ponsel penguji. | `php artisan sipanda:test-wa 081234567890 "Uji Notifikasi SIPANDA"` | Pesan uji coba berhasil masuk ke aplikasi WhatsApp ponsel dalam waktu < 3 detik. | [ ] |
+| 9.2 | Uji coba scheduler reminder harian (H-3/H-1 penugasan dan reminder mandek). | `php artisan sipanda:send-reminders` | Terminal menampilkan ringkasan notifikasi terkirim dan pesan reminder masuk ke WhatsApp tim penugasan. | [ ] |
+
+---
+
+## 🖨️ 5. PETUNJUK KONVERSI KE FORMAT PDF (CETAK RESMI)
+
+Dokumen ini dirancang dengan standar **GitHub Flavored Markdown** yang siap dicetak/dikonversi ke PDF:
+
+1. **Menggunakan Browser Chrome / Edge / Safari:**
+   - Buka file markdown ini menggunakan text viewer / markdown preview (atau di GitHub repository).
+   - Tekan `Ctrl + P` (Windows) atau `Cmd + P` (Mac).
+   - Pada opsi printer tujuan, pilih **Save as PDF** (Simpan sebagai PDF).
+   - Pastikan mencentang opsi **Background graphics** agar warna tabel dan badge tercetak jelas.
+2. **Menggunakan Node.js Tool CLI `md-to-pdf`:**
+   ```bash
+   npx md-to-pdf docs/08-SKENARIO-PENGUJIAN-DAN-USER-GUIDE.md
+   ```
+
+---
+*Dokumen ini disusun untuk menjamin seluruh modul SIPANDA teruji secara fungsional, andal, dan siap mendukung efektivitas pengawasan Inspektorat Kabupaten Trenggalek.*
