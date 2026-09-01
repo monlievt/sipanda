@@ -1,119 +1,137 @@
-<!-- Floating Action Button: UAT Feedback & Bug Report -->
-<div id="uatFeedbackFloatingContainer" class="fixed bottom-6 left-6 z-50 no-print">
-    <button type="button" onclick="openUatFeedbackModal()" class="group flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-2xl shadow-xl shadow-amber-500/25 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 cursor-pointer border border-amber-400/30">
+<!-- Floating Action Button & Chat Drawer: Kotak Saran & Bug UAT (Pojok Kanan Bawah) -->
+<div id="uatFeedbackWidgetWrapper" class="fixed bottom-6 right-6 z-50 no-print font-sans">
+
+    <!-- 1. Floating Toggle Button (Pojok Kanan Bawah) -->
+    <button type="button" id="uatFeedbackToggleBtn" onclick="toggleUatFeedbackPopup()" class="group flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-2xl shadow-2xl shadow-orange-500/40 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 cursor-pointer border border-amber-300/40">
+        <!-- Pulse Indicator -->
         <span class="relative flex h-3 w-3">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
             <span class="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
         </span>
-        <svg class="w-5 h-5 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-        </svg>
-        <span class="text-xs tracking-wide">Kritik, Saran & Bug UAT</span>
+        
+        <!-- Icon Chat -->
+        <span id="uatToggleIcon">
+            <svg class="w-5 h-5 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+        </span>
+        
+        <span class="text-xs font-extrabold tracking-wide">Kotak Saran & Bug UAT</span>
     </button>
-</div>
 
-<!-- Modal Popup Form UAT Feedback -->
-<div id="uatFeedbackModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-950/80 backdrop-blur-sm transition-opacity duration-300">
-    <div class="min-h-screen px-4 text-center flex items-center justify-center p-4">
-        <div class="inline-block w-full max-w-xl p-6 sm:p-8 my-8 overflow-hidden text-left align-middle transition-all transform bg-slate-900 border border-slate-800 shadow-2xl rounded-3xl relative text-white">
-            
-            <!-- Close Button -->
-            <button type="button" onclick="closeUatFeedbackModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-
-            <!-- Header -->
-            <div class="flex items-center gap-3 mb-5">
-                <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl font-bold border border-amber-500/20">
+    <!-- 2. Chatbox Popup Window Drawer -->
+    <div id="uatFeedbackPopupDrawer" class="hidden absolute bottom-16 right-0 w-96 max-w-[calc(100vw-2rem)] max-h-[85vh] bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-3xl shadow-2xl shadow-black/80 flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-right">
+        
+        <!-- Header Chat Drawer -->
+        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-4 border-b border-slate-700/80 flex items-center justify-between text-white">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg font-bold border border-amber-500/30">
                     🛠️
                 </div>
                 <div>
-                    <h3 class="text-lg font-black text-white tracking-tight">Pusat Masukan & Laporan Pengujian (UAT)</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">Sampaikan kendala, ide saran, atau pertanyaan saat mencoba fitur SIPANDA</p>
+                    <h3 class="text-sm font-black text-white tracking-tight flex items-center gap-1.5">
+                        <span>Kotak Saran & Bug UAT</span>
+                        <span class="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 text-[9px] font-bold rounded-md uppercase">UAT</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400">Kirim masukan & screenshot saat mencoba fitur</p>
+                </div>
+            </div>
+
+            <!-- Minimize / Close Button -->
+            <button type="button" onclick="toggleUatFeedbackPopup()" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-colors" title="Tutup Chat">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <!-- Chat Body / Scrollable Form -->
+        <div class="p-4 overflow-y-auto space-y-3.5 text-xs text-slate-200 custom-scrollbar flex-1">
+            
+            <!-- Intro Chat Bubble from Support -->
+            <div class="flex items-start gap-2.5">
+                <div class="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold shrink-0 border border-amber-500/30">
+                    🤖
+                </div>
+                <div class="p-3 bg-slate-800/80 rounded-2xl rounded-tl-sm border border-slate-700/60 text-[11px] text-slate-300 leading-relaxed shadow-sm">
+                    Halo! Tim pengembang siap menampung laporan kendala, pertanyaan alur, atau ide saran perbaikan Anda saat mencoba SIPANDA.
                 </div>
             </div>
 
             <!-- Form -->
-            <form id="uatFeedbackForm" onsubmit="submitUatFeedback(event)" class="space-y-4 text-xs">
+            <form id="uatFeedbackForm" onsubmit="submitUatFeedback(event)" class="space-y-3 pt-1">
                 @csrf
                 <input type="hidden" name="url_halaman" id="uatFeedbackUrl" value="">
                 <input type="hidden" name="browser_info" id="uatFeedbackBrowser" value="">
                 <input type="hidden" name="screenshot_b64" id="uatFeedbackScreenshotB64" value="">
 
-                <!-- Kategori & Urgensi -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-bold text-slate-300 uppercase tracking-wider text-[10px] mb-1.5">Jenis Masukan <span class="text-rose-500">*</span></label>
-                        <select name="kategori" id="uatKategori" required class="w-full rounded-xl border border-slate-700 bg-slate-800 text-white text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-amber-500">
-                            <option value="bug">🐞 Bug / Kendala Error</option>
-                            <option value="saran">💡 Ide & Saran Perbaikan</option>
-                            <option value="pertanyaan">❓ Pertanyaan Alur / Bingung</option>
-                            <option value="apresiasi">⭐ Ulasan / Catatan Kenyamanan</option>
-                        </select>
-                    </div>
+                <!-- Kategori Pilihan -->
+                <div>
+                    <label class="block font-bold text-slate-300 uppercase tracking-wider text-[10px] mb-1">Jenis Masukan <span class="text-rose-500">*</span></label>
+                    <select name="kategori" id="uatKategori" required class="w-full rounded-xl border border-slate-700 bg-slate-800 text-white text-xs px-3 py-2 focus:ring-2 focus:ring-amber-500">
+                        <option value="bug">🐞 Bug / Kendala Error</option>
+                        <option value="saran">💡 Ide & Saran Perbaikan</option>
+                        <option value="pertanyaan">❓ Pertanyaan Alur / Bingung</option>
+                        <option value="apresiasi">⭐ Ulasan / Catatan UX</option>
+                    </select>
+                </div>
 
-                    <div>
-                        <label class="block font-bold text-slate-300 uppercase tracking-wider text-[10px] mb-1.5">Tingkat Urgensi <span class="text-rose-500">*</span></label>
-                        <select name="urgensi" id="uatUrgensi" required class="w-full rounded-xl border border-slate-700 bg-slate-800 text-white text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-amber-500">
-                            <option value="sedang">🟡 Sedang (Normal)</option>
-                            <option value="rendah">🟢 Rendah (Saran Minor)</option>
-                            <option value="tinggi">⚠️ Tinggi (Fitur Tidak Jalan)</option>
-                            <option value="kritis">🔥 Kritis (Aplikasi Terhenti/Error 500)</option>
-                        </select>
-                    </div>
+                <!-- Tingkat Urgensi -->
+                <div>
+                    <label class="block font-bold text-slate-300 uppercase tracking-wider text-[10px] mb-1">Tingkat Urgensi <span class="text-rose-500">*</span></label>
+                    <select name="urgensi" id="uatUrgensi" required class="w-full rounded-xl border border-slate-700 bg-slate-800 text-white text-xs px-3 py-2 focus:ring-2 focus:ring-amber-500">
+                        <option value="sedang">🟡 Sedang (Normal)</option>
+                        <option value="rendah">🟢 Rendah (Saran Minor)</option>
+                        <option value="tinggi">⚠️ Tinggi (Fitur Tidak Berfungsi)</option>
+                        <option value="kritis">🔥 Kritis (Error 500 / Block)</option>
+                    </select>
                 </div>
 
                 <!-- Judul -->
                 <div>
-                    <label class="block font-bold text-slate-300 uppercase tracking-wider text-[10px] mb-1.5">Judul Singkat <span class="text-rose-500">*</span></label>
-                    <input type="text" name="judul" id="uatJudul" required placeholder="Contoh: Tombol cetak SPT tidak merespon di browser HP" class="w-full rounded-xl border border-slate-700 bg-slate-800 text-white text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-amber-500">
+                    <label class="block font-bold text-slate-300 uppercase tracking-wider text-[10px] mb-1">Judul Singkat <span class="text-rose-500">*</span></label>
+                    <input type="text" name="judul" id="uatJudul" required placeholder="Contoh: Tombol cetak tidak merespon di HP" class="w-full rounded-xl border border-slate-700 bg-slate-800 text-white text-xs px-3 py-2 focus:ring-2 focus:ring-amber-500">
                 </div>
 
-                <!-- Deskripsi & Langkah Kronologi -->
+                <!-- Deskripsi -->
                 <div>
-                    <label class="block font-bold text-slate-300 uppercase tracking-wider text-[10px] mb-1.5">Uraian Detail / Kronologi Masalah <span class="text-rose-500">*</span></label>
-                    <textarea name="deskripsi" id="uatDeskripsi" rows="3" required placeholder="Jelaskan apa yang sedang Anda lakukan, apa yang Anda harapkan, dan apa yang sebenarnya terjadi..." class="w-full rounded-xl border border-slate-700 bg-slate-800 text-white text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-amber-500 resize-none"></textarea>
+                    <label class="block font-bold text-slate-300 uppercase tracking-wider text-[10px] mb-1">Uraian / Kronologi <span class="text-rose-500">*</span></label>
+                    <textarea name="deskripsi" id="uatDeskripsi" rows="3" required placeholder="Jelaskan apa yang dicoba, apa yang diharapkan, dan apa yang terjadi..." class="w-full rounded-xl border border-slate-700 bg-slate-800 text-white text-xs px-3 py-2 focus:ring-2 focus:ring-amber-500 resize-none"></textarea>
                 </div>
 
-                <!-- Screenshot Upload & Clipboard Paste -->
+                <!-- Screenshot Box with Paste (Ctrl+V) -->
                 <div>
-                    <div class="flex items-center justify-between mb-1.5">
-                        <label class="block font-bold text-slate-300 uppercase tracking-wider text-[10px]">Tangkapan Layar / Screenshot (Opsional)</label>
-                        <span class="text-[10px] text-amber-400 font-semibold">💡 Bisa Paste (Ctrl+V) langsung!</span>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-slate-300 uppercase tracking-wider text-[10px]">Tangkapan Layar (Screenshot)</label>
+                        <span class="text-[9px] text-amber-400 font-semibold">Bisa Ctrl+V Paste!</span>
                     </div>
 
-                    <!-- Dropzone / Paste Area -->
-                    <div id="uatPasteZone" class="border-2 border-dashed border-slate-700 hover:border-amber-500/60 rounded-2xl p-3 text-center bg-slate-800/50 transition-colors relative cursor-pointer" onclick="document.getElementById('uatFileInput').click()">
+                    <div id="uatPasteZone" class="border border-dashed border-slate-700 hover:border-amber-500/60 rounded-2xl p-2.5 text-center bg-slate-800/60 transition-colors relative cursor-pointer" onclick="document.getElementById('uatFileInput').click()">
                         <input type="file" id="uatFileInput" name="screenshot" accept="image/*" class="hidden" onchange="handleUatFileSelect(this)">
                         
-                        <div id="uatUploadPrompt" class="space-y-1 py-2">
-                            <div class="text-slate-400 text-sm">📷 Klik untuk pilih file gambar atau tekan <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-slate-200 font-mono text-[10px]">Ctrl+V</kbd> untuk Paste</div>
-                            <div class="text-[10px] text-slate-500">Mendukung JPG, PNG, WEBP (Maks. 10MB)</div>
+                        <div id="uatUploadPrompt" class="space-y-0.5 py-1">
+                            <div class="text-slate-300 text-xs font-semibold">📷 Klik pilih file atau tekan <kbd class="px-1 py-0.5 bg-slate-700 rounded text-slate-200 font-mono text-[9px]">Ctrl+V</kbd></div>
+                            <div class="text-[9px] text-slate-500">JPG, PNG, WEBP (Maks. 10MB)</div>
                         </div>
 
-                        <!-- Live Preview Box -->
-                        <div id="uatPreviewContainer" class="hidden relative inline-block">
-                            <img id="uatImagePreview" src="" alt="Pratinjau Screenshot" class="max-h-36 rounded-xl border border-slate-700 shadow-md mx-auto">
+                        <!-- Preview -->
+                        <div id="uatPreviewContainer" class="hidden relative inline-block mt-1">
+                            <img id="uatImagePreview" src="" alt="Pratinjau Screenshot" class="max-h-28 rounded-xl border border-slate-700 shadow-md mx-auto">
                             <button type="button" onclick="clearUatScreenshot(event)" class="absolute -top-2 -right-2 bg-rose-600 hover:bg-rose-700 text-white rounded-full p-1 shadow-md transition-colors" title="Hapus Gambar">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Info Halaman Saat Ini (Auto) -->
-                <div class="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 text-[10px] flex items-center justify-between text-slate-400">
-                    <span class="truncate">📍 Halaman: <strong id="uatUrlBadge" class="text-slate-300 font-mono"></strong></span>
-                    <span class="shrink-0 text-emerald-400 font-semibold">Terekam Otomatis</span>
+                <!-- Info Halaman Terekam -->
+                <div class="p-2 bg-slate-950 rounded-xl border border-slate-800 text-[9px] flex items-center justify-between text-slate-400">
+                    <span class="truncate">📍 <strong id="uatUrlBadge" class="text-slate-300 font-mono"></strong></span>
+                    <span class="shrink-0 text-emerald-400 font-semibold ml-1">Auto</span>
                 </div>
 
-                <!-- Submit Button & Loader -->
-                <div class="pt-2 flex items-center justify-end gap-3">
-                    <button type="button" onclick="closeUatFeedbackModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition-all">
-                        Batal
-                    </button>
-                    <button type="submit" id="uatSubmitBtn" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-xl text-xs shadow-lg shadow-amber-500/25 transition-all flex items-center gap-2 cursor-pointer">
-                        <span id="uatBtnText">Kirim Masukan</span>
+                <!-- Submit Button -->
+                <div class="pt-1">
+                    <button type="submit" id="uatSubmitBtn" class="w-full py-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-xl text-xs shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <span id="uatBtnText">Kirim Masukan Sekarang 🚀</span>
                         <svg id="uatBtnSpinner" class="w-4 h-4 animate-spin hidden" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
                     </button>
                 </div>
@@ -123,24 +141,27 @@
 </div>
 
 <script>
-    function openUatFeedbackModal() {
-        document.getElementById('uatFeedbackUrl').value = window.location.href;
-        document.getElementById('uatUrlBadge').textContent = window.location.pathname + window.location.search;
-        document.getElementById('uatFeedbackBrowser').value = navigator.userAgent + ' | Screen: ' + window.innerWidth + 'x' + window.innerHeight;
-        
-        document.getElementById('uatFeedbackModal').classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
+    function toggleUatFeedbackPopup() {
+        const popup = document.getElementById('uatFeedbackPopupDrawer');
+        const isHidden = popup.classList.contains('hidden');
+
+        if (isHidden) {
+            document.getElementById('uatFeedbackUrl').value = window.location.href;
+            document.getElementById('uatUrlBadge').textContent = window.location.pathname + window.location.search;
+            document.getElementById('uatFeedbackBrowser').value = navigator.userAgent + ' | Screen: ' + window.innerWidth + 'x' + window.innerHeight;
+            
+            popup.classList.remove('hidden');
+            document.getElementById('uatToggleIcon').innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+        } else {
+            popup.classList.add('hidden');
+            document.getElementById('uatToggleIcon').innerHTML = '<svg class="w-5 h-5 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>';
+        }
     }
 
-    function closeUatFeedbackModal() {
-        document.getElementById('uatFeedbackModal').classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-    }
-
-    // Global Paste Listener (Ctrl+V / Cmd+V)
+    // Listener Paste (Ctrl+V / Cmd+V)
     window.addEventListener('paste', function(e) {
-        const modal = document.getElementById('uatFeedbackModal');
-        if (modal.classList.contains('hidden')) return;
+        const popup = document.getElementById('uatFeedbackPopupDrawer');
+        if (!popup || popup.classList.contains('hidden')) return;
 
         const items = (e.clipboardData || e.originalEvent.clipboardData).items;
         for (let i = 0; i < items.length; i++) {
@@ -150,7 +171,7 @@
                 reader.onload = function(event) {
                     showUatImagePreview(event.target.result);
                     document.getElementById('uatFeedbackScreenshotB64').value = event.target.result;
-                    document.getElementById('uatFileInput').value = ''; // Reset file input jika menggunakan paste
+                    document.getElementById('uatFileInput').value = '';
                 };
                 reader.readAsDataURL(blob);
                 break;
@@ -163,7 +184,7 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 showUatImagePreview(e.target.result);
-                document.getElementById('uatFeedbackScreenshotB64').value = ''; // Menggunakan file asli
+                document.getElementById('uatFeedbackScreenshotB64').value = '';
             };
             reader.readAsDataURL(input.files[0]);
         }
@@ -176,7 +197,7 @@
     }
 
     function clearUatScreenshot(e) {
-        e.stopPropagation();
+        if (e) e.stopPropagation();
         document.getElementById('uatFileInput').value = '';
         document.getElementById('uatFeedbackScreenshotB64').value = '';
         document.getElementById('uatImagePreview').src = '';
@@ -211,17 +232,17 @@
             if (response.ok && result.success) {
                 alert('✅ ' + result.message);
                 form.reset();
-                clearUatScreenshot(e);
-                closeUatFeedbackModal();
+                clearUatScreenshot(null);
+                toggleUatFeedbackPopup();
             } else {
                 alert('⚠️ Gagal mengirim: ' + (result.message || 'Silakan lengkapi kolom yang wajib diisi.'));
             }
         } catch (error) {
             console.error('Error feedback submit:', error);
-            alert('❌ Terjadi kendala saat mengirim masukan. Pastikan koneksi server aktif.');
+            alert('❌ Terjadi kendala saat mengirim masukan. Pastikan server aktif.');
         } finally {
             submitBtn.disabled = false;
-            btnText.textContent = 'Kirim Masukan';
+            btnText.textContent = 'Kirim Masukan Sekarang 🚀';
             btnSpinner.classList.add('hidden');
         }
     }
