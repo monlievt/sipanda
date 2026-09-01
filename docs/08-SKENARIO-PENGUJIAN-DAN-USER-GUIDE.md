@@ -77,7 +77,7 @@
 
 ---
 
-### 📌 SKENARIO 1: Perencanaan PKPT Berbasis Penilaian Risiko
+### 📌 SKENARIO 1: Perencanaan PKPT Berbasis Penilaian Risiko (Siklus N-1)
 * **Aktor:** Irban → Sekretariat → Inspektur
 * **Tujuan:** Menguji siklus penyusunan PKPT dari Draf, Reviu, Penetapan, hingga Pembuatan Versi Revisi.
 
@@ -91,7 +91,7 @@
 
 ---
 
-### 📌 SKENARIO 2: Penerbitan Surat Perintah Tugas (SPT) Baru
+### 📌 SKENARIO 2: Penerbitan Surat Perintah Tugas (SPT) Baru & Multi-Irban
 * **Aktor:** Irban / Admin Sistem
 * **Tujuan:** Menerbitkan SPT pengawasan lengkap dengan alokasi multi-irban, objek sasaran, dan penugasan tim.
 
@@ -189,7 +189,41 @@ c. **TDT (Tidak Dapat Ditindaklanjuti):** Status menjadi `TDT`. | Auditor / Irba
 | No | Langkah Pengujian | Perintah / Aksi | Hasil yang Diharapkan | Status |
 |:---:|---|---|---|:---:|
 | 9.1 | Uji coba kirim pesan langsung dari CLI ke nomor ponsel penguji. | `php artisan sipanda:test-wa 081234567890 "Uji Notifikasi SIPANDA"` | Pesan uji coba berhasil masuk ke aplikasi WhatsApp ponsel dalam waktu < 3 detik. | [ ] |
-| 9.2 | Uji coba scheduler reminder harian (H-3/H-1 penugasan dan reminder mandek). | `php artisan sipanda:send-reminders` | Terminal menampilkan ringkasan notifikasi terkirim dan pesan reminder masuk ke WhatsApp tim penugasan. | [ ] |
+| 9.2 | Uji coba scheduler reminder harian (H-3/H-1 penugasan, reminder mandek, dan jatuh tempo 60 hari). | `php artisan sipanda:send-reminders` | Terminal menampilkan ringkasan notifikasi terkirim dan pesan reminder masuk ke WhatsApp tim penugasan. | [ ] |
+
+---
+
+### 📌 SKENARIO 10: Evaluasi Kinerja & Pelaporan Tahunan (Siklus N+1)
+* **Aktor:** Inspektur / Sekretaris
+* **Tujuan:** Menghitung otomatis capaian kinerja pengawasan, efektivitas TLRHP, dan penyelamatan keuangan daerah.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 10.1 | Buka menu **Evaluasi Tahunan** (`/evaluasi`). Pilih tahun evaluasi. | Inspektur (`onowiji2@gmail.com`) | Ringkasan persentase capaian PKPT, total temuan, dan total setoran kas daerah tampil. | [ ] |
+| 10.2 | Klik tombol **"Generate Laporan Evaluasi Tahunan"**. | Inspektur | Sistem menyusun matriks capaian kinerja tahunan dan siap dicetak/diekspor. | [ ] |
+
+---
+
+### 📌 SKENARIO 11: Sinkronisasi Google Calendar Jadwal Pengawasan
+* **Aktor:** Auditor / Irban
+* **Tujuan:** Menghubungkan jadwal penugasan pengawasan ke Google Calendar ponsel.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 11.1 | Buka menu **Profil Pengguna** (`/profile`). Lihat kartu **Google Calendar Integration**. | Auditor (`bennohera100@gmail.com`) | Tampil tombol **"Hubungkan Google Calendar"**. | [ ] |
+| 11.2 | Klik tombol hubungkan, login dengan akun Google pribadi/kedinasan, lalu berikan izin akses kalender. | Auditor | Akun Google terhubung. Jadwal penugasan otomatis tersinkronisasi ke Google Calendar. | [ ] |
+
+---
+
+### 📌 SKENARIO 12: Pemulihan Kata Sandi Mandiri (Lupa Password OPD)
+* **Aktor:** PIC OPD
+* **Tujuan:** Mereset kata sandi tanpa bantuan manual admin melalui tautan 1-klik di WhatsApp/Email.
+
+| No | Langkah Pengujian | Akun Penguji | Hasil yang Diharapkan | Status |
+|:---:|---|---|---|:---:|
+| 12.1 | Buka halaman login OPD `/opd/login`, klik **"Lupa kata sandi?"**. Masukkan email `pic.dinkes@trenggalek.go.id`. | PIC OPD | Pesan sukses reset terkirim tampil. | [ ] |
+| 12.2 | Buka pesan WhatsApp / Email yang diterima, klik tombol/link **"Atur Ulang Kata Sandi"**. | PIC OPD | Halaman form kata sandi baru terbuka dengan token valid. | [ ] |
+| 12.3 | Masukkan kata sandi baru dan konfirmasi. Klik **"Simpan Kata Sandi Baru"**. | PIC OPD | Kata sandi berhasil diperbarui dan pengguna langsung dialihkan ke dashboard OPD. | [ ] |
 
 ---
 
