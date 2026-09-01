@@ -20,9 +20,9 @@
     };
 @endphp
 
-<aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex flex-col transition-transform -translate-x-full md:translate-x-0 border-r border-slate-200 dark:border-slate-800 shadow-sm">
+<aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen bg-slate-900 text-slate-300 flex flex-col transition-transform -translate-x-full md:translate-x-0 border-r border-slate-800 shadow-xl">
     <!-- Header / Logo -->
-    <div class="h-16 flex items-center justify-between px-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+    <div class="h-16 flex items-center justify-between px-4 border-b border-slate-800 bg-slate-900/80">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
             <div class="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-emerald-600/30">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,26 +30,26 @@
                 </svg>
             </div>
             <div>
-                <h1 class="font-bold text-slate-900 dark:text-white text-base leading-tight tracking-wide">SIPANDA</h1>
-                <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold tracking-wider uppercase">Inspektorat Trenggalek</p>
+                <h1 class="font-bold text-white text-base leading-tight tracking-wide">SIPANDA</h1>
+                <p class="text-[10px] text-emerald-400 font-bold tracking-wider uppercase">Inspektorat Trenggalek</p>
             </div>
         </a>
     </div>
 
     <!-- Profile Box -->
-    <div class="p-3 mx-3 my-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/50">
+    <div class="p-3 mx-3 my-3 bg-slate-800/60 rounded-xl border border-slate-700/50">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-emerald-600 text-white rounded-lg flex items-center justify-center font-bold text-sm shadow">
                 {{ strtoupper(substr($user->nama_display ?? 'U', 0, 1)) }}
             </div>
             <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ $user->nama_display }}</p>
+                <p class="text-xs font-bold text-white truncate">{{ $user->nama_display }}</p>
                 <div class="flex items-center gap-1.5 mt-0.5">
                     <span class="px-1.5 py-0.5 text-[9px] font-semibold rounded border {{ $roleColor }}">
                         {{ $roleDisplay }}
                     </span>
                     @if($user->irban)
-                        <span class="text-[9px] text-slate-500 dark:text-slate-400 font-medium truncate">({{ $user->irban->nama_irban }})</span>
+                        <span class="text-[9px] text-slate-400 font-medium truncate">({{ $user->irban->nama_irban }})</span>
                     @endif
                 </div>
             </div>
@@ -239,10 +239,10 @@
     </nav>
 
     <!-- Footer Logout -->
-    <div class="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80">
+    <div class="p-3 border-t border-slate-800 bg-slate-900/80">
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-900/40 text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-300 rounded-lg text-xs font-semibold transition-all border border-slate-200 dark:border-slate-700/60 shadow-2xs">
+            <button type="submit" class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-rose-900/40 text-slate-300 hover:text-rose-300 rounded-lg text-xs font-semibold transition-all">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
