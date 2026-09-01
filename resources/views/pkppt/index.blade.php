@@ -174,7 +174,7 @@
 
                                     <!-- 4. Tombol Revisi (Status: ditetapkan) -->
                                     @if($item->status === 'ditetapkan')
-                                        @can('pkppt.edit')
+                                        @if(auth()->user()->hasRole(['admin', 'sekretariat', 'inspektur', 'irban', 'admin_irban']) || auth()->user()->can('pkppt.edit'))
                                         <button type="button" onclick="openModalRevisiPkppt({
                                             id: {{ $item->id }},
                                             versi: {{ $item->versi_revisi }},
@@ -185,10 +185,10 @@
                                             jumlah_laporan_rencana: {{ $item->jumlah_laporan_rencana }},
                                             rencana_mulai: '{{ $item->rencana_mulai->format('Y-m-d') }}',
                                             rencana_selesai_laporan: '{{ $item->rencana_selesai_laporan->format('Y-m-d') }}'
-                                        })" class="px-2 py-1 bg-sky-600 hover:bg-sky-700 text-white font-bold text-[10px] rounded-lg shadow-xs transition-all flex items-center gap-1 cursor-pointer" title="Ajukan Revisi / Penyesuaian PKPPT">
-                                            <span>🔄 Revisi</span>
+                                        })" class="px-2.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-[10px] rounded-lg shadow-sm transition-all flex items-center gap-1 cursor-pointer" title="Ajukan Revisi / Penyesuaian PKPPT">
+                                            <span>🔄 Revisi PKPT</span>
                                         </button>
-                                        @endcan
+                                        @endif
                                     @endif
 
                                     <!-- Tombol Edit (jika belum ditetapkan atau role admin/sekretariat) -->
@@ -412,7 +412,7 @@
     </div>
 
     <!-- Modal Revisi PKPPT (Penyesuaian / Versioning) -->
-    @can('pkppt.edit')
+    @if(auth()->user()->hasRole(['admin', 'sekretariat', 'inspektur', 'irban', 'admin_irban']) || auth()->user()->can('pkppt.edit'))
     <div id="modalRevisiPkppt" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800">
             <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
@@ -489,7 +489,7 @@
             </form>
         </div>
     </div>
-    @endcan
+    @endif
 
     <script>
         function openModalEditPkppt(data) {

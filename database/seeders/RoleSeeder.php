@@ -70,12 +70,12 @@ class RoleSeeder extends Seeder
             'opd_users.manage',
         ]);
 
-        // 3. Inspektur — baca semua, tetapkan PKPT
+        // 3. Inspektur — baca semua, kelola & tetapkan PKPT
         $inspektur = Role::firstOrCreate(['name' => 'inspektur', 'guard_name' => 'web']);
         $inspektur->syncPermissions([
             'master.view',
             'users.view',
-            'pkppt.view','pkppt.tetapkan',
+            'pkppt.view','pkppt.create','pkppt.edit','pkppt.usulkan','pkppt.tetapkan',
             'penugasan.view',
             'tindak_lanjut.view',
             'arsip.view',
