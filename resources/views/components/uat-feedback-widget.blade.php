@@ -1,26 +1,25 @@
 <!-- Global Floating Action Button & Chat Drawer: Kotak Saran & Bug UAT (Pojok Kanan Bawah) -->
 <div id="uatFeedbackWidgetWrapper" class="no-print font-sans">
 
-    <!-- 1. Floating Toggle Button (Selalu di Pojok Kanan Bawah, Sangat Kontras & Jelas) -->
+    <!-- 1. Floating Toggle Button (Icon Bulat Kecil Mirip WhatsApp, Tanpa Tulisan) -->
     <button type="button" 
             id="uatFeedbackToggleBtn" 
             onclick="toggleUatFeedbackPopup()" 
-            style="position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 9999998 !important; background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%) !important; box-shadow: 0 12px 28px -4px rgba(234, 88, 12, 0.65), 0 6px 12px -2px rgba(245, 158, 11, 0.4) !important; border: 2px solid #fef3c7 !important;" 
-            class="group flex items-center gap-2.5 px-4 py-3 text-white font-extrabold rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 active:scale-95 cursor-pointer">
+            title="Kotak Saran & Lapor Bug UAT"
+            style="position: fixed !important; bottom: 24px !important; right: 24px !important; width: 52px !important; height: 52px !important; z-index: 9999998 !important; background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%) !important; box-shadow: 0 8px 24px -2px rgba(234, 88, 12, 0.5), 0 4px 10px -2px rgba(245, 158, 11, 0.4) !important; border: 2px solid #fef3c7 !important;" 
+            class="group relative flex items-center justify-center rounded-full text-white transition-all duration-300 transform hover:-translate-y-1 hover:scale-110 active:scale-95 cursor-pointer shadow-lg">
         
-        <!-- Blinking Pulse Beacon -->
-        <span class="relative flex h-3.5 w-3.5 shrink-0">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-85"></span>
-            <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-white shadow-xs"></span>
+        <!-- Blinking Notification Dot at Top Right -->
+        <span style="position: absolute; top: -2px; right: -2px;" class="flex h-3.5 w-3.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-rose-500 border-2 border-white shadow-xs"></span>
         </span>
         
-        <!-- Icon -->
-        <span id="uatToggleIcon" class="text-base flex items-center">
-            💬
-        </span>
-        
-        <span class="text-xs font-black tracking-wide text-white drop-shadow-sm uppercase">
-            Kotak Saran & Bug UAT
+        <!-- Icon Chat Bubble / Close -->
+        <span id="uatToggleIcon" class="flex items-center justify-center text-white transition-transform duration-200">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.03 2 11c0 2.87 1.5 5.43 3.82 7.02l-.82 3.02 3.25-1.42C9.26 19.83 10.6 20 12 20c5.52 0 10-4.03 10-9s-4.48-9-10-9zm0 16c-1.25 0-2.43-.22-3.49-.62l-.25-.1-1.92.84.48-1.78-.18-.26C5.64 14.88 5 13.01 5 11c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7z"/>
+            </svg>
         </span>
     </button>
 
@@ -163,10 +162,10 @@
             document.getElementById('uatFeedbackBrowser').value = navigator.userAgent + ' | Screen: ' + window.innerWidth + 'x' + window.innerHeight;
             
             popup.style.display = 'flex';
-            document.getElementById('uatToggleIcon').innerHTML = '✕';
+            document.getElementById('uatToggleIcon').innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>';
         } else {
             popup.style.display = 'none';
-            document.getElementById('uatToggleIcon').innerHTML = '💬';
+            document.getElementById('uatToggleIcon').innerHTML = '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.03 2 11c0 2.87 1.5 5.43 3.82 7.02l-.82 3.02 3.25-1.42C9.26 19.83 10.6 20 12 20c5.52 0 10-4.03 10-9s-4.48-9-10-9zm0 16c-1.25 0-2.43-.22-3.49-.62l-.25-.1-1.92.84.48-1.78-.18-.26C5.64 14.88 5 13.01 5 11c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7z"/></svg>';
         }
     }
 
