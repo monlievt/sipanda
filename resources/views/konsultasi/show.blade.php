@@ -13,14 +13,14 @@
             <div class="flex flex-wrap items-center gap-2">
                 {{-- 1. Tombol Disposisi Tingkat 1 (Sisi Inspektur) --}}
                 @if(auth()->user()->hasRole(['inspektur', 'super_admin', 'admin', 'sekretariat']))
-                    <button type="button" @click="showModalDisposisiInspektur = true" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 transition-all">
+                    <button type="button" @click="showModalDisposisiInspektur = true" class="px-4 py-2 bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition-all" style="background-color: #4338ca !important; color: #ffffff !important;">
                         ✍️ Disposisi Inspektur ke Irban
                     </button>
                 @endif
 
                 {{-- 2. Tombol Disposisi Tingkat 2 (Sisi Irban) --}}
                 @if(auth()->user()->hasRole(['irban', 'admin_irban', 'inspektur', 'super_admin', 'admin']))
-                    <button type="button" @click="showModalDisposisiIrban = true" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 transition-all">
+                    <button type="button" @click="showModalDisposisiIrban = true" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition-all" style="background-color: #d97706 !important; color: #ffffff !important;">
                         👥 Penugasan Tim APIP (Irban)
                     </button>
                 @endif
@@ -64,8 +64,8 @@
                     </div>
                 </div>
                 @if(auth()->user()->hasRole(['inspektur', 'super_admin', 'admin', 'sekretariat']))
-                    <button type="button" @click="showModalDisposisiInspektur = true" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shrink-0 shadow-xs">
-                        ✍️ Disposisikan Sekarang
+                    <button type="button" @click="showModalDisposisiInspektur = true" class="px-4 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-bold rounded-xl shrink-0 shadow-md transition-all flex items-center gap-1.5" style="background-color: #4338ca !important; color: #ffffff !important;">
+                        <span>✍️ Disposisikan Sekarang</span>
                     </button>
                 @endif
             </div>
@@ -82,7 +82,7 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="font-semibold text-slate-500">Diteruskan Kepada:</span>
-                    <span class="px-2.5 py-1 bg-indigo-600 text-white font-black rounded-lg text-xs">
+                    <span class="px-2.5 py-1 bg-indigo-700 text-white font-black rounded-lg text-xs" style="background-color: #4338ca !important; color: #ffffff !important;">
                         {{ $konsultasi->irban?->nama_irban ?? 'Irban Terkait' }}
                     </span>
                     @if($konsultasi->inspekturPemberiDisposisi)
@@ -268,7 +268,7 @@
 
                     <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
                         <button type="button" @click="showModalDisposisiInspektur = false" class="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Batal</button>
-                        <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs">
+                        <button type="submit" class="px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer" style="background-color: #4338ca !important; color: #ffffff !important;">
                             Kirim Disposisi ke Irban
                         </button>
                     </div>
@@ -354,7 +354,7 @@
 
                     <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
                         <button type="button" @click="showModalDisposisiIrban = false" class="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Batal</button>
-                        <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs">
+                        <button type="submit" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer" style="background-color: #d97706 !important; color: #ffffff !important;">
                             Simpan & Mulai Konsultasi
                         </button>
                     </div>
