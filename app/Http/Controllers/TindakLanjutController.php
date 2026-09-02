@@ -198,7 +198,7 @@ class TindakLanjutController extends Controller
         if ($request->hasFile('berkas_bukti')) {
             $file = $request->file('berkas_bukti');
             $fileName = Str::uuid() . '.' . $file->extension();
-            $filePath = $file->storeAs('bukti_tl/' . date('Y/m'), $fileName);
+            $filePath = $file->storeAs('bukti_tl/' . date('Y/m'), $fileName, 'public');
 
             ArsipDigital::create([
                 'penugasan_id'          => $tindakLanjut->penugasan_id,
@@ -300,7 +300,7 @@ class TindakLanjutController extends Controller
         if ($request->hasFile('berkas_dasar_lhp')) {
             $file = $request->file('berkas_dasar_lhp');
             $fileName = Str::uuid() . '.' . $file->extension();
-            $filePath = $file->storeAs('berkas_lhp/' . date('Y/m'), $fileName);
+            $filePath = $file->storeAs('berkas_lhp/' . date('Y/m'), $fileName, 'public');
 
             ArsipDigital::create([
                 'penugasan_id'  => $penugasan->id,
@@ -433,7 +433,7 @@ class TindakLanjutController extends Controller
         if ($request->hasFile('berkas_dasar_lhp')) {
             $file = $request->file('berkas_dasar_lhp');
             $fileName = Str::uuid() . '.' . $file->extension();
-            $filePath = $file->storeAs('berkas_lhp/' . date('Y/m'), $fileName);
+            $filePath = $file->storeAs('berkas_lhp/' . date('Y/m'), $fileName, 'public');
             $validated['berkas_dasar_lhp'] = $filePath;
         }
 

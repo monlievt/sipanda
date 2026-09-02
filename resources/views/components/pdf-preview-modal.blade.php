@@ -136,11 +136,17 @@
             previewUrl = previewUrl.replace('/download', '/preview');
         } else if (previewUrl.includes('/regulasi/') && previewUrl.endsWith('/download')) {
             previewUrl = previewUrl.replace('/download', '/preview');
+        } else if (previewUrl.includes('/storage/')) {
+            // 🛡️ Bypass Apache 403 Forbidden: Alihkan direct static storage link ke backend stream
+            const pathPart = previewUrl.substring(previewUrl.indexOf('/storage/') + 9);
+            previewUrl = '/dokumen/berkas/' + pathPart;
         }
 
         // Set Link New Tab & Download Asli
         btnNewTab.href = previewUrl;
-        btnDownload.href = url;
+        btnDownload.href = previewUrl.includes('/dokumen/berkas/') 
+            ? (previewUrl + (previewUrl.includes('?') ? '&download=1' : '?download=1')) 
+            : url;
         modalTitle.textContent = title || 'Dokumen PDF';
         modalTitle.title = title || 'Dokumen PDF';
 
@@ -226,6 +232,7 @@
         const isPdf = lowerHref.includes('.pdf') || 
                       lowerHref.includes('/cetak') || 
                       lowerHref.includes('/preview') ||
+                      lowerHref.includes('/dokumen/berkas') ||
                       (lowerHref.includes('/arsip/') && lowerHref.includes('/download')) ||
                       (lowerHref.includes('/regulasi/') && lowerHref.includes('/download')) ||
                       link.classList.contains('preview-pdf') || 

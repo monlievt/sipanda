@@ -109,6 +109,16 @@
                         </div>
                         <p class="font-semibold text-slate-800 dark:text-slate-200">{{ $b->catatan_opd }}</p>
 
+                        @if($b->arsipDigital && $b->arsipDigital->count() > 0)
+                            <div class="mt-2 flex items-center gap-2 flex-wrap">
+                                @foreach($b->arsipDigital as $file)
+                                    <a href="{{ route('dokumen.stream.path', $file->path_file) }}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[10px] font-semibold text-teal-600 hover:text-teal-700">
+                                        📎 {{ Str::limit($file->nama_file, 24) }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endif
+
                         @if($b->catatan_verifikasi)
                             <div class="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 text-rose-700 font-semibold">
                                 Catatan Verifikator: {{ $b->catatan_verifikasi }}

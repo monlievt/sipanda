@@ -173,7 +173,7 @@
             @if($tindakLanjut->berkas_dasar_lhp)
                 <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <span class="text-xs text-slate-500 font-semibold">Lampiran Dokumen PDF LHP Resmi:</span>
-                    <a href="{{ asset('storage/' . $tindakLanjut->berkas_dasar_lhp) }}" target="_blank" class="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5">
+                    <a href="{{ route('dokumen.stream.path', $tindakLanjut->berkas_dasar_lhp) }}" target="_blank" class="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5">
                         📄 Buka File PDF LHP
                     </a>
                 </div>
@@ -373,7 +373,7 @@
                                     <div class="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-2">
                                         <span class="text-[10px] text-slate-400 font-bold">Berkas Bukti Terlampir:</span>
                                         @foreach($bukti->arsipDigital as $fileBukti)
-                                            <a href="{{ route('arsip.download', $fileBukti->id) }}" target="_blank" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 text-slate-700 dark:text-slate-300 hover:text-blue-600 font-semibold rounded-lg text-[10px] inline-flex items-center gap-1 border border-slate-200 dark:border-slate-700 shadow-2xs">
+                                            <a href="{{ route('arsip.preview', $fileBukti->id) }}" target="_blank" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 text-slate-700 dark:text-slate-300 hover:text-blue-600 font-semibold rounded-lg text-[10px] inline-flex items-center gap-1 border border-slate-200 dark:border-slate-700 shadow-2xs">
                                                 📎 {{ $fileBukti->nama_file }}
                                             </a>
                                         @endforeach

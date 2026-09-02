@@ -28,6 +28,10 @@ Route::get('/regulasi', [\App\Http\Controllers\RegulasiHukumController::class, '
 Route::get('/regulasi/{regulasi}/preview', [\App\Http\Controllers\RegulasiHukumController::class, 'publicPreview'])->name('regulasi.public.preview');
 Route::get('/regulasi/{regulasi}/download', [\App\Http\Controllers\RegulasiHukumController::class, 'publicDownload'])->name('regulasi.public.download');
 
+// Universal Document Streaming & Preview (Bypass Apache 403 Forbidden pada Storage)
+Route::get('/dokumen/berkas', [\App\Http\Controllers\DokumenStreamController::class, 'stream'])->name('dokumen.stream');
+Route::get('/dokumen/berkas/{path}', [\App\Http\Controllers\DokumenStreamController::class, 'streamPath'])->where('path', '.*')->name('dokumen.stream.path');
+
 // API Chatbot Asisten Penasihat Virtual APIP (Tanpa Login & OPD)
 Route::post('/api/ai/ask', [\App\Http\Controllers\Api\ApipAiChatController::class, 'ask'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])

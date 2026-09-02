@@ -217,7 +217,7 @@ class OpdDashboardController extends Controller
         if ($request->hasFile('file')) {
             $file = $request->file('file');
             $fileName = Str::uuid() . '.' . $file->extension();
-            $path = $file->storeAs('arsip/' . date('Y/m'), $fileName);
+            $path = $file->storeAs('arsip/' . date('Y/m'), $fileName, 'public');
 
             ArsipDigital::create([
                 'penugasan_id'           => $tindakLanjut->penugasan_id,
