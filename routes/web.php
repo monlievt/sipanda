@@ -162,14 +162,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/import/preview', [ImportController::class, 'preview'])->middleware('can:master.create')->name('import.preview');
     Route::post('/import/execute', [ImportController::class, 'store'])->middleware('can:master.create')->name('import.store');
 
-    // Pusat Backup Database & Pembersihan Data Percobaan
-    Route::get('/master/backup', [\App\Http\Controllers\BackupController::class, 'index'])->name('backup.index');
-    Route::get('/master/backup/download-current', [\App\Http\Controllers\BackupController::class, 'downloadCurrent'])->name('backup.download_current');
-    Route::get('/master/backup/download/{filename}', [\App\Http\Controllers\BackupController::class, 'downloadFile'])->name('backup.download_file');
-    Route::delete('/master/backup/delete/{filename}', [\App\Http\Controllers\BackupController::class, 'deleteFile'])->name('backup.delete_file');
-    Route::post('/master/backup/send-email', [\App\Http\Controllers\BackupController::class, 'sendEmailTest'])->name('backup.send_email');
-    Route::post('/master/backup/settings', [\App\Http\Controllers\BackupController::class, 'updateSettings'])->name('backup.update_settings');
-    Route::post('/master/backup/purge-dummy', [\App\Http\Controllers\BackupController::class, 'purgeDummy'])->name('backup.purge_dummy');
+    // Pusat Backup Database & Pembersihan Data Percobaan (Khusus Admin & Sekretariat)
+    Route::middleware(['role:admin|sekretariat'])->group(function () {
+        Route::get('/master/backup', [\App\Http\Controllers\BackupController::class, 'index'])->name('backup.index');
+        Route::get('/master/backup/download-current', [\App\Http\Controllers\BackupController::class, 'downloadCurrent'])->middleware('throttle:10,1')->name('backup.download_current');
+        Route::get('/master/backup/download/{filename}', [\App\Http\Controllers\BackupController::class, 'downloadFile'])->middleware('throttle:10,1')->name('backup.download_file');
+        Route::delete('/master/backup/delete/{filename}', [\App\Http\Controllers\BackupController::class, 'deleteFile'])->name('backup.delete_file');
+        Route::post('/master/backup/send-email', [\App\Http\Controllers\BackupController::class, 'sendEmailTest'])->middleware('throttle:3,1')->name('backup.send_email');
+        Route::post('/master/backup/settings', [\App\Http\Controllers\BackupController::class, 'updateSettings'])->name('backup.update_settings');
+        Route::post('/master/backup/purge-dummy', [\App\Http\Controllers\BackupController::class, 'purgeDummy'])->middleware(['role:admin', 'throttle:5,1'])->name('backup.purge_dummy');
+    });
 
     // E-Consulting & QnA APIP (Internal)
     Route::get('/konsultasi', [\App\Http\Controllers\KonsultasiController::class, 'index'])->name('konsultasi.index');

@@ -21,6 +21,8 @@
 /storage/pail
 /storage/backups/*
 !/storage/backups/.gitkeep
+/storage/app/backups/*
+!/storage/app/backups/.gitkeep
 /database/*.sqlite
 /database/*.sqlite-journal
 /vendor

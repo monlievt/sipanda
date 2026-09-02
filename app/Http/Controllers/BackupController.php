@@ -58,13 +58,21 @@ class BackupController extends Controller
     public function downloadFile(string $filename): BinaryFileResponse|RedirectResponse
     {
         $clean = basename($filename);
+
+        // Security Hardening: Validasi format nama file cadangan secara ketat
+        if (! preg_match('/^sipanda_backup_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{6}\.(sql|sql\.gz|zip)$/', $clean)) {
+            abort(400, 'Format nama berkas cadangan tidak valid.');
+        }
+
         $path = storage_path("app/backups/{$clean}");
 
         if (! file_exists($path)) {
             return back()->with('error', 'Berkas cadangan tidak ditemukan di server.');
         }
 
-        return response()->download($path, $clean);
+        return response()->download($path, $clean, [
+            'Content-Type' => 'application/sql',
+        ]);
     }
 
     /**
@@ -73,6 +81,12 @@ class BackupController extends Controller
     public function deleteFile(string $filename): RedirectResponse
     {
         $clean = basename($filename);
+
+        // Security Hardening: Validasi format nama file cadangan secara ketat
+        if (! preg_match('/^sipanda_backup_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{6}\.(sql|sql\.gz|zip)$/', $clean)) {
+            abort(400, 'Format nama berkas cadangan tidak valid.');
+        }
+
         $deleted = $this->backupService->deleteBackup($clean);
 
         if ($deleted) {
