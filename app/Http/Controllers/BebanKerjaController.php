@@ -19,6 +19,7 @@ class BebanKerjaController extends Controller
         $tglAkhir = $request->input('tanggal_akhir', date('Y-12-31'));
         $irbanId = $request->input('irban_id');
         $statusFilter = $request->input('status_ketersediaan');
+        $selectedUserId = $request->input('user_id');
 
         $queryUsers = User::aktif()->internal()->with(['irban', 'penugasanSebagaiTim' => function ($q) use ($tglAwal, $tglAkhir) {
             $q->whereBetween('tanggal_mulai', [$tglAwal, $tglAkhir]);
