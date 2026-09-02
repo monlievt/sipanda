@@ -33,7 +33,7 @@ class DashboardController extends Controller
                 ->tahun($tahun);
 
             if ($irbanId) {
-                $queryPenugasan->where('irban_id', $irbanId);
+                $queryPenugasan->irban($irbanId);
             }
 
             $allPenugasan = $queryPenugasan->get();
