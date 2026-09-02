@@ -247,7 +247,7 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <div>
                                         <label class="block font-semibold mb-1 text-[11px] text-slate-600 dark:text-slate-400">Nominal Setor (Rp)</label>
-                                        <input type="text" name="nilai_setor_rp" placeholder="mis. 5.000.000" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold focus:ring-teal-500">
+                                        <input type="text" name="nilai_setor_rp" oninput="formatRupiahInput(this)" placeholder="mis. 5.000.000" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold focus:ring-teal-500 rupiah-input">
                                     </div>
                                     <div>
                                         <label class="block font-semibold mb-1 text-[11px] text-slate-600 dark:text-slate-400">No. STS / Bukti Bank / NTPN</label>
@@ -283,5 +283,25 @@
 
     <!-- Global UAT Feedback & Bug Report Widget -->
     <x-uat-feedback-widget />
+
+    <script>
+        function formatRupiahInput(el) {
+            if (!el) return;
+            let cursorPos = el.selectionStart || 0;
+            let originalLen = el.value.length;
+            let rawVal = el.value.replace(/\D/g, '');
+            if (!rawVal) {
+                el.value = '';
+                return;
+            }
+            let formatted = new Intl.NumberFormat('id-ID').format(rawVal);
+            el.value = formatted;
+            let newLen = formatted.length;
+            cursorPos = cursorPos + (newLen - originalLen);
+            if (cursorPos > 0 && el.setSelectionRange) {
+                el.setSelectionRange(cursorPos, cursorPos);
+            }
+        }
+    </script>
 </body>
 </html>

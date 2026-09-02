@@ -490,12 +490,21 @@
     <script>
         // 💰 Dynamic Live Currency Format Input (Ribuan Titik Koma)
         function formatRupiahInput(el) {
-            let val = el.value.replace(/[^\d]/g, '');
-            if (!val) {
+            if (!el) return;
+            let cursorPos = el.selectionStart || 0;
+            let originalLen = el.value.length;
+            let rawVal = el.value.replace(/\D/g, '');
+            if (!rawVal) {
                 el.value = '';
                 return;
             }
-            el.value = new Intl.NumberFormat('id-ID').format(val);
+            let formatted = new Intl.NumberFormat('id-ID').format(rawVal);
+            el.value = formatted;
+            let newLen = formatted.length;
+            cursorPos = cursorPos + (newLen - originalLen);
+            if (cursorPos > 0 && el.setSelectionRange) {
+                el.setSelectionRange(cursorPos, cursorPos);
+            }
         }
     </script>
 </x-app-layout>
