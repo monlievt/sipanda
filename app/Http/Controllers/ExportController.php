@@ -332,9 +332,7 @@ class ExportController extends Controller
                 '% Pemulihan Keuangan Daerah',
             ]);
 
-            $irbans = Irban::with(['objekPenugasan' => function ($q) {
-                $q->orderBy('nama', 'asc');
-            }])->orderBy('id', 'asc')->get();
+            $irbans = Irban::orderBy('id', 'asc')->get();
 
             $noUrut = 1;
             $grandTotalLhp = 0;
@@ -356,9 +354,22 @@ class ExportController extends Controller
                 $subTotalNilai = 0;
                 $subTotalSetor = 0;
 
-                // Ambil seluruh objek penugasan di bawah irban ini
-                foreach ($irban->objekPenugasan as $opd) {
-                    $penugasanIds = Penugasan::whereHas('objekPenugasan', function ($q) use ($opd) {
+                // Cari seluruh penugasan pada Irban ini (primer atau multi-irban)
+                $irbanPenugasanIds = Penugasan::where(function ($q) use ($irban) {
+                    $q->where('irban_id', $irban->id)
+                      ->orWhereHas('irbans', fn($m) => $m->where('irbans.id', $irban->id));
+                })->pluck('id');
+
+                // Ambil daftar unik OPD yang pernah diawasi oleh Irban ini
+                $opdList = ObjekPenugasan::whereHas('penugasan', function ($q) use ($irbanPenugasanIds) {
+                    $q->whereIn('penugasan.id', $irbanPenugasanIds);
+                })->orderBy('nama', 'asc')->get();
+
+                foreach ($opdList as $opd) {
+                    $penugasanIds = Penugasan::where(function ($q) use ($irban) {
+                        $q->where('irban_id', $irban->id)
+                          ->orWhereHas('irbans', fn($m) => $m->where('irbans.id', $irban->id));
+                    })->whereHas('objekPenugasan', function ($q) use ($opd) {
                         $q->where('objek_penugasan.id', $opd->id);
                     })->pluck('id');
 
