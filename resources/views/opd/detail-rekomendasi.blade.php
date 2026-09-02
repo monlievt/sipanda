@@ -125,6 +125,9 @@
     <!-- Global UAT Feedback & Bug Report Widget -->
     <x-uat-feedback-widget />
 
+    <!-- Global PDF & Document Preview Modal -->
+    <x-pdf-preview-modal />
+
     <script>
         function formatRupiahInput(el) {
             if (!el) return;

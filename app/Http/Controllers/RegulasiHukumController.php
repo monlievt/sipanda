@@ -165,6 +165,21 @@ class RegulasiHukumController extends Controller
     }
 
     /**
+     * Preview File Regulasi Inline (Internal)
+     */
+    public function preview(RegulasiHukum $regulasi): BinaryFileResponse|RedirectResponse
+    {
+        if (! $regulasi->file_path || ! Storage::exists($regulasi->file_path)) {
+            return back()->with('error', 'Berkas PDF regulasi tidak ditemukan di server.');
+        }
+
+        return response()->file(Storage::path($regulasi->file_path), [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . ($regulasi->nama_file_asli ?: "{$regulasi->nomor_regulasi}.pdf") . '"'
+        ]);
+    }
+
+    /**
      * Halaman Publik: Pusat Unduhan Regulasi Pengawasan Daerah (Tanpa Login)
      */
     public function publicIndex(Request $request): View
@@ -200,5 +215,24 @@ class RegulasiHukumController extends Controller
         $regulasi->increment('diunduh_count');
 
         return response()->download(Storage::path($regulasi->file_path), $regulasi->nama_file_asli ?: "{$regulasi->nomor_regulasi}.pdf");
+    }
+
+    /**
+     * Preview File Regulasi Publik Inline
+     */
+    public function publicPreview(RegulasiHukum $regulasi): BinaryFileResponse|RedirectResponse
+    {
+        if ($regulasi->visibilitas !== 'publik') {
+            abort(403, 'Akses ke dokumen ini dibatasi.');
+        }
+
+        if (! $regulasi->file_path || ! Storage::exists($regulasi->file_path)) {
+            return back()->with('error', 'Berkas PDF regulasi tidak ditemukan.');
+        }
+
+        return response()->file(Storage::path($regulasi->file_path), [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . ($regulasi->nama_file_asli ?: "{$regulasi->nomor_regulasi}.pdf") . '"'
+        ]);
     }
 }

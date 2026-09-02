@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ArsipDigitalController extends Controller
@@ -58,6 +59,27 @@ class ArsipDigitalController extends Controller
         ActivityLog::catat('arsip_digital', $arsip->id, 'create', null, $arsip->toArray());
 
         return back()->with('status', 'Berkas berhasil diunggah ke Arsip Digital.');
+    }
+
+    public function preview(ArsipDigital $arsip): BinaryFileResponse|StreamedResponse|RedirectResponse
+    {
+        if (Storage::disk('public')->exists($arsip->path_file)) {
+            $path = Storage::disk('public')->path($arsip->path_file);
+            return response()->file($path, [
+                'Content-Type' => $arsip->mime_type ?: 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $arsip->nama_file . '"'
+            ]);
+        }
+
+        if (Storage::disk('local')->exists($arsip->path_file)) {
+            $path = Storage::disk('local')->path($arsip->path_file);
+            return response()->file($path, [
+                'Content-Type' => $arsip->mime_type ?: 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $arsip->nama_file . '"'
+            ]);
+        }
+
+        return back()->with('error', 'File fisik tidak ditemukan di server.');
     }
 
     public function download(ArsipDigital $arsip): StreamedResponse|RedirectResponse

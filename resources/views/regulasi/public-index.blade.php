@@ -147,5 +147,8 @@
 
     <!-- Global UAT Feedback & Bug Report Widget -->
     <x-uat-feedback-widget />
+
+    <!-- Global PDF & Document Preview Modal -->
+    <x-pdf-preview-modal />
 </body>
 </html>

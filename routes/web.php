@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [\App\Http\Controllers\PublicDashboardController::class, 'index'])->name('welcome');
 Route::get('/faq', [\App\Http\Controllers\KonsultasiController::class, 'faqIndex'])->name('faq.index');
 Route::get('/regulasi', [\App\Http\Controllers\RegulasiHukumController::class, 'publicIndex'])->name('regulasi.public.index');
+Route::get('/regulasi/{regulasi}/preview', [\App\Http\Controllers\RegulasiHukumController::class, 'publicPreview'])->name('regulasi.public.preview');
 Route::get('/regulasi/{regulasi}/download', [\App\Http\Controllers\RegulasiHukumController::class, 'publicDownload'])->name('regulasi.public.download');
 
 // API Chatbot Asisten Penasihat Virtual APIP (Tanpa Login & OPD)
@@ -91,6 +92,7 @@ Route::middleware(['auth'])->group(function () {
     // Arsip Digital
     Route::get('/arsip', [ArsipDigitalController::class, 'index'])->name('arsip.index');
     Route::post('/arsip', [ArsipDigitalController::class, 'store'])->name('arsip.store');
+    Route::get('/arsip/{arsip}/preview', [ArsipDigitalController::class, 'preview'])->name('arsip.preview');
     Route::get('/arsip/{arsip}/download', [ArsipDigitalController::class, 'download'])->name('arsip.download');
     Route::delete('/arsip/{arsip}', [ArsipDigitalController::class, 'destroy'])->name('arsip.destroy');
 
@@ -132,6 +134,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/master/regulasi', [\App\Http\Controllers\RegulasiHukumController::class, 'store'])->name('master.regulasi.store');
     Route::put('/master/regulasi/{regulasi}', [\App\Http\Controllers\RegulasiHukumController::class, 'update'])->name('master.regulasi.update');
     Route::delete('/master/regulasi/{regulasi}', [\App\Http\Controllers\RegulasiHukumController::class, 'destroy'])->name('master.regulasi.destroy');
+    Route::get('/master/regulasi/{regulasi}/preview', [\App\Http\Controllers\RegulasiHukumController::class, 'preview'])->name('master.regulasi.preview');
     Route::get('/master/regulasi/{regulasi}/download', [\App\Http\Controllers\RegulasiHukumController::class, 'download'])->name('master.regulasi.download');
 
     // Master Bank Artikel FAQ APIP
