@@ -396,15 +396,19 @@ Setiap berkas disimpan dengan enkripsi nama unik (UUID) pada direktori penyimpan
 3. Pilih Instansi OPD sasaran, masukkan Nama PIC, Email, dan Nomor WhatsApp.
 4. Sistem otomatis mengirimkan tautan undangan aktivasi akun via WhatsApp & Email kepada PIC bersangkutan.
 
-### 10.3 Mengimpor Data Historis dari Spreadsheet / CSV
-1. Buka menu **Import Data CSV** (`/import`).
-2. Unduh template CSV resmi:
-   - 📄 *Template Penugasan SPT*
-   - 📄 *Template Matriks LHP & Tindak Lanjut*
-   - 📄 *Template Master Objek Penugasan (OPD/Desa)*
-3. Isi data pada Microsoft Excel / Google Sheets, lalu simpan sebagai file `.csv`.
-4. Unggah berkas pada formulir importer. Tinjau halaman **Pratinjau Data (Preview)** untuk memastikan tidak ada kesalahan format baris.
-5. Klik **"Eksekusi Import Data"**. Sistem mengeksekusi penyimpanan massal dalam satu transaksi database aman (*Database Transaction Rollback-Safe*).
+### 10.3 Mengimpor Data Historis dari Excel (.xlsx) / CSV
+Aplikasi SIPANDA mendukung import data massal secara praktis menggunakan berkas **Microsoft Excel (.xlsx)** yang sudah terbagi rapi per kolom (Kolom A, B, C, dst.) maupun file CSV:
+1. Buka menu **Import Data** (`/import`).
+2. Pilih tab kategori data yang akan diimpor:
+   - 📋 **Import Penugasan (SPT)**: Nomor SPT, uraian penugasan, Irban, jenis/sumber penugasan, OPD target, tanggal mulai/selesai, dan status.
+   - 📊 **Import Matriks LHP (Tindak Lanjut)**: Nomor LHP, nomor SPT relasi, temuan, rekomendasi, target nominal kasda, batas target, dan status tindak lanjut.
+   - 🏛️ **Import Master Objek (OPD/Desa/Kecamatan)**: Nama instansi, kategori, dan status aktif.
+3. Klik tombol hijau **"🟢 Unduh Template Excel (.xlsx)"** (Sangat Direkomendasikan).
+   - Berkas Excel otomatis terbuka di Microsoft Excel dengan kolom-kolom terpisah rapi (Kolom A, B, C, dst.) dan header berwarna hijau emerald.
+   - Anda dapat langsung mengisi atau *copy-paste* data dari dokumen kerja Anda tanpa perlu repot memikirkan pemisah koma / titik koma.
+4. Unggah berkas Excel (`.xlsx`) atau CSV pada formulir importer.
+5. Tinjau halaman **Pratinjau Data (Preview)** untuk memeriksa pembagian kolom dan data 10 baris pertama.
+6. Klik **"Import Data Sekarang"**. Sistem mengeksekusi penyimpanan massal dalam satu transaksi database aman (*Database Transaction Rollback-Safe*). Jika terdapat baris yang tidak lengkap, sistem akan memunculkan rincian nomor baris yang perlu diperbaiki.
 
 ---
 

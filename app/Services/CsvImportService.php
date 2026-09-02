@@ -18,6 +18,57 @@ use Illuminate\Support\Str;
 class CsvImportService
 {
     /**
+     * Parse file (Excel .xlsx, .xls, atau CSV .csv) menjadi array baris kolom.
+     */
+    public function parseFile(UploadedFile|string $file): array
+    {
+        $path = $file instanceof UploadedFile ? $file->getRealPath() : $file;
+        $originalName = $file instanceof UploadedFile ? $file->getClientOriginalName() : basename($file);
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        // 1. Dukungan File Excel (.xlsx, .xls)
+        if (in_array($extension, ['xlsx', 'xls'])) {
+            try {
+                $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($path);
+                $reader->setReadDataOnly(true);
+                $spreadsheet = $reader->load($path);
+                $worksheet = $spreadsheet->getActiveSheet();
+                $rawRows = $worksheet->toArray(null, true, true, false);
+
+                $rows = [];
+                foreach ($rawRows as $r) {
+                    // Cek apakah baris tidak kosong
+                    $hasData = false;
+                    foreach ($r as $val) {
+                        if (!is_null($val) && trim((string)$val) !== '') {
+                            $hasData = true;
+                            break;
+                        }
+                    }
+
+                    if ($hasData) {
+                        $rows[] = array_map(fn($v) => is_null($v) ? '' : trim((string)$v), $r);
+                    }
+                }
+
+                if (!empty($rows)) {
+                    return $rows;
+                }
+            } catch (\Throwable $e) {
+                Log::warning('[SIPANDA Import] Gagal membaca Excel: ' . $e->getMessage() . ', mencoba fallback CSV...');
+            }
+        }
+
+        // 2. Fallback untuk CSV / Text
+        if ($file instanceof UploadedFile) {
+            return $this->parseCsv($file);
+        } else {
+            $uploaded = new UploadedFile($path, basename($path), 'text/csv', null, true);
+            return $this->parseCsv($uploaded);
+        }
+    }
+
+    /**
      * Parse baris CSV dari file yang diunggah dengan auto-detect delimiter (koma atau titik koma).
      */
     public function parseCsv(UploadedFile $file): array
@@ -357,16 +408,25 @@ class CsvImportService
     }
 
     /**
-     * Helper parser tanggal multi-format (Y-m-d, d/m/Y, d-m-Y)
+     * Helper parser tanggal multi-format (Y-m-d, d/m/Y, d-m-Y, atau serial number Excel)
      */
-    private function parseDate(?string $dateStr): ?string
+    private function parseDate($dateStr): ?string
     {
-        if (! $dateStr) {
+        if (is_null($dateStr) || $dateStr === '') {
             return null;
         }
 
-        $dateStr = trim($dateStr);
-        $formats = ['Y-m-d', 'd/m/Y', 'd-m-Y', 'Y/m/d', 'd.m.Y'];
+        // Cek serial number Excel (contoh: 45689)
+        if (is_numeric($dateStr) && (float)$dateStr > 30000 && (float)$dateStr < 70000) {
+            try {
+                return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float) $dateStr)->format('Y-m-d');
+            } catch (\Throwable $e) {
+                // Fallback
+            }
+        }
+
+        $dateStr = trim((string) $dateStr);
+        $formats = ['Y-m-d', 'd/m/Y', 'd-m-Y', 'Y/m/d', 'd.m.Y', 'm/d/Y'];
 
         foreach ($formats as $fmt) {
             try {

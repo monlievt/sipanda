@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Pratinjau Data Import CSV
+        Pratinjau Data Import Excel / CSV
     </x-slot>
 
     <!-- Header Actions -->
@@ -13,7 +13,7 @@
                 Pratinjau Data {{ ucfirst(str_replace('_', ' ', $type)) }}
             </h2>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Ditemukan total <strong>{{ $totalRows }} baris data</strong> pada file CSV. Menampilkan 10 baris pertama untuk pemeriksaan.
+                Ditemukan total <strong>{{ $totalRows }} baris data</strong> pada file spreadsheet. Menampilkan 10 baris pertama untuk pemeriksaan.
             </p>
         </div>
 
@@ -43,7 +43,7 @@
                 Contoh 10 Baris Pertama yang Akan Dimasukkan ke Database
             </h3>
             <span class="text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                Format CSV Valid
+                Format Berkas Valid
             </span>
         </div>
 
