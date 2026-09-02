@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Irban;
+use App\Models\ObjekPenugasan;
 use App\Models\Penugasan;
 use App\Models\Pkppt;
 use App\Models\TindakLanjut;
@@ -281,6 +283,196 @@ class ExportController extends Controller
                     strtoupper($item->status),
                 ]);
             }
+
+            fclose($handle);
+        }, 200, $headers);
+    }
+
+    /**
+     * Export Dokumen Kompilasi Matriks Pemantauan Tindak Lanjut Hasil Pengawasan
+     * Seluruh Perangkat Daerah se-Kabupaten Trenggalek (Format Standar BPKP / Kemendagri / Laporan Bupati).
+     */
+    public function exportKompilasiDaerahExcel(Request $request): StreamedResponse
+    {
+        $tahun = $request->input('tahun', date('Y'));
+
+        $filename = "Kompilasi_TLHP_Kab_Trenggalek_" . ($tahun == 'semua' ? 'Semua_Tahun' : $tahun) . ".csv";
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        return response()->stream(function () use ($tahun) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF)); // UTF-8 BOM agar rapi di Microsoft Excel
+
+            // Judul Header Dokumen
+            fputcsv($handle, ['KOMPILASI PEMANTAUAN TINDAK LANJUT HASIL PENGAWASAN (TLHP) PEMERINTAH KABUPATEN TRENGGALEK']);
+            fputcsv($handle, ['STANDAR EVALUASI DAN REKONSILIASI BPKP & KEMENDAGRI RI']);
+            fputcsv($handle, ['Tahun Anggaran Pemantauan', $tahun == 'semua' ? 'Seluruh Tahun Anggaran' : $tahun]);
+            fputcsv($handle, ['Tanggal Cetak Data', now()->translatedFormat('d F Y H:i') . ' WIB']);
+            fputcsv($handle, []);
+
+            // Header Kolom Tabel
+            fputcsv($handle, [
+                'No',
+                'Wilayah Pengawasan (Irban)',
+                'Nama Perangkat Daerah (OPD / Satuan Kerja)',
+                'Jumlah Dokumen LHP',
+                'Jumlah Rekomendasi',
+                'Sesuai (SS)',
+                'Belum Sesuai (BS)',
+                'Belum Ditindaklanjuti (BTL)',
+                'Tidak Dapat Ditindaklanjuti (TDT)',
+                '% Penyelesaian Rekomendasi',
+                'Total Nilai Rekomendasi (Rp)',
+                'Realisasi Setor Kasda (Rp)',
+                'Sisa Kurang Setor (Rp)',
+                '% Pemulihan Keuangan Daerah',
+            ]);
+
+            $irbans = Irban::with(['objekPenugasan' => function ($q) {
+                $q->orderBy('nama', 'asc');
+            }])->orderBy('id', 'asc')->get();
+
+            $noUrut = 1;
+            $grandTotalLhp = 0;
+            $grandTotalRekomendasi = 0;
+            $grandTotalSs = 0;
+            $grandTotalBs = 0;
+            $grandTotalBtl = 0;
+            $grandTotalTdt = 0;
+            $grandTotalNilai = 0;
+            $grandTotalSetor = 0;
+
+            foreach ($irbans as $irban) {
+                $subTotalLhp = 0;
+                $subTotalRekomendasi = 0;
+                $subTotalSs = 0;
+                $subTotalBs = 0;
+                $subTotalBtl = 0;
+                $subTotalTdt = 0;
+                $subTotalNilai = 0;
+                $subTotalSetor = 0;
+
+                // Ambil seluruh objek penugasan di bawah irban ini
+                foreach ($irban->objekPenugasan as $opd) {
+                    $penugasanIds = Penugasan::whereHas('objekPenugasan', function ($q) use ($opd) {
+                        $q->where('objek_penugasan.id', $opd->id);
+                    })->pluck('id');
+
+                    $tlQuery = TindakLanjut::with('rincianPenyetoran')
+                        ->whereIn('penugasan_id', $penugasanIds);
+
+                    if ($tahun && $tahun !== 'semua') {
+                        $tlQuery->whereYear('tgl_lhp', $tahun);
+                    }
+
+                    $rekomendasiList = $tlQuery->get();
+
+                    // Hitung jumlah unik dokumen LHP
+                    $jmlLhp = $rekomendasiList->pluck('no_lhp')->filter()->unique()->count();
+                    if ($jmlLhp === 0 && $rekomendasiList->count() > 0) {
+                        $jmlLhp = $rekomendasiList->pluck('penugasan_id')->unique()->count();
+                    }
+
+                    $jmlRekomendasi = $rekomendasiList->count();
+                    $jmlSs  = $rekomendasiList->where('status_tindak_lanjut', 'selesai')->count();
+                    $jmlBs  = $rekomendasiList->where('status_tindak_lanjut', 'dalam_proses')->count();
+                    $jmlBtl = $rekomendasiList->where('status_tindak_lanjut', 'belum_ditindaklanjuti')->count();
+                    $jmlTdt = $rekomendasiList->where('status_tindak_lanjut', 'tdt')->count();
+
+                    $nilaiRekomendasi = (float) $rekomendasiList->sum('nilai_rekomendasi_rp');
+                    $nilaiSetor = (float) $rekomendasiList->sum(function ($r) {
+                        return $r->rincianPenyetoran->sum('nilai_setor_rp');
+                    });
+                    $sisaSetor = max(0, $nilaiRekomendasi - $nilaiSetor);
+
+                    $persenSelesai = $jmlRekomendasi > 0 ? round(($jmlSs / $jmlRekomendasi) * 100, 1) : 0;
+                    $persenPulih   = $nilaiRekomendasi > 0 ? round(($nilaiSetor / $nilaiRekomendasi) * 100, 1) : 0;
+
+                    fputcsv($handle, [
+                        $noUrut++,
+                        $irban->nama_irban,
+                        $opd->nama,
+                        $jmlLhp,
+                        $jmlRekomendasi,
+                        $jmlSs,
+                        $jmlBs,
+                        $jmlBtl,
+                        $jmlTdt,
+                        $persenSelesai . '%',
+                        $nilaiRekomendasi,
+                        $nilaiSetor,
+                        $sisaSetor,
+                        $persenPulih . '%',
+                    ]);
+
+                    $subTotalLhp += $jmlLhp;
+                    $subTotalRekomendasi += $jmlRekomendasi;
+                    $subTotalSs += $jmlSs;
+                    $subTotalBs += $jmlBs;
+                    $subTotalBtl += $jmlBtl;
+                    $subTotalTdt += $jmlTdt;
+                    $subTotalNilai += $nilaiRekomendasi;
+                    $subTotalSetor += $nilaiSetor;
+                }
+
+                // Baris Sub-Total per Irban
+                $subSisa = max(0, $subTotalNilai - $subTotalSetor);
+                $subPersenSelesai = $subTotalRekomendasi > 0 ? round(($subTotalSs / $subTotalRekomendasi) * 100, 1) : 0;
+                $subPersenPulih   = $subTotalNilai > 0 ? round(($subTotalSetor / $subTotalNilai) * 100, 1) : 0;
+
+                fputcsv($handle, [
+                    '',
+                    'SUBTOTAL ' . strtoupper($irban->nama_irban),
+                    '',
+                    $subTotalLhp,
+                    $subTotalRekomendasi,
+                    $subTotalSs,
+                    $subTotalBs,
+                    $subTotalBtl,
+                    $subTotalTdt,
+                    $subPersenSelesai . '%',
+                    $subTotalNilai,
+                    $subTotalSetor,
+                    $subSisa,
+                    $subPersenPulih . '%',
+                ]);
+                fputcsv($handle, []); // Baris kosong pemisah antar-irban
+
+                $grandTotalLhp += $subTotalLhp;
+                $grandTotalRekomendasi += $subTotalRekomendasi;
+                $grandTotalSs += $subTotalSs;
+                $grandTotalBs += $subTotalBs;
+                $grandTotalBtl += $subTotalBtl;
+                $grandTotalTdt += $subTotalTdt;
+                $grandTotalNilai += $subTotalNilai;
+                $grandTotalSetor += $subTotalSetor;
+            }
+
+            // Baris GRAND TOTAL se-Kabupaten Trenggalek
+            $grandSisa = max(0, $grandTotalNilai - $grandTotalSetor);
+            $grandPersenSelesai = $grandTotalRekomendasi > 0 ? round(($grandTotalSs / $grandTotalRekomendasi) * 100, 1) : 0;
+            $grandPersenPulih   = $grandTotalNilai > 0 ? round(($grandTotalSetor / $grandTotalNilai) * 100, 1) : 0;
+
+            fputcsv($handle, [
+                'TOTAL',
+                'SE-KABUPATEN TRENGGALEK',
+                '',
+                $grandTotalLhp,
+                $grandTotalRekomendasi,
+                $grandTotalSs,
+                $grandTotalBs,
+                $grandTotalBtl,
+                $grandTotalTdt,
+                $grandPersenSelesai . '%',
+                $grandTotalNilai,
+                $grandTotalSetor,
+                $grandSisa,
+                $grandPersenPulih . '%',
+            ]);
 
             fclose($handle);
         }, 200, $headers);

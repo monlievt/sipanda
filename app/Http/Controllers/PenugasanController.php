@@ -9,6 +9,7 @@ use App\Models\ObjekPenugasan;
 use App\Models\Penugasan;
 use App\Models\PenugasanTim;
 use App\Models\Pkppt;
+use App\Models\RegulasiHukum;
 use App\Models\SumberPenugasan;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -131,12 +132,17 @@ class PenugasanController extends Controller
             ->take(100)
             ->get();
 
+        $regulasiBaku = RegulasiHukum::dasarSptBaku()->get();
+        $allRegulasi  = RegulasiHukum::select('id', 'nomor_regulasi', 'tahun', 'judul', 'jenis_regulasi')
+            ->orderBy('tahun', 'desc')
+            ->get();
+
         $defaultDasarPenugasan = "1. Peraturan Daerah Kabupaten Trenggalek tentang Pembentukan dan Susunan Perangkat Daerah;\n"
             . "2. Peraturan Bupati Trenggalek tentang Kedudukan, Susunan Organisasi, Tugas dan Fungsi serta Tata Kerja Inspektorat Daerah Kabupaten Trenggalek;\n"
             . "3. Program Kerja Pengawasan Tahunan (PKPT) Inspektorat Daerah Kabupaten Trenggalek Tahun Anggaran " . date('Y') . ";";
 
         return view('penugasan.create', compact(
-            'objekList', 'jenisList', 'sumberList', 'irbans', 'usersList', 'pkpptList', 'parentStList', 'defaultDasarPenugasan'
+            'objekList', 'jenisList', 'sumberList', 'irbans', 'usersList', 'pkpptList', 'parentStList', 'defaultDasarPenugasan', 'regulasiBaku', 'allRegulasi'
         ));
     }
 
@@ -381,10 +387,15 @@ class PenugasanController extends Controller
             'tim_anggota'  => $penugasan->tim->where('peran', 'anggota_tim')->pluck('user_id')->toArray(),
         ];
 
+        $regulasiBaku = RegulasiHukum::dasarSptBaku()->get();
+        $allRegulasi  = RegulasiHukum::select('id', 'nomor_regulasi', 'tahun', 'judul', 'jenis_regulasi')
+            ->orderBy('tahun', 'desc')
+            ->get();
+
         return view('penugasan.edit', compact(
             'penugasan', 'objekList', 'jenisList', 'sumberList', 'irbans',
             'usersList', 'pkpptList', 'parentStList', 'selectedIrbanIds',
-            'selectedObjekIds', 'selectedTim'
+            'selectedObjekIds', 'selectedTim', 'regulasiBaku', 'allRegulasi'
         ));
     }
 

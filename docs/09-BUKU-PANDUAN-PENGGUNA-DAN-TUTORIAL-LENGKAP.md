@@ -164,7 +164,14 @@ Modul **Penugasan (SPT)** adalah pusat operasional pengawasan yang mengatur pene
 2. Pilih Nomor SPT Induk yang diperpanjang.
 3. Masukkan tanggal perpanjangan baru. Sistem akan menghubungkan kedua surat tugas tersebut dalam satu pohon penugasan (*parent-child hierarchy*).
 
-### 4.3 🖨️ Mencetak Naskah Dinas SPT Resmi Format Pemkab Trenggalek
+### 4.3 📚 Pengelolaan Dasar Penugasan Terintegrasi Bank Regulasi & Disposisi
+Pada form pembuatan atau pengeditan SPT, sistem menyediakan komponen pemilih dasar penugasan interaktif:
+1. **Regulasi Standar Baku Pemkab Trenggalek:** 3 regulasi dasar (Perda Struktur Perangkat Daerah, Perbup Tugas dan Fungsi Inspektorat, serta SK PKPT Berbasis Risiko Tahun Berjalan) telah terpasang secara otomatis bernomor urut 1, 2, 3.
+2. **+ Bank Regulasi:** Klik tombol ini untuk membuka katalog regulasi hukum APIP, cari peraturan berdasarkan nomor atau kata kunci, lalu klik untuk menyisipkannya langsung ke naskah SPT.
+3. **+ Surat / Disposisi:** Jika penugasan didasari oleh surat masuk atau disposisi pimpinan (misal: Disposisi Bupati untuk audit khusus), klik tombol ini, isi Nomor Surat, Tanggal, dan Perihal. Sistem otomatis merangkainya menjadi klausul hukum resmi.
+4. **Sunting Langsung & Reset:** Teks pada kotak pratinjau tetap dapat diedit secara bebas. Klik tombol **"🔄 Reset Baku"** jika ingin mengembalikan klausul ke 3 regulasi standar.
+
+### 4.4 🖨️ Mencetak Naskah Dinas SPT Resmi Format Pemkab Trenggalek
 1. Buka menu **Data Penugasan** (`/penugasan`) &rarr; Klik tombol **"🖨️ Cetak"** pada baris penugasan yang diinginkan, atau buka **Detail Penugasan** (`/penugasan/{id}`) dan klik **"Cetak Surat Tugas (SPT)"**.
 2. Sistem akan membuka lembar naskah dinas resmi lengkap dengan:
    - Kop Resmi Inspektorat Daerah Kabupaten Trenggalek
@@ -174,7 +181,7 @@ Modul **Penugasan (SPT)** adalah pusat operasional pengawasan yang mengatur pene
    - Kolom Tanda Tangan Plt. Inspektur Daerah dan Tembusan Resmi.
 3. Klik tombol **"Cetak / Simpan PDF Resmi"** untuk mencetak langsung ke kertas A4 atau menyimpannya sebagai file PDF.
 
-### 4.4 Monitoring Beban Kerja Personil Auditor
+### 4.5 Monitoring Beban Kerja Personil Auditor
 1. Buka menu **Beban Kerja Personil** (`/beban-kerja`).
 2. Sistem menyajikan matriks beban kerja:
    - Jumlah penugasan aktif berjalan per auditor.
@@ -192,6 +199,7 @@ Modul **Tindak Lanjut Result** mengatur siklus pengawasan pasca-audit, penatausa
   ┌─────────┐      ┌─────────────────────┐      ┌─────────────────────────┐
   │  BELUM  │ ───> │ MENUNGGU VERIFIKASI │ ───> │ SESUAI (100% SELESAI)   │
   │ (Draft) │      │  (OPD Upload Bukti) │      │ Diterima oleh Auditor   │
+  │         │      │  + Setor Kasda      │      │                         │
   └─────────┘      └─────────────────────┘      └─────────────────────────┘
                                                            │ (Jika Bukti Kurang)
                                                            ▼
@@ -226,8 +234,27 @@ Modul **Tindak Lanjut Result** mengatur siklus pengawasan pasca-audit, penatausa
 
 ### 5.3 Mencatat Setoran Kas Daerah (NTPN / STS Bank Jatim)
 1. Pada lembar verifikasi bukti finansial, buka tab **"Pencatatan Penyetoran Kas Daerah"**.
-2. Masukkan Nomor Referensi NTPN / No STS Bank Jatim, Tanggal Setor, dan Nominal Setor (Rp).
+2. Masukkan Nominal Setor (Rp) *(otomatis terformat pemisah ribuan)*, Nama Bank Penyetor (misal: *Bank Jatim / Kasda*), Nomor Referensi NTPN / No STS Bank Jatim, dan Tanggal Setor.
 3. Sistem otomatis mengakumulasi saldo setoran terhadap total kewajiban rekomendasi.
+
+### 5.4 📑 Mencetak Naskah Dinas Berita Acara Rekonsiliasi Tindak Lanjut
+Saat pelaksanaan rekonsiliasi hasil tindak lanjut berkala atau forum Gelar Pengawasan antara APIP dan OPD:
+1. Buka dokumen LHP di `/tindak-lanjut/{id}` (pada sisi Inspektorat) atau `/opd/lhp/{id}` (pada portal OPD).
+2. Klik tombol **"📑 Berita Acara Rekonsiliasi (PDF)"**.
+3. Sistem menyusun naskah dinas resmi:
+   - Kop Resmi Inspektorat Daerah Kabupaten Trenggalek.
+   - Identitas Pihak Pertama (Tim Evaluator APIP / Irban) dan Pihak Kedua (Kepala OPD).
+   - Tabel Rekapitulasi Status Standar BPKP (SS, BS, BTL, TDT dan % Penyelesaian).
+   - Tabel Rekapitulasi Pemulihan Keuangan Daerah (Target, Telah Disetor, Sisa Kurang Setor, dan % Recovery).
+   - Matriks rincian per butir rekomendasi dan catatan kesepakatan rekonsiliasi.
+   - Kolom tanda tangan para pihak berdampingan.
+4. Klik tombol **"Cetak / Simpan PDF Berita Acara"** untuk dicetak pada kertas A4 atau disimpan dalam format PDF.
+
+### 5.5 📊 Mengunduh Laporan Kompilasi Daerah (Standar Evaluasi BPKP / Kemendagri)
+Untuk kebutuhan pelaporan eksekutif kepada Bupati Trenggalek atau pemantauan evaluasi oleh BPKP Perwakilan Provinsi Jawa Timur:
+1. Buka menu **Tindak Lanjut Result** (`/tindak-lanjut`).
+2. Klik tombol **"📊 Kompilasi BPKP (Excel)"**.
+3. Sistem mengunduh lembar kerja Excel/CSV berstandar BPKP yang mengelompokkan data seluruh OPD se-Kabupaten Trenggalek per Irban (Irban I, II, III, IV, dan Investigasi), dilengkapi sub-total per Irban serta Grand Total Pemulihan Keuangan Daerah se-Kabupaten Trenggalek.
 
 ---
 

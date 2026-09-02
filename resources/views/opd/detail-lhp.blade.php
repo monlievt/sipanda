@@ -63,12 +63,18 @@
                     </h1>
                 </div>
 
-                @if($lhpSummary->berkas_dasar_lhp)
-                    <a href="{{ route('dokumen.stream.path', $lhpSummary->berkas_dasar_lhp) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-600/20 transition-all shrink-0">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        <span>Unduh Dokumen LHP (PDF)</span>
+                <div class="flex flex-wrap items-center gap-2 shrink-0">
+                    <a href="{{ route('opd.lhp.berita_acara', $lhpSummary->id) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold text-xs rounded-xl shadow-xs transition-all">
+                        <span>📑 Cetak Berita Acara (PDF)</span>
                     </a>
-                @endif
+
+                    @if($lhpSummary->berkas_dasar_lhp)
+                        <a href="{{ route('dokumen.stream.path', $lhpSummary->berkas_dasar_lhp) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-600/20 transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <span>Unduh Dokumen LHP (PDF)</span>
+                        </a>
+                    @endif
+                </div>
             </div>
 
             <!-- Matriks Status & Finansial LHP -->

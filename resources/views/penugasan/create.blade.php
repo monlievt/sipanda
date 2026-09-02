@@ -176,13 +176,152 @@
                     <textarea name="uraian_penugasan" rows="3" required placeholder="Jelaskan uraian atau alasan perpanjangan penugasan..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">{{ old('uraian_penugasan') }}</textarea>
                 </div>
 
-                <div>
-                    <div class="flex items-center justify-between mb-1">
-                        <label class="block font-semibold">Dasar Surat Perintah Tugas (Dasar Hukum / Rujukan Penugasan)</label>
-                        <span class="text-[10px] text-slate-400">Dapat diedit / ditambah per penugasan untuk dicetak di Surat Tugas</span>
+                <!-- Komponen Interaktif Dasar Penugasan (Bank Regulasi & Disposisi) -->
+                <div x-data="{
+                    openRegulasiModal: false,
+                    openSuratModal: false,
+                    searchRegulasi: '',
+                    suratNomor: '',
+                    suratTanggal: '',
+                    suratPerihal: '',
+                    allRegulasi: {{ Js::from($allRegulasi) }},
+                    dasarItems: [
+                        @foreach($regulasiBaku as $rb)
+                            '{{ addslashes($rb->jenis_regulasi == 'perda' ? 'Peraturan Daerah' : ($rb->jenis_regulasi == 'perbup' ? 'Peraturan Bupati' : strtoupper($rb->jenis_regulasi))) }} Kabupaten Trenggalek {{ addslashes($rb->nomor_regulasi) }} tentang {{ addslashes($rb->judul) }};',
+                        @endforeach
+                    ],
+                    dasarText: `{{ old('dasar_penugasan', $defaultDasarPenugasan ?? '') }}`,
+                    
+                    syncToTextarea() {
+                        let res = '';
+                        this.dasarItems.forEach((item, idx) => {
+                            let clean = item.replace(/^\d+\.\s*/, '').trim();
+                            res += (idx + 1) + '. ' + clean + '\n';
+                        });
+                        this.dasarText = res.trim();
+                    },
+
+                    tambahRegulasi(reg) {
+                        let jenis = reg.jenis_regulasi === 'perda' ? 'Peraturan Daerah' : (reg.jenis_regulasi === 'perbup' ? 'Peraturan Bupati' : reg.jenis_regulasi.toUpperCase());
+                        let itemText = jenis + ' Kabupaten Trenggalek ' + reg.nomor_regulasi + ' tentang ' + reg.judul + ';';
+                        if (!this.dasarItems.includes(itemText)) {
+                            this.dasarItems.push(itemText);
+                            this.syncToTextarea();
+                        }
+                        this.openRegulasiModal = false;
+                        this.searchRegulasi = '';
+                    },
+
+                    tambahSuratDisposisi() {
+                        if (!this.suratNomor.trim()) return;
+                        let itemText = 'Surat Perintah / Disposisi Nomor ' + this.suratNomor.trim() + 
+                                       (this.suratTanggal ? ' tanggal ' + this.suratTanggal : '') + 
+                                       (this.suratPerihal ? ' perihal ' + this.suratPerihal.trim() : '') + ';';
+                        this.dasarItems.push(itemText);
+                        this.syncToTextarea();
+                        this.suratNomor = '';
+                        this.suratTanggal = '';
+                        this.suratPerihal = '';
+                        this.openSuratModal = false;
+                    },
+
+                    resetDasarBaku() {
+                        if (confirm('Kembalikan dasar penugasan ke 3 regulasi standar baku Pemkab Trenggalek?')) {
+                            this.dasarItems = [
+                                @foreach($regulasiBaku as $rb)
+                                    '{{ addslashes($rb->jenis_regulasi == 'perda' ? 'Peraturan Daerah' : ($rb->jenis_regulasi == 'perbup' ? 'Peraturan Bupati' : strtoupper($rb->jenis_regulasi))) }} Kabupaten Trenggalek {{ addslashes($rb->nomor_regulasi) }} tentang {{ addslashes($rb->judul) }};',
+                                @endforeach
+                            ];
+                            this.syncToTextarea();
+                        }
+                    },
+
+                    get filteredRegulasi() {
+                        if (!this.searchRegulasi.trim()) return this.allRegulasi.slice(0, 10);
+                        let s = this.searchRegulasi.toLowerCase();
+                        return this.allRegulasi.filter(r => 
+                            r.judul.toLowerCase().includes(s) || 
+                            r.nomor_regulasi.toLowerCase().includes(s)
+                        ).slice(0, 15);
+                    }
+                }" class="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+                    
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-2">
+                        <div>
+                            <label class="block font-bold text-slate-800 dark:text-slate-200 text-xs">Dasar Surat Perintah Tugas (SPT)</label>
+                            <p class="text-[10px] text-slate-400">Rujukan regulasi, dasar hukum pengawasan, atau surat disposisi kepala daerah</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <button type="button" @click="openRegulasiModal = true" class="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold text-[11px] rounded-lg border border-emerald-300 dark:border-emerald-700 shadow-2xs transition-all cursor-pointer">
+                                📚 + Bank Regulasi
+                            </button>
+                            <button type="button" @click="openSuratModal = true" class="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-lg border border-blue-300 dark:border-blue-700 shadow-2xs transition-all cursor-pointer">
+                                📩 + Surat / Disposisi
+                            </button>
+                            <button type="button" @click="resetDasarBaku()" class="px-2 py-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-[10px] font-semibold underline cursor-pointer" title="Reset ke 3 Dasar Baku">
+                                🔄 Reset Baku
+                            </button>
+                        </div>
                     </div>
-                    <textarea name="dasar_penugasan" rows="4" placeholder="1. Peraturan Daerah...&#10;2. Peraturan Bupati...&#10;3. PKPT Inspektorat Daerah..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500 leading-relaxed">{{ old('dasar_penugasan', $defaultDasarPenugasan ?? '') }}</textarea>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Teks dasar penugasan ini akan otomatis tercetak pada naskah dinas resmi Surat Perintah Tugas (SPT).</p>
+
+                    <textarea name="dasar_penugasan" x-model="dasarText" rows="4" placeholder="1. Peraturan Daerah...&#10;2. Peraturan Bupati...&#10;3. PKPT Inspektorat Daerah..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500 leading-relaxed font-sans"></textarea>
+                    <p class="text-[10px] text-slate-400">Teks di atas dapat Anda sunting secara langsung. Angka 1, 2, 3... otomatis tersusun pada cetakan resmi naskah dinas SPT.</p>
+
+                    <!-- Modal Picker: Tambah dari Bank Regulasi -->
+                    <div x-show="openRegulasiModal" style="display: none;" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+                        <div @click.outside="openRegulasiModal = false" class="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-4 border border-slate-200 dark:border-slate-700 shadow-2xl space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                                <h4 class="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                                    <span>📚 Pilih Regulasi dari Bank Data APIP</span>
+                                </h4>
+                                <button type="button" @click="openRegulasiModal = false" class="text-slate-400 hover:text-slate-600 text-sm font-bold">&times;</button>
+                            </div>
+
+                            <input type="text" x-model="searchRegulasi" placeholder="Ketik nomor atau judul peraturan (mis. 45, PKPT, 10)..." class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs px-3 py-2">
+
+                            <div class="max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                                <template x-for="r in filteredRegulasi" :key="r.id">
+                                    <div @click="tambahRegulasi(r)" class="p-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-xl cursor-pointer transition-colors space-y-0.5">
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-1.5 py-0.2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold uppercase text-[9px] rounded" x-text="r.jenis_regulasi"></span>
+                                            <span class="font-mono font-bold text-emerald-700 dark:text-emerald-400 text-[11px]" x-text="r.nomor_regulasi"></span>
+                                        </div>
+                                        <p class="font-semibold text-slate-800 dark:text-slate-200 line-clamp-2 text-[11px]" x-text="r.judul"></p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Picker: Tambah Surat Masuk / Disposisi -->
+                    <div x-show="openSuratModal" style="display: none;" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+                        <div @click.outside="openSuratModal = false" class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-4 border border-slate-200 dark:border-slate-700 shadow-2xl space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                                <h4 class="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
+                                    <span>📩 Tambah Dasar Berupa Surat Masuk / Disposisi</span>
+                                </h4>
+                                <button type="button" @click="openSuratModal = false" class="text-slate-400 hover:text-slate-600 text-sm font-bold">&times;</button>
+                            </div>
+
+                            <div class="space-y-2.5 text-xs">
+                                <div>
+                                    <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400 text-[11px]">Nomor Surat / Disposisi <span class="text-rose-500">*</span></label>
+                                    <input type="text" x-model="suratNomor" placeholder="mis. 700/125/406.008/2026" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs px-3 py-2">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400 text-[11px]">Tanggal Surat</label>
+                                    <input type="date" x-model="suratTanggal" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs px-3 py-2">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400 text-[11px]">Perihal / Asal Surat</label>
+                                    <input type="text" x-model="suratPerihal" placeholder="mis. Disposisi Bupati Trenggalek perihal Audit Khusus..." class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs px-3 py-2">
+                                </div>
+                                <button type="button" @click="tambahSuratDisposisi()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-xs transition-all cursor-pointer">
+                                    + Sisipkan ke Dasar SPT
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Jenis & Sumber (Hanya tampil jika BUKAN ST Perpanjangan) -->

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ArsipDigitalController;
 use App\Http\Controllers\BebanKerjaController;
+use App\Http\Controllers\BeritaAcaraTlController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EvaluasiTahunanController;
 use App\Http\Controllers\ExportController;
@@ -83,7 +84,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tindak-lanjut', [TindakLanjutController::class, 'index'])->name('tindak-lanjut.index');
     Route::get('/tindak-lanjut/verifikasi-bukti', [VerifikasiBuktiController::class, 'index'])->middleware('can:bukti.verifikasi')->name('tindak-lanjut.verifikasi-bukti');
     Route::get('/tindak-lanjut/export/all', [ExportController::class, 'exportAllLhpMatrix'])->name('tindak-lanjut.export_all');
+    Route::get('/tindak-lanjut/export/kompilasi-daerah', [ExportController::class, 'exportKompilasiDaerahExcel'])->name('tindak-lanjut.export_kompilasi_daerah');
     Route::get('/tindak-lanjut/export/lhp/{tindakLanjut}', [ExportController::class, 'exportLhpMatrix'])->name('tindak-lanjut.export_lhp');
+    Route::get('/tindak-lanjut/{tindakLanjut}/berita-acara', [BeritaAcaraTlController::class, 'cetakLhp'])->name('tindak-lanjut.berita_acara');
+    Route::get('/tindak-lanjut/opd/{objek}/berita-acara', [BeritaAcaraTlController::class, 'cetakOpd'])->name('tindak-lanjut.berita_acara_opd');
     Route::post('/tindak-lanjut', [TindakLanjutController::class, 'store'])->name('tindak-lanjut.store');
     Route::get('/tindak-lanjut/{tindakLanjut}', [TindakLanjutController::class, 'show'])->name('tindak-lanjut.show');
     Route::put('/tindak-lanjut/{tindakLanjut}', [TindakLanjutController::class, 'update'])->name('tindak-lanjut.update');
@@ -202,6 +206,7 @@ Route::prefix('opd')->name('opd.')->group(function () {
         Route::post('/logout', [OpdAuthController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [OpdDashboardController::class, 'index'])->name('dashboard');
         Route::get('/lhp/{tindakLanjut}', [OpdDashboardController::class, 'showLhp'])->name('lhp.show');
+        Route::get('/lhp/{tindakLanjut}/berita-acara', [BeritaAcaraTlController::class, 'cetakLhp'])->name('lhp.berita_acara');
         Route::get('/tindak-lanjut/{tindakLanjut}', [OpdDashboardController::class, 'show'])->name('tindak-lanjut.show');
         Route::post('/tindak-lanjut/{tindakLanjut}/bukti', [OpdDashboardController::class, 'storeBukti'])->name('tindak-lanjut.bukti.store');
 

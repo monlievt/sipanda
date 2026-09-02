@@ -23,13 +23,15 @@ class RegulasiHukum extends Model
         'ukuran_kb',
         'teks_konten',
         'visibilitas',
+        'is_dasar_spt_baku',
         'diunduh_count',
         'diunggah_oleh',
     ];
 
     protected $casts = [
-        'tahun'         => 'integer',
-        'diunduh_count' => 'integer',
+        'tahun'             => 'integer',
+        'diunduh_count'     => 'integer',
+        'is_dasar_spt_baku' => 'boolean',
     ];
 
     // ─── Relasi ───────────────────────────────────────────
@@ -70,5 +72,10 @@ class RegulasiHukum extends Model
             });
         }
         return $query;
+    }
+
+    public function scopeDasarSptBaku($query)
+    {
+        return $query->where('is_dasar_spt_baku', true);
     }
 }

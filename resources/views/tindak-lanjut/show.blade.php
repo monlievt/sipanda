@@ -24,6 +24,10 @@
                 📥 Ekspor Matriks LHP (Excel)
             </a>
 
+            <a href="{{ route('tindak-lanjut.berita_acara', $tindakLanjut->id) }}" target="_blank" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5 transition-all">
+                📑 Berita Acara Rekonsiliasi (PDF)
+            </a>
+
             <button onclick="window.print()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5 transition-all">
                 🖨️ Cetak Matriks
             </button>
