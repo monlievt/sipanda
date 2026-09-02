@@ -82,20 +82,20 @@ Route::middleware(['auth'])->group(function () {
 
     // Tindak Lanjut Result & Verifikasi Bukti OPD
     Route::get('/tindak-lanjut', [TindakLanjutController::class, 'index'])->name('tindak-lanjut.index');
-    Route::get('/tindak-lanjut/verifikasi-bukti', [VerifikasiBuktiController::class, 'index'])->middleware('can:bukti.verifikasi')->name('tindak-lanjut.verifikasi-bukti');
+    Route::get('/tindak-lanjut/verifikasi-bukti', [VerifikasiBuktiController::class, 'index'])->name('tindak-lanjut.verifikasi-bukti');
     Route::get('/tindak-lanjut/export/all', [ExportController::class, 'exportAllLhpMatrix'])->name('tindak-lanjut.export_all');
     Route::get('/tindak-lanjut/export/kompilasi-daerah', [ExportController::class, 'exportKompilasiDaerahExcel'])->name('tindak-lanjut.export_kompilasi_daerah');
-    Route::get('/tindak-lanjut/export/lhp/{tindakLanjut}', [ExportController::class, 'exportLhpMatrix'])->name('tindak-lanjut.export_lhp');
-    Route::get('/tindak-lanjut/{tindakLanjut}/berita-acara', [BeritaAcaraTlController::class, 'cetakLhp'])->name('tindak-lanjut.berita_acara');
-    Route::get('/tindak-lanjut/opd/{objek}/berita-acara', [BeritaAcaraTlController::class, 'cetakOpd'])->name('tindak-lanjut.berita_acara_opd');
+    Route::get('/tindak-lanjut/export/lhp/{tindakLanjut}', [ExportController::class, 'exportLhpMatrix'])->whereNumber('tindakLanjut')->name('tindak-lanjut.export_lhp');
+    Route::get('/tindak-lanjut/{tindakLanjut}/berita-acara', [BeritaAcaraTlController::class, 'cetakLhp'])->whereNumber('tindakLanjut')->name('tindak-lanjut.berita_acara');
+    Route::get('/tindak-lanjut/opd/{objek}/berita-acara', [BeritaAcaraTlController::class, 'cetakOpd'])->whereNumber('objek')->name('tindak-lanjut.berita_acara_opd');
     Route::post('/tindak-lanjut', [TindakLanjutController::class, 'store'])->name('tindak-lanjut.store');
-    Route::get('/tindak-lanjut/{tindakLanjut}', [TindakLanjutController::class, 'show'])->name('tindak-lanjut.show');
-    Route::put('/tindak-lanjut/{tindakLanjut}', [TindakLanjutController::class, 'update'])->name('tindak-lanjut.update');
-    Route::delete('/tindak-lanjut/{tindakLanjut}', [TindakLanjutController::class, 'destroy'])->name('tindak-lanjut.destroy');
-    Route::post('/tindak-lanjut/{tindakLanjut}/rincian-setor', [TindakLanjutController::class, 'storeRincianSetor'])->name('tindak-lanjut.store_rincian_setor');
-    Route::post('/tindak-lanjut/{tindakLanjut}/respon', [TindakLanjutController::class, 'storeRespon'])->name('tindak-lanjut.store_respon');
-    Route::patch('/tindak-lanjut/{tindakLanjut}/status', [TindakLanjutController::class, 'updateStatus'])->name('tindak-lanjut.update_status');
-    Route::post('/bukti-tindak-lanjut/{bukti}/verifikasi', [VerifikasiBuktiController::class, 'verifikasi'])->name('tindak-lanjut.bukti.verifikasi');
+    Route::get('/tindak-lanjut/{tindakLanjut}', [TindakLanjutController::class, 'show'])->whereNumber('tindakLanjut')->name('tindak-lanjut.show');
+    Route::put('/tindak-lanjut/{tindakLanjut}', [TindakLanjutController::class, 'update'])->whereNumber('tindakLanjut')->name('tindak-lanjut.update');
+    Route::delete('/tindak-lanjut/{tindakLanjut}', [TindakLanjutController::class, 'destroy'])->whereNumber('tindakLanjut')->name('tindak-lanjut.destroy');
+    Route::post('/tindak-lanjut/{tindakLanjut}/rincian-setor', [TindakLanjutController::class, 'storeRincianSetor'])->whereNumber('tindakLanjut')->name('tindak-lanjut.store_rincian_setor');
+    Route::post('/tindak-lanjut/{tindakLanjut}/respon', [TindakLanjutController::class, 'storeRespon'])->whereNumber('tindakLanjut')->name('tindak-lanjut.store_respon');
+    Route::patch('/tindak-lanjut/{tindakLanjut}/status', [TindakLanjutController::class, 'updateStatus'])->whereNumber('tindakLanjut')->name('tindak-lanjut.update_status');
+    Route::post('/bukti-tindak-lanjut/{bukti}/verifikasi', [VerifikasiBuktiController::class, 'verifikasi'])->whereNumber('bukti')->name('tindak-lanjut.bukti.verifikasi');
 
     // Arsip Digital
     Route::get('/arsip', [ArsipDigitalController::class, 'index'])->name('arsip.index');

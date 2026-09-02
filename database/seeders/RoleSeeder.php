@@ -124,6 +124,7 @@ class RoleSeeder extends Seeder
             'arsip.view','arsip.upload',
             'beban_kerja.view',
             'dashboard.view',
+            'bukti.verifikasi',
         ]);
 
         // ─── 1 Role Eksternal (guard opd & web) ─────────────────────────
