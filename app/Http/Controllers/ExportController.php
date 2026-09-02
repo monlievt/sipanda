@@ -8,27 +8,77 @@ use App\Models\Penugasan;
 use App\Models\Pkppt;
 use App\Models\TindakLanjut;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx as XlsxReader;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExportController extends Controller
 {
     /**
-     * Export Dokumen Matriks Tindak Lanjut Hasil Pengawasan (LHP Spesifik) ke CSV / Excel.
+     * Helper styling untuk header tabel.
+     */
+    private function styleTableHeader($sheet, string $range, string $bgColor = '0F172A', string $fontColor = 'FFFFFF'): void
+    {
+        $sheet->getStyle($range)->applyFromArray([
+            'font' => [
+                'bold'  => true,
+                'color' => ['rgb' => $fontColor],
+                'size'  => 10,
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical'   => Alignment::VERTICAL_CENTER,
+                'wrapText'   => true,
+            ],
+            'fill' => [
+                'fillType'   => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => $bgColor],
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color'       => ['rgb' => 'CBD5E1'],
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Helper styling garis border tabel data.
+     */
+    private function styleTableData($sheet, string $range): void
+    {
+        $sheet->getStyle($range)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color'       => ['rgb' => 'E2E8F0'],
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Export Dokumen Matriks Tindak Lanjut Hasil Pengawasan (LHP Spesifik) ke Excel .XLSX Asli
+     * Menggunakan Template Baku Resmi Inspektorat Kabupaten Trenggalek.
      */
     public function exportLhpMatrix(TindakLanjut $tindakLanjut): StreamedResponse
     {
         $tindakLanjut->load([
-            'penugasan.irban',
+            'penugasan.irban.users',
             'penugasan.objekPenugasan',
-            'buktiTindakLanjut.pengunggah',
+            'buktiTindakLanjut.arsipDigital',
             'rincianPenyetoran',
         ]);
 
-        // Ambil seluruh rekomendasi dalam LHP yang sama
         $items = TindakLanjut::with([
-            'penugasan.irban',
+            'penugasan.irban.users',
             'penugasan.objekPenugasan',
-            'buktiTindakLanjut.pengunggah',
+            'buktiTindakLanjut',
             'rincianPenyetoran',
         ])->where(function ($q) use ($tindakLanjut) {
             if ($tindakLanjut->no_lhp) {
@@ -38,72 +88,82 @@ class ExportController extends Controller
             }
         })->orderBy('id', 'asc')->get();
 
-        $noLhpClean = preg_replace('/[^\w\-]/', '_', $tindakLanjut->no_lhp ?? ('SPT_' . $tindakLanjut->penugasan?->no_spt));
-        $filename   = "Matriks_TLHP_{$noLhpClean}.csv";
+        $templatePath = resource_path('templates/Template_Matriks_Tindak_Lanjut_Inspektorat_Trenggalek.xlsx');
 
-        $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-        ];
+        if (file_exists($templatePath)) {
+            $reader = new XlsxReader();
+            $spreadsheet = $reader->load($templatePath);
+            $sheet = $spreadsheet->getActiveSheet();
 
-        return response()->stream(function () use ($tindakLanjut, $items) {
-            $handle = fopen('php://output', 'w');
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            // Isi Header Dokumen Sesuai Template Baku Trenggalek
+            $sheet->setCellValue('A3', 'ATAS ' . strtoupper($tindakLanjut->judul_lhp ?? 'LAPORAN HASIL PENGAWASAN'));
+            $sheet->setCellValue('C5', ': ' . ($tindakLanjut->no_lhp ?? ('SPT ' . $tindakLanjut->penugasan?->no_spt)));
+            $sheet->setCellValue('C6', ': ' . ($tindakLanjut->tgl_lhp ? $tindakLanjut->tgl_lhp->translatedFormat('d F Y') : '-'));
+            $sheet->setCellValue('C7', ': ' . ($tindakLanjut->penugasan?->objekPenugasan->pluck('nama')->implode(', ') ?: '-'));
 
-            // Meta Header Informasi Dokumen LHP
-            fputcsv($handle, ['MATRIKS TINDAK LANJUT HASIL PENGAWASAN (LHP) INSPEKTORAT KABUPATEN TRENGGALEK']);
-            fputcsv($handle, ['Nomor LHP', $tindakLanjut->no_lhp ?? '-']);
-            fputcsv($handle, ['Judul LHP', $tindakLanjut->judul_lhp ?? '-']);
-            fputcsv($handle, ['Tanggal LHP', $tindakLanjut->tgl_lhp ? $tindakLanjut->tgl_lhp->format('d F Y') : '-']);
-            fputcsv($handle, ['Nomor SPT', $tindakLanjut->penugasan?->no_spt ?? '-']);
-            fputcsv($handle, ['Irban Pengawas', $tindakLanjut->penugasan?->irban?->nama_irban ?? '-']);
-            fputcsv($handle, ['Objek OPD Target', $tindakLanjut->penugasan?->objekPenugasan->pluck('nama')->implode(', ') ?? '-']);
-            fputcsv($handle, []);
-
-            // Column Header Standard Matriks BPK / Inspektorat
-            fputcsv($handle, [
-                'No Item',
-                'Uraian Temuan',
-                'Rekomendasi Wajib',
-                'Nilai Target Rekomendasi (Rp)',
-                'Target Waktu Penyelesaian',
-                'Uraian / Jawaban Tindak Lanjut OPD',
-                'Rincian Penyetoran Kasda (NTPN / Nominal Rp)',
-                'Status Tindak Lanjut',
-                'Catatan Evaluasi / Kekurangan Tim Auditor'
-            ]);
+            $startRow = 11;
+            $currentRow = $startRow;
 
             foreach ($items as $idx => $item) {
-                // Formatting Respon OPD
-                $catatanOpdText = $item->buktiTindakLanjut->pluck('catatan_opd')->filter()->implode("\n---\n");
+                if ($idx > 0) {
+                    $sheet->insertNewRowBefore($currentRow, 1);
+                }
 
-                // Formatting Rincian Setor
-                $setorText = $item->rincianPenyetoran->map(function ($s) {
-                    return "NTPN: " . ($s->no_referensi_ntpn ?? '-') . " (Rp " . number_format($s->nilai_setor_rp, 0, ',', '.') . " - " . ($s->tgl_setor ? $s->tgl_setor->format('d/m/Y') : '') . ")";
-                })->implode("\n");
+                $catatanOpd = $item->buktiTindakLanjut->pluck('catatan_opd')->filter()->implode("\n");
+                $catatanVerifikasi = $item->buktiTindakLanjut->pluck('catatan_verifikasi')->filter()->implode("\n");
+                $totalSetor = $item->rincianPenyetoran->sum('nilai_setor_rp');
 
-                // Catatan Evaluasi Verifikasi
-                $catatanVerifikasi = $item->buktiTindakLanjut->pluck('catatan_verifikasi')->filter()->implode("\n---\n");
+                $sheet->setCellValue('A' . $currentRow, $idx + 1);
+                $sheet->setCellValue('B' . $currentRow, $item->temuan_uraian ?: $item->uraian_temuan);
+                $sheet->setCellValue('C' . $currentRow, $item->rekomendasi_uraian ?: $item->rekomendasi);
+                
+                $sheet->setCellValue('D' . $currentRow, (float) $item->nilai_rekomendasi_rp);
+                $sheet->getStyle('D' . $currentRow)->getNumberFormat()->setFormatCode('#,##0');
 
-                fputcsv($handle, [
-                    $idx + 1,
-                    $item->uraian_temuan,
-                    $item->rekomendasi,
-                    $item->nilai_rekomendasi_rp,
-                    $item->tanggal_target ? $item->tanggal_target->format('Y-m-d') : '-',
-                    $catatanOpdText ?: 'Belum ada uraian perbaikan OPD',
-                    $setorText ?: 'Belum ada penyetoran Kasda',
-                    strtoupper($item->status_label),
-                    $catatanVerifikasi ?: 'Sesuai'
-                ]);
+                $sheet->setCellValue('E' . $currentRow, $catatanOpd ?: '-');
+
+                // Tanda centang pada 4 sub-kolom status BPKP
+                $sheet->setCellValue('F' . $currentRow, $item->status_tindak_lanjut === 'selesai' ? '✓' : '');
+                $sheet->setCellValue('G' . $currentRow, $item->status_tindak_lanjut === 'dalam_proses' ? '✓' : '');
+                $sheet->setCellValue('H' . $currentRow, $item->status_tindak_lanjut === 'belum_ditindaklanjuti' ? '✓' : '');
+                $sheet->setCellValue('I' . $currentRow, $item->status_tindak_lanjut === 'tdt' ? '✓' : '');
+
+                $sheet->setCellValue('J' . $currentRow, (float) $totalSetor);
+                $sheet->getStyle('J' . $currentRow)->getNumberFormat()->setFormatCode('#,##0');
+
+                $sheet->setCellValue('K' . $currentRow, $catatanVerifikasi ?: '-');
+
+                // Styling data baris
+                $sheet->getStyle('A' . $currentRow . ':K' . $currentRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
+                $sheet->getStyle('A' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('F' . $currentRow . ':I' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('B' . $currentRow . ':C' . $currentRow)->getAlignment()->setWrapText(true);
+                $sheet->getStyle('E' . $currentRow)->getAlignment()->setWrapText(true);
+                $sheet->getStyle('K' . $currentRow)->getAlignment()->setWrapText(true);
+
+                $currentRow++;
             }
 
-            fclose($handle);
-        }, 200, $headers);
+            // Atur nama file output
+            $noLhpClean = preg_replace('/[^\w\-]/', '_', $tindakLanjut->no_lhp ?? ('SPT_' . $tindakLanjut->penugasan?->no_spt));
+            $filename = "Matriks_TLHP_{$noLhpClean}.xlsx";
+
+            return response()->stream(function () use ($spreadsheet) {
+                $writer = new XlsxWriter($spreadsheet);
+                $writer->save('php://output');
+            }, 200, [
+                'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+                'Cache-Control'       => 'max-age=0',
+            ]);
+        }
+
+        // Fallback jika template belum ada
+        return $this->exportKompilasiDaerahExcel(request());
     }
 
     /**
-     * Export Seluruh Rekapitulasi Matriks LHP ke CSV / Excel.
+     * Export Seluruh Rekapitulasi Matriks LHP ke File Excel .XLSX Asli.
      */
     public function exportAllLhpMatrix(Request $request): StreamedResponse
     {
@@ -134,69 +194,355 @@ class ExportController extends Controller
             return $item->no_lhp ? ('LHP:' . $item->no_lhp) : ('SPT:' . $item->penugasan_id);
         });
 
-        $filename = "Rekapitulasi_Matriks_LHP_" . ($tahun ? "Tahun_{$tahun}" : "Semua") . ".csv";
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Rekapitulasi LHP');
 
+        // Header Dokumen
+        $sheet->setCellValue('A1', 'REKAPITULASI DOKUMEN LAPORAN HASIL PENGAWASAN (LHP)');
+        $sheet->setCellValue('A2', 'INSPEKTORAT DAERAH KABUPATEN TRENGGALEK');
+        $sheet->setCellValue('A3', 'Tahun Anggaran: ' . ($tahun ?: 'Semua') . ' | Tanggal Unduh: ' . now()->translatedFormat('d F Y H:i') . ' WIB');
+
+        $sheet->getStyle('A1:A2')->getFont()->setBold(true)->setSize(12);
+        $sheet->getStyle('A3')->getFont()->setSize(9)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('64748B'));
+
+        // Table Header
         $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'A5' => 'NO',
+            'B5' => 'NOMOR LHP',
+            'C5' => 'TANGGAL LHP',
+            'D5' => 'JUDUL LHP',
+            'E5' => 'OBJEK PENGAWASAN',
+            'F5' => 'IRBAN PENGAWAS',
+            'G5' => 'JML REKOMENDASI',
+            'H5' => 'SESUAI (SS)',
+            'I5' => 'BELUM SESUAI (BS)',
+            'J5' => 'BELUM TL (BTL)',
+            'K5' => 'TDT',
+            'L5' => '% SELESAI',
+            'M5' => 'TARGET REKOMENDASI (RP)',
+            'N5' => 'REALISASI SETOR (RP)',
+            'O5' => 'SISA KURANG SETOR (RP)',
         ];
 
-        return response()->stream(function () use ($grouped) {
-            $handle = fopen('php://output', 'w');
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+        foreach ($headers as $cell => $val) {
+            $sheet->setCellValue($cell, $val);
+        }
+        $this->styleTableHeader($sheet, 'A5:O5', '1E293B', 'FFFFFF');
 
-            fputcsv($handle, [
-                'No', 'Nomor LHP', 'Judul LHP', 'Tanggal LHP', 'Nomor SPT', 'Irban',
-                'Objek OPD Target', 'Total Item Rekomendasi', 'SESUAI', 'BELUM SESUAI',
-                'BELUM DITINDAKLANJUTI', 'TIDAK DAPAT DITINDAKLANJUTI',
-                'Total Target Rp', 'Total Realisasi Setor Rp'
-            ]);
+        $row = 6;
+        $no = 1;
 
-            $no = 1;
-            foreach ($grouped as $items) {
-                $first = $items->first();
-                $countSesuai      = $items->where('status_tindak_lanjut', 'selesai')->count();
-                $countBelumSesuai = $items->whereIn('status_tindak_lanjut', ['proses', 'menunggu_verifikasi'])->count();
-                $countBelum       = $items->where('status_tindak_lanjut', 'belum')->count();
-                $countTdt         = $items->where('status_tindak_lanjut', 'tdt')->count();
+        foreach ($grouped as $key => $items) {
+            $first = $items->first();
+            $penugasan = $first->penugasan;
+            $objekNames = $penugasan ? $penugasan->objekPenugasan->pluck('nama')->implode(', ') : '-';
 
-                $totalNilaiTarget = $items->sum('nilai_rekomendasi_rp');
-                $totalSetorRp     = $items->sum(function ($tl) {
-                    return $tl->rincianPenyetoran->sum('nilai_setor_rp');
-                });
+            $countTotal = $items->count();
+            $countSesuai = $items->where('status_tindak_lanjut', 'selesai')->count();
+            $countBelumSesuai = $items->where('status_tindak_lanjut', 'dalam_proses')->count();
+            $countBelumTl = $items->where('status_tindak_lanjut', 'belum_ditindaklanjuti')->count();
+            $countTdt = $items->where('status_tindak_lanjut', 'tdt')->count();
 
-                fputcsv($handle, [
-                    $no++,
-                    $first->no_lhp ?? '-',
-                    $first->judul_lhp ?? '-',
-                    $first->tgl_lhp ? $first->tgl_lhp->format('Y-m-d') : '-',
-                    $first->penugasan?->no_spt ?? '-',
-                    $first->penugasan?->irban?->nama_irban ?? '-',
-                    $first->penugasan?->objekPenugasan->pluck('nama')->implode(', ') ?? '-',
-                    $items->count(),
-                    $countSesuai,
-                    $countBelumSesuai,
-                    $countBelum,
-                    $countTdt,
-                    $totalNilaiTarget,
-                    $totalSetorRp,
-                ]);
-            }
+            $totalTarget = $items->sum('nilai_rekomendasi_rp');
+            $totalSetor = $items->sum(function ($it) {
+                return $it->rincianPenyetoran->sum('nilai_setor_rp');
+            });
+            $sisaSetor = max(0, $totalTarget - $totalSetor);
+            $persenSelesai = $countTotal > 0 ? round(($countSesuai / $countTotal) * 100, 1) : 0;
 
-            fclose($handle);
-        }, 200, $headers);
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValue('B' . $row, $first->no_lhp ?: ('SPT ' . ($penugasan?->no_spt ?? '-')));
+            $sheet->setCellValue('C' . $row, $first->tgl_lhp ? $first->tgl_lhp->format('d/m/Y') : '-');
+            $sheet->setCellValue('D' . $row, $first->judul_lhp ?: ($penugasan?->uraian_penugasan ?? '-'));
+            $sheet->setCellValue('E' . $row, $objekNames);
+            $sheet->setCellValue('F' . $row, $penugasan?->irban?->nama_irban ?? '-');
+            $sheet->setCellValue('G' . $row, $countTotal);
+            $sheet->setCellValue('H' . $row, $countSesuai);
+            $sheet->setCellValue('I' . $row, $countBelumSesuai);
+            $sheet->setCellValue('J' . $row, $countBelumTl);
+            $sheet->setCellValue('K' . $row, $countTdt);
+            $sheet->setCellValue('L' . $row, $persenSelesai . '%');
+
+            $sheet->setCellValue('M' . $row, (float) $totalTarget);
+            $sheet->getStyle('M' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+            $sheet->setCellValue('N' . $row, (float) $totalSetor);
+            $sheet->getStyle('N' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+            $sheet->setCellValue('O' . $row, (float) $sisaSetor);
+            $sheet->getStyle('O' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+            $row++;
+        }
+
+        $this->styleTableData($sheet, 'A6:O' . max(6, $row - 1));
+
+        foreach (range('A', 'O') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $filename = "Rekapitulasi_LHP_SIPANDA_" . date('Ymd_His') . ".xlsx";
+
+        return response()->stream(function () use ($spreadsheet) {
+            $writer = new XlsxWriter($spreadsheet);
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control'       => 'max-age=0',
+        ]);
     }
 
     /**
-     * Export Data Penugasan (SPT) ke CSV / Spreadsheet.
+     * Export Dokumen Kompilasi Matriks Pemantauan Tindak Lanjut Hasil Pengawasan
+     * Seluruh Perangkat Daerah se-Kabupaten Trenggalek ke File Excel .XLSX Asli (Standar BPKP).
+     */
+    public function exportKompilasiDaerahExcel(Request $request): StreamedResponse
+    {
+        $tahun = $request->input('tahun', date('Y'));
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Kompilasi TLHP Trenggalek');
+
+        // Judul Header Dokumen Resmi
+        $sheet->setCellValue('A1', 'KOMPILASI PEMANTAUAN TINDAK LANJUT HASIL PENGAWASAN (TLHP) SE-KABUPATEN TRENGGALEK');
+        $sheet->setCellValue('A2', 'STANDAR EVALUASI DAN REKONSILIASI BPKP & KEMENDAGRI RI');
+        $sheet->setCellValue('A3', 'Tahun Anggaran Pemantauan: ' . ($tahun == 'semua' ? 'Seluruh Tahun Anggaran' : $tahun));
+        $sheet->setCellValue('A4', 'Tanggal Cetak: ' . now()->translatedFormat('d F Y H:i') . ' WIB');
+
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(13)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('0F172A'));
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(11)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('0369A1'));
+        $sheet->getStyle('A3:A4')->getFont()->setSize(9)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('64748B'));
+
+        // Header Kolom Tabel
+        $headers = [
+            'A6' => 'NO',
+            'B6' => 'WILAYAH PENGAWASAN (IRBAN)',
+            'C6' => 'PERANGKAT DAERAH (OPD / UNIT KERJA)',
+            'D6' => 'JML LHP',
+            'E6' => 'JML REKOMENDASI',
+            'F6' => 'SESUAI (SS)',
+            'G6' => 'BELUM SESUAI (BS)',
+            'H6' => 'BELUM DI-TL (BTL)',
+            'I6' => 'TDT',
+            'J6' => '% SELESAI',
+            'K6' => 'TOTAL REKOMENDASI (RP)',
+            'L6' => 'REALISASI KASDA (RP)',
+            'M6' => 'SISA KURANG SETOR (RP)',
+            'N6' => '% RECOVERY',
+        ];
+
+        foreach ($headers as $cell => $val) {
+            $sheet->setCellValue($cell, $val);
+        }
+        $this->styleTableHeader($sheet, 'A6:N6', '0F172A', 'FFFFFF');
+
+        $irbans = Irban::orderBy('id', 'asc')->get();
+
+        $noUrut = 1;
+        $row = 7;
+        $grandTotalLhp = 0;
+        $grandTotalRekomendasi = 0;
+        $grandTotalSs = 0;
+        $grandTotalBs = 0;
+        $grandTotalBtl = 0;
+        $grandTotalTdt = 0;
+        $grandTotalNilai = 0;
+        $grandTotalSetor = 0;
+
+        foreach ($irbans as $irban) {
+            $subTotalLhp = 0;
+            $subTotalRekomendasi = 0;
+            $subTotalSs = 0;
+            $subTotalBs = 0;
+            $subTotalBtl = 0;
+            $subTotalTdt = 0;
+            $subTotalNilai = 0;
+            $subTotalSetor = 0;
+
+            // Cari seluruh penugasan pada Irban ini
+            $irbanPenugasanIds = Penugasan::where(function ($q) use ($irban) {
+                $q->where('irban_id', $irban->id)
+                  ->orWhereHas('irbans', fn($m) => $m->where('irbans.id', $irban->id));
+            })->pluck('id');
+
+            // Ambil daftar unik OPD yang pernah diawasi oleh Irban ini
+            $opdList = ObjekPenugasan::whereHas('penugasan', function ($q) use ($irbanPenugasanIds) {
+                $q->whereIn('penugasan.id', $irbanPenugasanIds);
+            })->orderBy('nama', 'asc')->get();
+
+            foreach ($opdList as $opd) {
+                $penugasanIds = Penugasan::where(function ($q) use ($irban) {
+                    $q->where('irban_id', $irban->id)
+                      ->orWhereHas('irbans', fn($m) => $m->where('irbans.id', $irban->id));
+                })->whereHas('objekPenugasan', function ($q) use ($opd) {
+                    $q->where('objek_penugasan.id', $opd->id);
+                })->pluck('id');
+
+                $tlQuery = TindakLanjut::with('rincianPenyetoran')->whereIn('penugasan_id', $penugasanIds);
+
+                if ($tahun && $tahun !== 'semua') {
+                    $tlQuery->whereYear('tgl_lhp', $tahun);
+                }
+
+                $rekomendasiList = $tlQuery->get();
+
+                $jmlLhp = $rekomendasiList->pluck('no_lhp')->filter()->unique()->count();
+                if ($jmlLhp === 0 && $rekomendasiList->count() > 0) {
+                    $jmlLhp = $rekomendasiList->pluck('penugasan_id')->unique()->count();
+                }
+
+                $jmlRekomendasi = $rekomendasiList->count();
+                $jmlSs  = $rekomendasiList->where('status_tindak_lanjut', 'selesai')->count();
+                $jmlBs  = $rekomendasiList->where('status_tindak_lanjut', 'dalam_proses')->count();
+                $jmlBtl = $rekomendasiList->where('status_tindak_lanjut', 'belum_ditindaklanjuti')->count();
+                $jmlTdt = $rekomendasiList->where('status_tindak_lanjut', 'tdt')->count();
+
+                $nilaiRekomendasi = (float) $rekomendasiList->sum('nilai_rekomendasi_rp');
+                $nilaiSetor = (float) $rekomendasiList->sum(function ($r) {
+                    return $r->rincianPenyetoran->sum('nilai_setor_rp');
+                });
+                $sisaSetor = max(0, $nilaiRekomendasi - $nilaiSetor);
+
+                $persenSelesai = $jmlRekomendasi > 0 ? round(($jmlSs / $jmlRekomendasi) * 100, 1) : 0;
+                $persenPulih   = $nilaiRekomendasi > 0 ? round(($nilaiSetor / $nilaiRekomendasi) * 100, 1) : 0;
+
+                $sheet->setCellValue('A' . $row, $noUrut++);
+                $sheet->setCellValue('B' . $row, $irban->nama_irban);
+                $sheet->setCellValue('C' . $row, $opd->nama);
+                $sheet->setCellValue('D' . $row, $jmlLhp);
+                $sheet->setCellValue('E' . $row, $jmlRekomendasi);
+                $sheet->setCellValue('F' . $row, $jmlSs);
+                $sheet->setCellValue('G' . $row, $jmlBs);
+                $sheet->setCellValue('H' . $row, $jmlBtl);
+                $sheet->setCellValue('I' . $row, $jmlTdt);
+                $sheet->setCellValue('J' . $row, $persenSelesai . '%');
+
+                $sheet->setCellValue('K' . $row, $nilaiRekomendasi);
+                $sheet->getStyle('K' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+                $sheet->setCellValue('L' . $row, $nilaiSetor);
+                $sheet->getStyle('L' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+                $sheet->setCellValue('M' . $row, $sisaSetor);
+                $sheet->getStyle('M' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+                $sheet->setCellValue('N' . $row, $persenPulih . '%');
+
+                $subTotalLhp += $jmlLhp;
+                $subTotalRekomendasi += $jmlRekomendasi;
+                $subTotalSs += $jmlSs;
+                $subTotalBs += $jmlBs;
+                $subTotalBtl += $jmlBtl;
+                $subTotalTdt += $jmlTdt;
+                $subTotalNilai += $nilaiRekomendasi;
+                $subTotalSetor += $nilaiSetor;
+
+                $row++;
+            }
+
+            // Baris Sub-Total per Irban
+            $subSisa = max(0, $subTotalNilai - $subTotalSetor);
+            $subPersenSelesai = $subTotalRekomendasi > 0 ? round(($subTotalSs / $subTotalRekomendasi) * 100, 1) : 0;
+            $subPersenPulih   = $subTotalNilai > 0 ? round(($subTotalSetor / $subTotalNilai) * 100, 1) : 0;
+
+            $sheet->setCellValue('B' . $row, 'SUBTOTAL ' . strtoupper($irban->nama_irban));
+            $sheet->setCellValue('D' . $row, $subTotalLhp);
+            $sheet->setCellValue('E' . $row, $subTotalRekomendasi);
+            $sheet->setCellValue('F' . $row, $subTotalSs);
+            $sheet->setCellValue('G' . $row, $subTotalBs);
+            $sheet->setCellValue('H' . $row, $subTotalBtl);
+            $sheet->setCellValue('I' . $row, $subTotalTdt);
+            $sheet->setCellValue('J' . $row, $subPersenSelesai . '%');
+
+            $sheet->setCellValue('K' . $row, $subTotalNilai);
+            $sheet->getStyle('K' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+            $sheet->setCellValue('L' . $row, $subTotalSetor);
+            $sheet->getStyle('L' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+            $sheet->setCellValue('M' . $row, $subSisa);
+            $sheet->getStyle('M' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+            $sheet->setCellValue('N' . $row, $subPersenPulih . '%');
+
+            $sheet->getStyle('A' . $row . ':N' . $row)->applyFromArray([
+                'font' => ['bold' => true],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F1F5F9']],
+            ]);
+
+            $grandTotalLhp += $subTotalLhp;
+            $grandTotalRekomendasi += $subTotalRekomendasi;
+            $grandTotalSs += $subTotalSs;
+            $grandTotalBs += $subTotalBs;
+            $grandTotalBtl += $subTotalBtl;
+            $grandTotalTdt += $subTotalTdt;
+            $grandTotalNilai += $subTotalNilai;
+            $grandTotalSetor += $subTotalSetor;
+
+            $row++;
+        }
+
+        // Baris GRAND TOTAL Se-Kabupaten Trenggalek
+        $grandSisa = max(0, $grandTotalNilai - $grandTotalSetor);
+        $grandPersenSelesai = $grandTotalRekomendasi > 0 ? round(($grandTotalSs / $grandTotalRekomendasi) * 100, 1) : 0;
+        $grandPersenPulih   = $grandTotalNilai > 0 ? round(($grandTotalSetor / $grandTotalNilai) * 100, 1) : 0;
+
+        $sheet->setCellValue('B' . $row, 'TOTAL SE-KABUPATEN TRENGGALEK');
+        $sheet->setCellValue('D' . $row, $grandTotalLhp);
+        $sheet->setCellValue('E' . $row, $grandTotalRekomendasi);
+        $sheet->setCellValue('F' . $row, $grandTotalSs);
+        $sheet->setCellValue('G' . $row, $grandTotalBs);
+        $sheet->setCellValue('H' . $row, $grandTotalBtl);
+        $sheet->setCellValue('I' . $row, $grandTotalTdt);
+        $sheet->setCellValue('J' . $row, $grandPersenSelesai . '%');
+
+        $sheet->setCellValue('K' . $row, $grandTotalNilai);
+        $sheet->getStyle('K' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+        $sheet->setCellValue('L' . $row, $grandTotalSetor);
+        $sheet->getStyle('L' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+        $sheet->setCellValue('M' . $row, $grandSisa);
+        $sheet->getStyle('M' . $row)->getNumberFormat()->setFormatCode('#,##0');
+
+        $sheet->setCellValue('N' . $row, $grandPersenPulih . '%');
+
+        $sheet->getStyle('A' . $row . ':N' . $row)->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '047857']],
+        ]);
+
+        $this->styleTableData($sheet, 'A7:N' . $row);
+
+        foreach (range('A', 'N') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $filename = "Kompilasi_TLHP_Kab_Trenggalek_" . ($tahun == 'semua' ? 'Semua_Tahun' : $tahun) . ".xlsx";
+
+        return response()->stream(function () use ($spreadsheet) {
+            $writer = new XlsxWriter($spreadsheet);
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control'       => 'max-age=0',
+        ]);
+    }
+
+    /**
+     * Export Data Penugasan ke File Excel .XLSX.
      */
     public function exportPenugasan(Request $request): StreamedResponse
     {
-        $tahun = $request->input('tahun', date('Y'));
+        $tahun   = $request->input('tahun', date('Y'));
         $irbanId = $request->input('irban_id');
 
         $query = Penugasan::with(['irban', 'jenisPenugasan', 'sumberPenugasan', 'objekPenugasan'])
-            ->tahun($tahun);
+            ->whereYear('tanggal_mulai', $tahun);
 
         if ($irbanId) {
             $query->where('irban_id', $irbanId);
@@ -204,46 +550,71 @@ class ExportController extends Controller
 
         $listPenugasan = $query->orderBy('tanggal_mulai', 'desc')->get();
 
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Penugasan');
+
+        $sheet->setCellValue('A1', 'DAFTAR SURAT PERINTAH TUGAS (SPT) PENGAWASAN');
+        $sheet->setCellValue('A2', 'INSPEKTORAT DAERAH KABUPATEN TRENGGALEK TAHUN ' . $tahun);
+        $sheet->getStyle('A1:A2')->getFont()->setBold(true)->setSize(11);
+
         $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"SIPANDA_Penugasan_{$tahun}.csv\"",
+            'A4' => 'NO. SPT',
+            'B4' => 'KATEGORI PKPPT',
+            'C4' => 'URAIAN PENUGASAN',
+            'D4' => 'IRBAN PENGAWAS',
+            'E4' => 'JENIS PENUGASAN',
+            'F4' => 'SUMBER PENUGASAN',
+            'G4' => 'OBJEK PENGAWASAN',
+            'H4' => 'TGL MULAI',
+            'I4' => 'TGL SELESAI',
+            'J4' => 'STATUS',
+            'K4' => 'PROGRES %',
         ];
 
-        return response()->stream(function () use ($listPenugasan) {
-            $handle = fopen('php://output', 'w');
-            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+        foreach ($headers as $cell => $val) {
+            $sheet->setCellValue($cell, $val);
+        }
+        $this->styleTableHeader($sheet, 'A4:K4', '1E293B', 'FFFFFF');
 
-            fputcsv($handle, [
-                'No. SPT', 'Kategori PKPPT', 'Uraian Penugasan', 'Irban',
-                'Jenis Penugasan', 'Sumber Penugasan', 'Objek Penugasan',
-                'Tanggal Mulai', 'Tanggal Selesai', 'Status', 'Progres %', 'Keterangan Hasil'
-            ]);
+        $row = 5;
+        foreach ($listPenugasan as $item) {
+            $objekNames = $item->objekPenugasan->pluck('nama')->implode(', ');
 
-            foreach ($listPenugasan as $item) {
-                $objekNames = $item->objekPenugasan->pluck('nama')->implode(', ');
+            $sheet->setCellValue('A' . $row, $item->no_spt);
+            $sheet->setCellValue('B' . $row, $item->is_sesuai_pkppt ? 'Sesuai PKPPT' : 'Non-PKPPT');
+            $sheet->setCellValue('C' . $row, $item->uraian_penugasan);
+            $sheet->setCellValue('D' . $row, $item->irban?->nama_irban ?? '-');
+            $sheet->setCellValue('E' . $row, $item->jenisPenugasan?->nama ?? '-');
+            $sheet->setCellValue('F' . $row, $item->sumberPenugasan?->nama ?? '-');
+            $sheet->setCellValue('G' . $row, $objekNames);
+            $sheet->setCellValue('H' . $row, $item->tanggal_mulai->format('d/m/Y'));
+            $sheet->setCellValue('I' . $row, $item->tanggal_selesai->format('d/m/Y'));
+            $sheet->setCellValue('J' . $row, $item->status_label);
+            $sheet->setCellValue('K' . $row, $item->progres_persen . '%');
+            $row++;
+        }
 
-                fputcsv($handle, [
-                    $item->no_spt,
-                    $item->is_sesuai_pkppt ? 'Sesuai PKPPT' : 'Non-PKPPT',
-                    $item->uraian_penugasan,
-                    $item->irban?->nama_irban ?? '-',
-                    $item->jenisPenugasan?->nama ?? '-',
-                    $item->sumberPenugasan?->nama ?? '-',
-                    $objekNames,
-                    $item->tanggal_mulai->format('Y-m-d'),
-                    $item->tanggal_selesai->format('Y-m-d'),
-                    $item->status_label,
-                    $item->progres_persen . '%',
-                    $item->keterangan_hasil ?? '-',
-                ]);
-            }
+        $this->styleTableData($sheet, 'A5:K' . max(5, $row - 1));
 
-            fclose($handle);
-        }, 200, $headers);
+        foreach (range('A', 'K') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $filename = "SIPANDA_Penugasan_{$tahun}.xlsx";
+
+        return response()->stream(function () use ($spreadsheet) {
+            $writer = new XlsxWriter($spreadsheet);
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control'       => 'max-age=0',
+        ]);
     }
 
     /**
-     * Export Rencana PKPPT Tahunan ke CSV.
+     * Export Rencana PKPPT Tahunan ke Excel .XLSX.
      */
     public function exportPkppt(Request $request): StreamedResponse
     {
@@ -254,238 +625,62 @@ class ExportController extends Controller
             ->orderBy('rencana_mulai', 'asc')
             ->get();
 
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('PKPPT ' . $tahun);
+
+        $sheet->setCellValue('A1', 'PROGRAM KERJA PENGAWASAN TAHUNAN (PKPT) BERBASIS RISIKO');
+        $sheet->setCellValue('A2', 'INSPEKTORAT DAERAH KABUPATEN TRENGGALEK TAHUN ANGGARAN ' . $tahun);
+        $sheet->getStyle('A1:A2')->getFont()->setBold(true)->setSize(11);
+
         $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"SIPANDA_PKPPT_{$tahun}.csv\"",
+            'A4' => 'TAHUN',
+            'B4' => 'AREA PENGAWASAN',
+            'C4' => 'JENIS PENGAWASAN',
+            'D4' => 'SASARAN',
+            'E4' => 'IRBAN PELAKSANA',
+            'F4' => 'RENCANA MULAI',
+            'G4' => 'RENCANA SELESAI',
+            'H4' => 'TARGET LAPORAN',
+            'I4' => 'REALISASI SPT',
+            'J4' => 'STATUS',
         ];
 
-        return response()->stream(function () use ($listPkppt) {
-            $handle = fopen('php://output', 'w');
-            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+        foreach ($headers as $cell => $val) {
+            $sheet->setCellValue($cell, $val);
+        }
+        $this->styleTableHeader($sheet, 'A4:J4', '0F172A', 'FFFFFF');
 
-            fputcsv($handle, [
-                'Tahun', 'Area Pengawasan', 'Jenis Pengawasan', 'Sasaran',
-                'Irban Pelaksana', 'Rencana Mulai', 'Rencana Selesai Laporan',
-                'Target Laporan', 'Realisasi SPT', 'Status Alur'
-            ]);
+        $row = 5;
+        foreach ($listPkppt as $item) {
+            $sheet->setCellValue('A' . $row, $item->tahun);
+            $sheet->setCellValue('B' . $row, $item->area_pengawasan);
+            $sheet->setCellValue('C' . $row, $item->jenis_pengawasan);
+            $sheet->setCellValue('D' . $row, $item->sasaran ?? '-');
+            $sheet->setCellValue('E' . $row, $item->irban?->nama_irban ?? 'Semua Irban');
+            $sheet->setCellValue('F' . $row, $item->rencana_mulai->format('d/m/Y'));
+            $sheet->setCellValue('G' . $row, $item->rencana_selesai_laporan->format('d/m/Y'));
+            $sheet->setCellValue('H' . $row, $item->jumlah_laporan_rencana);
+            $sheet->setCellValue('I' . $row, $item->penugasan->count());
+            $sheet->setCellValue('J' . $row, strtoupper($item->status));
+            $row++;
+        }
 
-            foreach ($listPkppt as $item) {
-                fputcsv($handle, [
-                    $item->tahun,
-                    $item->area_pengawasan,
-                    $item->jenis_pengawasan,
-                    $item->sasaran ?? '-',
-                    $item->irban?->nama_irban ?? 'Semua Irban',
-                    $item->rencana_mulai->format('Y-m-d'),
-                    $item->rencana_selesai_laporan->format('Y-m-d'),
-                    $item->jumlah_laporan_rencana,
-                    $item->penugasan->count(),
-                    strtoupper($item->status),
-                ]);
-            }
+        $this->styleTableData($sheet, 'A5:J' . max(5, $row - 1));
 
-            fclose($handle);
-        }, 200, $headers);
-    }
+        foreach (range('A', 'J') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
 
-    /**
-     * Export Dokumen Kompilasi Matriks Pemantauan Tindak Lanjut Hasil Pengawasan
-     * Seluruh Perangkat Daerah se-Kabupaten Trenggalek (Format Standar BPKP / Kemendagri / Laporan Bupati).
-     */
-    public function exportKompilasiDaerahExcel(Request $request): StreamedResponse
-    {
-        $tahun = $request->input('tahun', date('Y'));
+        $filename = "SIPANDA_PKPPT_{$tahun}.xlsx";
 
-        $filename = "Kompilasi_TLHP_Kab_Trenggalek_" . ($tahun == 'semua' ? 'Semua_Tahun' : $tahun) . ".csv";
-
-        $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
+        return response()->stream(function () use ($spreadsheet) {
+            $writer = new XlsxWriter($spreadsheet);
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-        ];
-
-        return response()->stream(function () use ($tahun) {
-            $handle = fopen('php://output', 'w');
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF)); // UTF-8 BOM agar rapi di Microsoft Excel
-
-            // Judul Header Dokumen
-            fputcsv($handle, ['KOMPILASI PEMANTAUAN TINDAK LANJUT HASIL PENGAWASAN (TLHP) PEMERINTAH KABUPATEN TRENGGALEK']);
-            fputcsv($handle, ['STANDAR EVALUASI DAN REKONSILIASI BPKP & KEMENDAGRI RI']);
-            fputcsv($handle, ['Tahun Anggaran Pemantauan', $tahun == 'semua' ? 'Seluruh Tahun Anggaran' : $tahun]);
-            fputcsv($handle, ['Tanggal Cetak Data', now()->translatedFormat('d F Y H:i') . ' WIB']);
-            fputcsv($handle, []);
-
-            // Header Kolom Tabel
-            fputcsv($handle, [
-                'No',
-                'Wilayah Pengawasan (Irban)',
-                'Nama Perangkat Daerah (OPD / Satuan Kerja)',
-                'Jumlah Dokumen LHP',
-                'Jumlah Rekomendasi',
-                'Sesuai (SS)',
-                'Belum Sesuai (BS)',
-                'Belum Ditindaklanjuti (BTL)',
-                'Tidak Dapat Ditindaklanjuti (TDT)',
-                '% Penyelesaian Rekomendasi',
-                'Total Nilai Rekomendasi (Rp)',
-                'Realisasi Setor Kasda (Rp)',
-                'Sisa Kurang Setor (Rp)',
-                '% Pemulihan Keuangan Daerah',
-            ]);
-
-            $irbans = Irban::orderBy('id', 'asc')->get();
-
-            $noUrut = 1;
-            $grandTotalLhp = 0;
-            $grandTotalRekomendasi = 0;
-            $grandTotalSs = 0;
-            $grandTotalBs = 0;
-            $grandTotalBtl = 0;
-            $grandTotalTdt = 0;
-            $grandTotalNilai = 0;
-            $grandTotalSetor = 0;
-
-            foreach ($irbans as $irban) {
-                $subTotalLhp = 0;
-                $subTotalRekomendasi = 0;
-                $subTotalSs = 0;
-                $subTotalBs = 0;
-                $subTotalBtl = 0;
-                $subTotalTdt = 0;
-                $subTotalNilai = 0;
-                $subTotalSetor = 0;
-
-                // Cari seluruh penugasan pada Irban ini (primer atau multi-irban)
-                $irbanPenugasanIds = Penugasan::where(function ($q) use ($irban) {
-                    $q->where('irban_id', $irban->id)
-                      ->orWhereHas('irbans', fn($m) => $m->where('irbans.id', $irban->id));
-                })->pluck('id');
-
-                // Ambil daftar unik OPD yang pernah diawasi oleh Irban ini
-                $opdList = ObjekPenugasan::whereHas('penugasan', function ($q) use ($irbanPenugasanIds) {
-                    $q->whereIn('penugasan.id', $irbanPenugasanIds);
-                })->orderBy('nama', 'asc')->get();
-
-                foreach ($opdList as $opd) {
-                    $penugasanIds = Penugasan::where(function ($q) use ($irban) {
-                        $q->where('irban_id', $irban->id)
-                          ->orWhereHas('irbans', fn($m) => $m->where('irbans.id', $irban->id));
-                    })->whereHas('objekPenugasan', function ($q) use ($opd) {
-                        $q->where('objek_penugasan.id', $opd->id);
-                    })->pluck('id');
-
-                    $tlQuery = TindakLanjut::with('rincianPenyetoran')
-                        ->whereIn('penugasan_id', $penugasanIds);
-
-                    if ($tahun && $tahun !== 'semua') {
-                        $tlQuery->whereYear('tgl_lhp', $tahun);
-                    }
-
-                    $rekomendasiList = $tlQuery->get();
-
-                    // Hitung jumlah unik dokumen LHP
-                    $jmlLhp = $rekomendasiList->pluck('no_lhp')->filter()->unique()->count();
-                    if ($jmlLhp === 0 && $rekomendasiList->count() > 0) {
-                        $jmlLhp = $rekomendasiList->pluck('penugasan_id')->unique()->count();
-                    }
-
-                    $jmlRekomendasi = $rekomendasiList->count();
-                    $jmlSs  = $rekomendasiList->where('status_tindak_lanjut', 'selesai')->count();
-                    $jmlBs  = $rekomendasiList->where('status_tindak_lanjut', 'dalam_proses')->count();
-                    $jmlBtl = $rekomendasiList->where('status_tindak_lanjut', 'belum_ditindaklanjuti')->count();
-                    $jmlTdt = $rekomendasiList->where('status_tindak_lanjut', 'tdt')->count();
-
-                    $nilaiRekomendasi = (float) $rekomendasiList->sum('nilai_rekomendasi_rp');
-                    $nilaiSetor = (float) $rekomendasiList->sum(function ($r) {
-                        return $r->rincianPenyetoran->sum('nilai_setor_rp');
-                    });
-                    $sisaSetor = max(0, $nilaiRekomendasi - $nilaiSetor);
-
-                    $persenSelesai = $jmlRekomendasi > 0 ? round(($jmlSs / $jmlRekomendasi) * 100, 1) : 0;
-                    $persenPulih   = $nilaiRekomendasi > 0 ? round(($nilaiSetor / $nilaiRekomendasi) * 100, 1) : 0;
-
-                    fputcsv($handle, [
-                        $noUrut++,
-                        $irban->nama_irban,
-                        $opd->nama,
-                        $jmlLhp,
-                        $jmlRekomendasi,
-                        $jmlSs,
-                        $jmlBs,
-                        $jmlBtl,
-                        $jmlTdt,
-                        $persenSelesai . '%',
-                        $nilaiRekomendasi,
-                        $nilaiSetor,
-                        $sisaSetor,
-                        $persenPulih . '%',
-                    ]);
-
-                    $subTotalLhp += $jmlLhp;
-                    $subTotalRekomendasi += $jmlRekomendasi;
-                    $subTotalSs += $jmlSs;
-                    $subTotalBs += $jmlBs;
-                    $subTotalBtl += $jmlBtl;
-                    $subTotalTdt += $jmlTdt;
-                    $subTotalNilai += $nilaiRekomendasi;
-                    $subTotalSetor += $nilaiSetor;
-                }
-
-                // Baris Sub-Total per Irban
-                $subSisa = max(0, $subTotalNilai - $subTotalSetor);
-                $subPersenSelesai = $subTotalRekomendasi > 0 ? round(($subTotalSs / $subTotalRekomendasi) * 100, 1) : 0;
-                $subPersenPulih   = $subTotalNilai > 0 ? round(($subTotalSetor / $subTotalNilai) * 100, 1) : 0;
-
-                fputcsv($handle, [
-                    '',
-                    'SUBTOTAL ' . strtoupper($irban->nama_irban),
-                    '',
-                    $subTotalLhp,
-                    $subTotalRekomendasi,
-                    $subTotalSs,
-                    $subTotalBs,
-                    $subTotalBtl,
-                    $subTotalTdt,
-                    $subPersenSelesai . '%',
-                    $subTotalNilai,
-                    $subTotalSetor,
-                    $subSisa,
-                    $subPersenPulih . '%',
-                ]);
-                fputcsv($handle, []); // Baris kosong pemisah antar-irban
-
-                $grandTotalLhp += $subTotalLhp;
-                $grandTotalRekomendasi += $subTotalRekomendasi;
-                $grandTotalSs += $subTotalSs;
-                $grandTotalBs += $subTotalBs;
-                $grandTotalBtl += $subTotalBtl;
-                $grandTotalTdt += $subTotalTdt;
-                $grandTotalNilai += $subTotalNilai;
-                $grandTotalSetor += $subTotalSetor;
-            }
-
-            // Baris GRAND TOTAL se-Kabupaten Trenggalek
-            $grandSisa = max(0, $grandTotalNilai - $grandTotalSetor);
-            $grandPersenSelesai = $grandTotalRekomendasi > 0 ? round(($grandTotalSs / $grandTotalRekomendasi) * 100, 1) : 0;
-            $grandPersenPulih   = $grandTotalNilai > 0 ? round(($grandTotalSetor / $grandTotalNilai) * 100, 1) : 0;
-
-            fputcsv($handle, [
-                'TOTAL',
-                'SE-KABUPATEN TRENGGALEK',
-                '',
-                $grandTotalLhp,
-                $grandTotalRekomendasi,
-                $grandTotalSs,
-                $grandTotalBs,
-                $grandTotalBtl,
-                $grandTotalTdt,
-                $grandPersenSelesai . '%',
-                $grandTotalNilai,
-                $grandTotalSetor,
-                $grandSisa,
-                $grandPersenPulih . '%',
-            ]);
-
-            fclose($handle);
-        }, 200, $headers);
+            'Cache-Control'       => 'max-age=0',
+        ]);
     }
 }
