@@ -410,6 +410,39 @@ Aplikasi SIPANDA mendukung import data massal secara praktis menggunakan berkas 
 5. Tinjau halaman **Pratinjau Data (Preview)** untuk memeriksa pembagian kolom dan data 10 baris pertama.
 6. Klik **"Import Data Sekarang"**. Sistem mengeksekusi penyimpanan massal dalam satu transaksi database aman (*Database Transaction Rollback-Safe*). Jika terdapat baris yang tidak lengkap, sistem akan memunculkan rincian nomor baris yang perlu diperbaiki.
 
+### 10.4 Pusat Cadangan (Backup) Database & Pembersihan Data Percobaan (Khusus Super Admin)
+Buka menu **Master Data & Sistem** &rarr; **Backup & Pemulihan Data** (`/master/backup`).
+
+#### Tiga Fitur Cadangan Data yang Tersedia:
+1. **📥 Mode 1: Unduh Cadangan Instan (On-Demand)**
+   - Klik tombol **"Unduh Database Sekarang (.sql)"**.
+   - Sistem langsung membuat dump SQL database terkini dan mengunduhnya ke laptop/komputer lokal Anda dalam hitungan detik.
+2. **📧 Mode 2: Backup Otomatis Terkirim ke Email Admin (Checklist Aktif)**
+   - Centang checkbox **[x] Aktifkan Pengiriman Otomatis**.
+   - Masukkan alamat email tujuan (misal: `nugrahenisetya72@gmail.com`).
+   - Klik **"Simpan Setting"**.
+   - Untuk menguji coba pengiriman saat ini, klik tombol **"⚡ Tes Kirim ke Email Sekarang"**.
+   - *Jadwal Cron VPS:* Tambahkan perintah berikut pada crontab server agar berjalan otomatis setiap pukul 01:00 WIB:
+     ```bash
+     0 1 * * * cd /path-ke-sipanda && php artisan sipanda:backup --email >> /dev/null 2>&1
+     ```
+3. **☁️ Mode 3: Sinkronisasi Cloud Google Drive (Checklist Aktif)**
+   - Centang checkbox **[x] Aktifkan Sinkronisasi Cloud**.
+   - Masukkan nama folder target di Google Drive (misal: `SIPANDA_TRENGGALEK_BACKUP`).
+   - Klik tombol **"📖 Panduan Koneksi Google Drive (VPS)"** untuk melihat petunjuk konfigurasi `rclone` di server Linux VPS.
+
+#### 🛠️ Pembersihan Data Percobaan (Purge Dummy Data):
+Untuk membersihkan data simulasi / salah input sebelum operasional resmi (*Go-Live*):
+1. Pada kartu merah **Pusat Pembersihan Data Percobaan**, klik tombol **"🧹 Bersihkan Data Percobaan..."**.
+2. Centang modul yang ingin dibersihkan:
+   - [x] Matriks Tindak Lanjut & Rekomendasi LHP Percobaan
+   - [x] Data Penugasan & SPT Pengawasan Percobaan
+   - [x] Data Tiket E-Consulting & Chat Percobaan
+   - [x] Riwayat Log & Notifikasi Masa Testing
+3. **Proteksi Wajib:** Ketik kata kunci konfirmasi: `BERSIHKAN DATA PERCOBAAN` dan masukkan kata sandi (password) akun Super Admin Anda saat ini.
+4. Klik **"Eksekusi Pembersihan Sekarang"**.
+5. *Catatan Keamanan:* Seluruh Akun Pegawai (Inspektur, Irban, Auditor, OPD), Struktur Irban, dan Bank Regulasi **DIJAMIN UTUH 100%** dan tidak akan terhapus.
+
 ---
 
 # BAB XI: PANDUAN PORTAL KHUSUS AUDITI / PERANGKAT DAERAH (OPD)
