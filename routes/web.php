@@ -194,6 +194,7 @@ Route::prefix('opd')->name('opd.')->group(function () {
     Route::middleware('auth:opd')->group(function () {
         Route::post('/logout', [OpdAuthController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [OpdDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/lhp/{tindakLanjut}', [OpdDashboardController::class, 'showLhp'])->name('lhp.show');
         Route::get('/tindak-lanjut/{tindakLanjut}', [OpdDashboardController::class, 'show'])->name('tindak-lanjut.show');
         Route::post('/tindak-lanjut/{tindakLanjut}/bukti', [OpdDashboardController::class, 'storeBukti'])->name('tindak-lanjut.bukti.store');
 

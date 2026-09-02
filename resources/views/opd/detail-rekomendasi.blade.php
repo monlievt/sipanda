@@ -57,6 +57,28 @@
                     <textarea name="catatan_opd" rows="3" required placeholder="Jelaskan langkah perbaikan / tindak lanjut yang telah dilaksanakan oleh OPD..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs"></textarea>
                 </div>
 
+                <!-- Input Setoran Finansial (Opsional / Kondisional) -->
+                <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-700 dark:text-slate-300 text-xs">💵 Penyetoran Kas Daerah (Jika Ada Unsur Finansial)</span>
+                        <span class="text-[10px] text-slate-400">Kosongkan jika bukan rekomendasi finansial</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block font-semibold mb-1 text-[11px] text-slate-600 dark:text-slate-400">Nominal Setor (Rp)</label>
+                            <input type="text" name="nilai_setor_rp" placeholder="mis. 5.000.000" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold focus:ring-teal-500">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1 text-[11px] text-slate-600 dark:text-slate-400">No. STS / Bukti Bank / NTPN</label>
+                            <input type="text" name="no_referensi_ntpn" placeholder="mis. STS-2026/08/01" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-teal-500">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1 text-[11px] text-slate-600 dark:text-slate-400">Tanggal Penyetoran</label>
+                            <input type="date" name="tgl_setor" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-teal-500">
+                        </div>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block font-semibold mb-1">Lampiran Berkas Bukti (PDF, DOCX, XLSX, JPG — Max 10MB)</label>
                     <input type="file" name="file" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs p-2">
