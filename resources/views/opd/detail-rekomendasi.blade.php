@@ -63,10 +63,14 @@
                         <span class="font-bold text-slate-700 dark:text-slate-300 text-xs">💵 Penyetoran Kas Daerah (Jika Ada Unsur Finansial)</span>
                         <span class="text-[10px] text-slate-400">Kosongkan jika bukan rekomendasi finansial</span>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         <div>
                             <label class="block font-semibold mb-1 text-[11px] text-slate-600 dark:text-slate-400">Nominal Setor (Rp)</label>
                             <input type="text" name="nilai_setor_rp" oninput="formatRupiahInput(this)" placeholder="mis. 5.000.000" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold focus:ring-teal-500 rupiah-input">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1 text-[11px] text-slate-600 dark:text-slate-400">Nama Bank / Kasda</label>
+                            <input type="text" name="nama_bank" placeholder="mis. Bank Jatim / Kasda" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-teal-500">
                         </div>
                         <div>
                             <label class="block font-semibold mb-1 text-[11px] text-slate-600 dark:text-slate-400">No. STS / Bukti Bank / NTPN</label>
@@ -88,6 +92,35 @@
                     Kirim Bukti ke Inspektorat
                 </button>
             </form>
+        </div>
+        @endif
+
+        <!-- Rincian Penyetoran Kas Daerah (Jika Ada) -->
+        @if($tindakLanjut->rincianPenyetoran->count() > 0)
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 text-xs space-y-3">
+            <h3 class="font-bold text-slate-900 dark:text-white text-base">💰 Rincian Penyetoran Kas Daerah (NTPN)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold uppercase">
+                        <tr>
+                            <th class="p-3">No. Referensi / NTPN</th>
+                            <th class="p-3">Bank</th>
+                            <th class="p-3">Nilai Setoran</th>
+                            <th class="p-3 text-center">Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 dark:divide-slate-800 font-mono">
+                        @foreach($tindakLanjut->rincianPenyetoran as $s)
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                <td class="p-3 font-bold text-slate-800 dark:text-slate-200">{{ $s->no_referensi_ntpn ?: '-' }}</td>
+                                <td class="p-3 text-slate-600 dark:text-slate-300 font-sans">{{ $s->nama_bank ?: 'Bank Jatim / Kas Daerah' }}</td>
+                                <td class="p-3 font-bold text-emerald-600 dark:text-emerald-400">{{ $s->formatted_nilai_setor }}</td>
+                                <td class="p-3 text-center text-slate-500 font-sans">{{ $s->tgl_setor ? $s->tgl_setor->format('d/m/Y') : '-' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
         @endif
 
