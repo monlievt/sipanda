@@ -3,7 +3,7 @@
         Detail Tiket Konsultasi #{{ $konsultasi->nomor_tiket }}
     </x-slot>
 
-    <div class="space-y-6" x-data="{ showModalDisposisi: false, showModalTerbitkanBa: false }">
+    <div class="space-y-6" x-data="{ showModalDisposisiInspektur: false, showModalDisposisiIrban: false, showModalTerbitkanBa: false }">
         <!-- Back Link & Action Header -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <a href="{{ route('konsultasi.index') }}" class="text-xs font-bold text-slate-500 hover:text-slate-700 flex items-center gap-1">
@@ -11,9 +11,17 @@
             </a>
 
             <div class="flex flex-wrap items-center gap-2">
-                @if(auth()->user()->hasRole(['admin', 'sekretariat', 'inspektur', 'irban', 'admin_irban']))
-                    <button type="button" @click="showModalDisposisi = true" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5">
-                        👥 Disposisi & Penunjukan Tim APIP
+                {{-- 1. Tombol Disposisi Tingkat 1 (Sisi Inspektur) --}}
+                @if(auth()->user()->hasRole(['inspektur', 'super_admin', 'admin', 'sekretariat']))
+                    <button type="button" @click="showModalDisposisiInspektur = true" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 transition-all">
+                        ✍️ Disposisi Inspektur ke Irban
+                    </button>
+                @endif
+
+                {{-- 2. Tombol Disposisi Tingkat 2 (Sisi Irban) --}}
+                @if(auth()->user()->hasRole(['irban', 'admin_irban', 'inspektur', 'super_admin', 'admin']))
+                    <button type="button" @click="showModalDisposisiIrban = true" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 transition-all">
+                        👥 Penugasan Tim APIP (Irban)
                     </button>
                 @endif
 
@@ -42,6 +50,53 @@
         @if (session('status'))
             <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-semibold">
                 {{ session('status') }}
+            </div>
+        @endif
+
+        <!-- Banner Status Disposisi Pimpinan -->
+        @if(!$konsultasi->disposisi_inspektur_pada)
+            <div class="p-4 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border border-amber-200 dark:border-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-3">
+                    <span class="text-xl">⏳</span>
+                    <div>
+                        <span class="font-bold text-amber-900 dark:text-amber-200 block">Menunggu Arahan & Disposisi Inspektur Daerah</span>
+                        <span class="text-amber-700 dark:text-amber-300 text-[11px]">Permohonan baru masuk dari OPD dan belum diarahkan oleh pimpinan ke Irban pembina.</span>
+                    </div>
+                </div>
+                @if(auth()->user()->hasRole(['inspektur', 'super_admin', 'admin', 'sekretariat']))
+                    <button type="button" @click="showModalDisposisiInspektur = true" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shrink-0 shadow-xs">
+                        ✍️ Disposisikan Sekarang
+                    </button>
+                @endif
+            </div>
+        @else
+            <!-- Lembar Disposisi Resmi Inspektur -->
+            <div class="p-4 bg-indigo-50/70 dark:bg-indigo-950/40 rounded-2xl border border-indigo-200 dark:border-indigo-900 space-y-2 text-xs">
+                <div class="flex items-center justify-between">
+                    <span class="font-black text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                        ✍️ Disposisi Pimpinan (Inspektur Daerah)
+                    </span>
+                    <span class="font-bold text-indigo-600 dark:text-indigo-400 text-[11px]">
+                        {{ $konsultasi->disposisi_inspektur_pada->format('d F Y H:i') }} WIB
+                    </span>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-semibold text-slate-500">Diteruskan Kepada:</span>
+                    <span class="px-2.5 py-1 bg-indigo-600 text-white font-black rounded-lg text-xs">
+                        {{ $konsultasi->irban?->nama_irban ?? 'Irban Terkait' }}
+                    </span>
+                    @if($konsultasi->inspekturPemberiDisposisi)
+                        <span class="text-slate-400 text-[11px]">oleh {{ $konsultasi->inspekturPemberiDisposisi->nama }}</span>
+                    @endif
+                </div>
+                @if($konsultasi->catatan_disposisi_inspektur)
+                    <div class="mt-2 p-3 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-indigo-950">
+                        <span class="font-bold text-slate-400 block mb-0.5 text-[10px] uppercase">Catatan / Arahan Disposisi:</span>
+                        <p class="text-slate-900 dark:text-white font-medium italic text-xs leading-relaxed">
+                            "{{ $konsultasi->catatan_disposisi_inspektur }}"
+                        </p>
+                    </div>
+                @endif
             </div>
         @endif
 
@@ -85,7 +140,7 @@
                         @if($konsultasi->metode_disetujui)
                             {{ $konsultasi->metode_disetujui === 'online' ? '💬 Online Chat' : '🤝 Tatap Muka (' . ($konsultasi->tanggal_tatap_muka ? $konsultasi->tanggal_tatap_muka->format('d/m/Y H:i') : '-') . ')' }}
                         @else
-                            Usulan: {{ strtoupper($konsultasi->preferensi_metode) }} (Belum Disposisi)
+                            Usulan: {{ strtoupper($konsultasi->preferensi_metode) }} (Belum Ditetapkan)
                         @endif
                     </span>
                 </div>
@@ -140,53 +195,98 @@
             <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
                 @forelse($konsultasi->chats as $chat)
                     <div class="flex flex-col {{ $chat->tipe_pengirim === 'apip' ? 'items-end' : 'items-start' }}">
-                        <div class="max-w-2xl p-4 rounded-2xl text-xs space-y-1.5 shadow-xs
-                            {{ $chat->tipe_pengirim === 'apip' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-none' }}">
-                            <div class="flex items-center justify-between gap-4 font-bold text-[10px] opacity-80 border-b border-white/20 pb-1 mb-1">
-                                <span>{{ $chat->sender?->nama ?? ($chat->tipe_pengirim === 'apip' ? 'Tim APIP Inspektorat' : 'Pemohon OPD') }}</span>
-                                <span>{{ $chat->created_at->format('d/m/Y H:i') }}</span>
+                        <div class="max-w-xl p-4 rounded-2xl text-xs space-y-1 {{ $chat->tipe_pengirim === 'apip' ? 'bg-blue-600 text-white rounded-br-none shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-bl-none' }}">
+                            <div class="flex items-center justify-between gap-4 text-[10px] opacity-75 font-semibold">
+                                <span>{{ $chat->sender?->nama_display ?? ($chat->tipe_pengirim === 'apip' ? 'Tim Auditor APIP' : 'Pemohon OPD') }}</span>
+                                <span>{{ $chat->created_at->format('d/m H:i') }}</span>
                             </div>
-                            <p class="whitespace-pre-line leading-relaxed">{{ $chat->pesan }}</p>
+                            <p class="leading-relaxed whitespace-pre-line">{{ $chat->pesan }}</p>
                             @if($chat->lampiran_file)
                                 <div class="pt-1">
-                                    <a href="{{ asset('storage/' . $chat->lampiran_file) }}" target="_blank" class="font-bold underline text-[11px]">
-                                        📎 Unduh Berkas Lampiran
+                                    <a href="{{ asset('storage/' . $chat->lampiran_file) }}" target="_blank" class="underline text-[11px] font-semibold hover:opacity-90">
+                                        📎 Unduh Lampiran Berkas
                                     </a>
                                 </div>
                             @endif
                         </div>
                     </div>
                 @empty
-                    <div class="py-8 text-center text-slate-400 text-xs font-medium">
-                        Belum ada riwayat percakapan. Kirim pesan balasan di bawah ini.
+                    <div class="py-8 text-center text-xs text-slate-400">
+                        Belum ada percakapan. Mulai diskusi atau berikan tanggapan konsultasi di bawah ini.
                     </div>
                 @endforelse
             </div>
 
-            <!-- Form Kirim Pesan Balasan Chat (APIP) -->
+            <!-- Form Kirim Pesan APIP -->
             <form method="POST" action="{{ route('konsultasi.chat', $konsultasi->id) }}" enctype="multipart/form-data" class="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
                 @csrf
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Tulis Tanggapan / Advis APIP:</label>
-                    <textarea name="pesan" rows="3" required placeholder="Tuliskan penjelasan advis, regulasi acuan, atau tanggapan untuk OPD..." class="w-full text-xs rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-blue-500"></textarea>
+                    <textarea name="pesan" rows="3" required placeholder="Ketikkan tanggapan, klarifikasi regulasi, atau advis APIP untuk OPD..." class="w-full rounded-2xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs focus:ring-blue-500"></textarea>
                 </div>
-
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <input type="file" name="lampiran_file" class="text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-
-                    <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5">
-                        ✈️ Kirim Tanggapan Advis
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <input type="file" name="lampiran_file" class="text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                    <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 self-end sm:self-auto">
+                        <span>Kirim Tanggapan</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- MODAL DISPOSISI TIM APIP -->
-        <div x-show="showModalDisposisi" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        {{-- ===================================================== --}}
+        {{-- MODAL 1: DISPOSISI PIMPINAN (INSPEKTUR DAERAH KE IRBAN) --}}
+        {{-- ===================================================== --}}
+        <div x-show="showModalDisposisiInspektur" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl p-6 space-y-4 shadow-xl border border-slate-200 dark:border-slate-800">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div>
+                        <h3 class="font-black text-slate-900 dark:text-white text-sm flex items-center gap-1.5">
+                            <span>✍️ Disposisi Pimpinan (Inspektur Daerah)</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Arahkan permohonan konsultasi ini kepada Irban yang membidangi.</p>
+                    </div>
+                    <button type="button" @click="showModalDisposisiInspektur = false" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+                </div>
+
+                <form method="POST" action="{{ route('konsultasi.disposisi_inspektur', $konsultasi->id) }}" class="space-y-4 text-xs">
+                    @csrf
+                    <div>
+                        <label class="block font-bold text-slate-800 dark:text-slate-200 mb-1">Diteruskan Kepada Irban *</label>
+                        <select name="irban_id" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold focus:ring-indigo-500">
+                            @foreach($irbans as $irb)
+                                <option value="{{ $irb->id }}" {{ $konsultasi->irban_id == $irb->id ? 'selected' : '' }}>
+                                    {{ $irb->nama_irban }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-800 dark:text-slate-200 mb-1">Catatan / Petunjuk Arahan Inspektur *</label>
+                        <textarea name="catatan_disposisi_inspektur" rows="4" required placeholder="Tuliskan petunjuk arahan pimpinan, misal: 'Pelajari regulasi pengadaan barang dan dampingi OPD terkait...'" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-indigo-500">{{ $konsultasi->catatan_disposisi_inspektur }}</textarea>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+                        <button type="button" @click="showModalDisposisiInspektur = false" class="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Batal</button>
+                        <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs">
+                            Kirim Disposisi ke Irban
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {{-- ===================================================== --}}
+        {{-- MODAL 2: DISPOSISI TEKNIS & TIM AUDITOR (SISI IRBAN)  --}}
+        {{-- ===================================================== --}}
+        <div x-show="showModalDisposisiIrban" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
             <div class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl p-6 space-y-4 shadow-xl border border-slate-200 dark:border-slate-800">
                 <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                    <h3 class="font-black text-slate-900 dark:text-white text-sm">Disposisi Tim & Metode Konsultasi APIP</h3>
-                    <button type="button" @click="showModalDisposisi = false" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+                    <div>
+                        <h3 class="font-black text-slate-900 dark:text-white text-sm">Penugasan Tim APIP & Metode Konsultasi (Irban)</h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Tetapkan metode pelayanan dan susun Tim Auditor/PPUPD penanggap.</p>
+                    </div>
+                    <button type="button" @click="showModalDisposisiIrban = false" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
                 </div>
 
                 <form method="POST" action="{{ route('konsultasi.disposisi', $konsultasi->id) }}" class="space-y-4 text-xs">
@@ -253,8 +353,10 @@
                     </div>
 
                     <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
-                        <button type="button" @click="showModalDisposisi = false" class="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Batal</button>
-                        <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs">Simpan Disposisi</button>
+                        <button type="button" @click="showModalDisposisiIrban = false" class="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Batal</button>
+                        <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs">
+                            Simpan & Mulai Konsultasi
+                        </button>
                     </div>
                 </form>
             </div>

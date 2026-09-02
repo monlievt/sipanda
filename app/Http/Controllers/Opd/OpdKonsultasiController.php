@@ -6,8 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Konsultasi;
 use App\Models\KonsultasiChat;
 use App\Models\ObjekPenugasan;
+use App\Models\Notifikasi;
+use App\Models\User;
+use App\Notifications\KonsultasiNotifikasiNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -35,7 +39,7 @@ class OpdKonsultasiController extends Controller
     }
 
     /**
-     * Form Pengajuan Konsultasi Baru OPD
+     * Form Pengajuan Konsultasi Baru
      */
     public function create(): View
     {
@@ -78,7 +82,7 @@ class OpdKonsultasiController extends Controller
         $opdUser = auth()->guard('opd')->user();
         $objek   = $opdUser->objekPenugasan;
 
-        // Auto Generate Nomor Tiket: CONS/2026/07/001
+        // Auto Generate Nomor Tiket: CONS/2026/09/001
         $count = Konsultasi::withTrashed()->whereYear('created_at', date('Y'))->count() + 1;
         $nomorTiket = 'CONS/' . date('Y') . '/' . date('m') . '/' . str_pad($count, 3, '0', STR_PAD_LEFT);
 
@@ -112,8 +116,35 @@ class OpdKonsultasiController extends Controller
             'lampiran_file' => $filePath,
         ]);
 
+        // 🔔 Kirim Notifikasi (Web + WA + Email) ke Inspektur Daerah & Super Admin
+        $inspekturs = User::whereHas('roles', fn($r) => $r->whereIn('name', ['inspektur', 'super_admin']))
+            ->aktif()
+            ->get();
+
+        foreach ($inspekturs as $inspektur) {
+            Notifikasi::create([
+                'user_id'      => $inspektur->id,
+                'jenis'        => 'info_lain',
+                'judul'        => 'Permohonan Konsultasi Baru dari OPD',
+                'pesan'        => "Permohonan #{$nomorTiket} dari {$objek?->nama}: '{$konsultasi->judul_permasalahan}'. Menunggu disposisi arahan Inspektur.",
+                'url_target'   => route('konsultasi.show', $konsultasi->id),
+                'status'       => 'terkirim',
+                'dikirim_pada' => now(),
+            ]);
+
+            try {
+                $inspektur->notify(new KonsultasiNotifikasiNotification(
+                    $konsultasi,
+                    'permohonan_baru',
+                    $opdUser->nama_display ?? $objek?->nama ?? 'OPD'
+                ));
+            } catch (\Throwable $e) {
+                Log::warning("[SIPANDA Notification] Gagal kirim notif konsultasi baru ke Inspektur {$inspektur->id}: " . $e->getMessage());
+            }
+        }
+
         return redirect()->route('opd.konsultasi.show', $konsultasi->id)
-            ->with('status', "Permohonan Konsultasi berhasil diajukan dengan Nomor Tiket: {$nomorTiket}. Tim Irban akan meninjau dan menunjuk Tim Konsultasi APIP.");
+            ->with('status', "Permohonan Konsultasi berhasil diajukan dengan Nomor Tiket: {$nomorTiket}. Permohonan telah diteruskan ke Inspektur untuk disposisi ke Irban.");
     }
 
     /**
@@ -131,6 +162,7 @@ class OpdKonsultasiController extends Controller
         $konsultasi->load([
             'objekPenugasan',
             'irban',
+            'inspekturPemberiDisposisi',
             'tim.user',
             'chats.sender',
         ]);
@@ -168,6 +200,36 @@ class OpdKonsultasiController extends Controller
             'pesan'         => $request->pesan,
             'lampiran_file' => $filePath,
         ]);
+
+        // 🔔 Kirim Notifikasi ke Tim Konsultasi APIP & Irban Terkait
+        $timUserIds = $konsultasi->timUsers->pluck('id')->toArray();
+        if (empty($timUserIds) && $konsultasi->irban_id) {
+            $timUserIds = User::where('irban_id', $konsultasi->irban_id)->pluck('id')->toArray();
+        }
+
+        $apipRecipients = User::whereIn('id', $timUserIds)->aktif()->get();
+        foreach ($apipRecipients as $apip) {
+            Notifikasi::create([
+                'user_id'      => $apip->id,
+                'jenis'        => 'info_lain',
+                'judul'        => 'Pesan Konsultasi Baru dari OPD',
+                'pesan'        => "Pesan baru dari " . ($opdUser->nama_display ?? 'OPD') . ": \"" . Str::limit($request->pesan, 80) . "\"",
+                'url_target'   => route('konsultasi.show', $konsultasi->id),
+                'status'       => 'terkirim',
+                'dikirim_pada' => now(),
+            ]);
+
+            try {
+                $apip->notify(new KonsultasiNotifikasiNotification(
+                    $konsultasi,
+                    'chat_baru',
+                    $opdUser->nama_display ?? 'OPD',
+                    $request->pesan
+                ));
+            } catch (\Throwable $e) {
+                // Log and continue
+            }
+        }
 
         return back()->with('status', 'Pesan konsultasi berhasil dikirim.');
     }

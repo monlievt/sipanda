@@ -14,19 +14,26 @@ class Konsultasi extends Model
     protected $fillable = [
         'nomor_tiket', 'user_id', 'objek_penugasan_id', 'irban_id',
         'area_konsultasi', 'judul_permasalahan', 'uraian_permasalahan',
-        'berkas_pendukung', 'preferensi_metode', 'metode_disetujui',
+        'berkas_pendukung', 'catatan_disposisi_inspektur', 'disposisi_inspektur_oleh', 'disposisi_inspektur_pada',
+        'preferensi_metode', 'metode_disetujui',
         'tanggal_tatap_muka', 'lokasi_tatap_muka', 'status',
         'kesimpulan_advis', 'berita_acara_pdf', 'is_faq_public', 'dibuat_oleh'
     ];
 
     protected $casts = [
-        'tanggal_tatap_muka' => 'datetime',
-        'is_faq_public' => 'boolean',
+        'tanggal_tatap_muka'        => 'datetime',
+        'disposisi_inspektur_pada'  => 'datetime',
+        'is_faq_public'             => 'boolean',
     ];
 
     public function pemohon()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function inspekturPemberiDisposisi()
+    {
+        return $this->belongsTo(User::class, 'disposisi_inspektur_oleh');
     }
 
     public function objekPenugasan()
@@ -55,14 +62,28 @@ class Konsultasi extends Model
         return $this->hasMany(KonsultasiChat::class, 'konsultasi_id')->orderBy('created_at', 'asc');
     }
 
+    public function getTopikAttribute(): string
+    {
+        return $this->judul_permasalahan ?: 'Konsultasi APIP';
+    }
+
+    public function getKategoriAttribute(): string
+    {
+        return $this->area_konsultasi ?: 'Umum';
+    }
+
     public function getStatusLabelAttribute(): string
     {
+        if ($this->status === 'menunggu_disposisi' || $this->status === 'menunggu_disposisi_inspektur') {
+            return $this->disposisi_inspektur_pada ? 'Menunggu Penugasan Tim Irban' : 'Menunggu Arahan Inspektur';
+        }
+
         return match($this->status) {
-            'menunggu_disposisi' => 'Menunggu Disposisi Irban',
-            'berjalan'           => 'Sedang Berjalan',
-            'selesai'            => 'Selesai (BA Terbit)',
-            'ditolak'            => 'Ditolak',
-            default              => $this->status,
+            'menunggu_penugasan_tim' => 'Menunggu Penugasan Tim Irban',
+            'berjalan'               => 'Sedang Berjalan',
+            'selesai'                => 'Selesai (BA Terbit)',
+            'ditolak'                => 'Ditolak',
+            default                  => $this->status,
         };
     }
 }

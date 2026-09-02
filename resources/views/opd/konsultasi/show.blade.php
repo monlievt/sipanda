@@ -77,6 +77,17 @@
                 </div>
             </div>
 
+            @if($konsultasi->disposisi_inspektur_pada)
+                <div class="p-3.5 bg-indigo-50/70 dark:bg-indigo-950/40 rounded-2xl border border-indigo-200 dark:border-indigo-900 text-xs space-y-1">
+                    <span class="font-bold text-indigo-900 dark:text-indigo-200 block text-[11px] uppercase tracking-wider">
+                        ✍️ Status Disposisi Pimpinan Inspektorat
+                    </span>
+                    <p class="text-indigo-950 dark:text-indigo-100">
+                        Permohonan telah didisposisikan oleh <strong>{{ $konsultasi->inspekturPemberiDisposisi?->nama ?? 'Inspektur Daerah' }}</strong> kepada <strong>{{ $konsultasi->irban?->nama_irban }}</strong> pada {{ $konsultasi->disposisi_inspektur_pada->format('d/m/Y H:i') }} WIB untuk ditindaklanjuti.
+                    </p>
+                </div>
+            @endif
+
             <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-1 text-xs">
                 <span class="font-bold text-slate-700 dark:text-slate-300 block">Uraian Permasalahan:</span>
                 <p class="text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-line">{{ $konsultasi->uraian_permasalahan }}</p>

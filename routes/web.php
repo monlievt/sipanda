@@ -165,6 +165,7 @@ Route::middleware(['auth'])->group(function () {
     // E-Consulting & QnA APIP (Internal)
     Route::get('/konsultasi', [\App\Http\Controllers\KonsultasiController::class, 'index'])->name('konsultasi.index');
     Route::get('/konsultasi/{konsultasi}', [\App\Http\Controllers\KonsultasiController::class, 'show'])->name('konsultasi.show');
+    Route::post('/konsultasi/{konsultasi}/disposisi-inspektur', [\App\Http\Controllers\KonsultasiController::class, 'disposisiInspektur'])->name('konsultasi.disposisi_inspektur');
     Route::post('/konsultasi/{konsultasi}/disposisi', [\App\Http\Controllers\KonsultasiController::class, 'disposisi'])->name('konsultasi.disposisi');
     Route::post('/konsultasi/{konsultasi}/chat', [\App\Http\Controllers\KonsultasiController::class, 'sendChat'])->name('konsultasi.chat');
     Route::post('/konsultasi/{konsultasi}/terbitkan-ba', [\App\Http\Controllers\KonsultasiController::class, 'terbitkanBa'])->name('konsultasi.terbitkan_ba');

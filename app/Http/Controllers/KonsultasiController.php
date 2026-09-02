@@ -35,7 +35,11 @@ class KonsultasiController extends Controller
         }
 
         if ($status) {
-            $query->where('status', $status);
+            if ($status === 'menunggu_disposisi') {
+                $query->whereIn('status', ['menunggu_disposisi', 'menunggu_disposisi_inspektur', 'menunggu_penugasan_tim']);
+            } else {
+                $query->where('status', $status);
+            }
         }
 
         if ($area) {
@@ -55,7 +59,7 @@ class KonsultasiController extends Controller
         $irbans = Irban::all();
         $usersList = User::internal()->aktif()->get();
 
-        $countMenunggu = Konsultasi::where('status', 'menunggu_disposisi')->count();
+        $countMenunggu = Konsultasi::whereIn('status', ['menunggu_disposisi', 'menunggu_disposisi_inspektur', 'menunggu_penugasan_tim'])->count();
         $countBerjalan = Konsultasi::where('status', 'berjalan')->count();
         $countSelesai  = Konsultasi::where('status', 'selesai')->count();
 
@@ -92,7 +96,83 @@ class KonsultasiController extends Controller
     }
 
     /**
-     * Disposisi Tim Konsultasi APIP & Persetujuan Metode (Online / Tatap Muka)
+     * Disposisi Tingkat 1: Inspektur mendisposisikan konsultasi ke Irban tujuan & arahan pimpinan.
+     */
+    public function disposisiInspektur(Request $request, Konsultasi $konsultasi): RedirectResponse
+    {
+        $request->validate([
+            'irban_id'                    => ['required', 'exists:irbans,id'],
+            'catatan_disposisi_inspektur' => ['required', 'string', 'max:1000'],
+        ], [
+            'irban_id.required'                    => 'Irban tujuan disposisi wajib dipilih.',
+            'catatan_disposisi_inspektur.required' => 'Catatan / arahan disposisi Inspektur wajib diisi.',
+        ]);
+
+        $sebelum = $konsultasi->toArray();
+
+        $konsultasi->update([
+            'irban_id'                    => $request->irban_id,
+            'catatan_disposisi_inspektur' => trim($request->catatan_disposisi_inspektur),
+            'disposisi_inspektur_oleh'    => auth()->id(),
+            'disposisi_inspektur_pada'    => now(),
+            'status'                      => 'menunggu_penugasan_tim',
+        ]);
+
+        ActivityLog::catat('konsultasi', $konsultasi->id, 'update', $sebelum, $konsultasi->toArray());
+
+        $irban = Irban::find($request->irban_id);
+
+        // Kirim Notifikasi (Web + WA + Email) ke Pejabat Irban tujuan
+        $irbanUsers = User::where('irban_id', $irban->id)
+            ->whereHas('roles', fn($r) => $r->whereIn('name', ['irban', 'admin_irban']))
+            ->aktif()
+            ->get();
+
+        if ($irbanUsers->isEmpty()) {
+            $irbanUsers = User::where('irban_id', $irban->id)->aktif()->get();
+        }
+
+        foreach ($irbanUsers as $uIrban) {
+            \App\Models\Notifikasi::create([
+                'user_id'      => $uIrban->id,
+                'jenis'        => 'info_lain',
+                'judul'        => 'Disposisi Konsultasi dari Inspektur',
+                'pesan'        => "Konsultasi '{$konsultasi->topik}' didisposisikan kepada Irban Anda. Arahan: {$request->catatan_disposisi_inspektur}",
+                'url_target'   => route('konsultasi.show', $konsultasi->id),
+                'status'       => 'terkirim',
+                'dikirim_pada' => now(),
+            ]);
+
+            try {
+                $uIrban->notify(new \App\Notifications\KonsultasiNotifikasiNotification(
+                    $konsultasi,
+                    'disposisi_inspektur',
+                    auth()->user()->nama ?? 'Inspektur',
+                    $request->catatan_disposisi_inspektur
+                ));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif disposisi inspektur ke {$uIrban->id}: " . $e->getMessage());
+            }
+        }
+
+        // Notifikasi update ke pemohon OPD
+        if ($konsultasi->pemohon) {
+            \App\Models\Notifikasi::create([
+                'user_id'      => $konsultasi->user_id,
+                'jenis'        => 'info_lain',
+                'judul'        => 'Konsultasi Didisposisikan oleh Inspektur',
+                'pesan'        => "Permohonan konsultasi #{$konsultasi->nomor_tiket} telah didisposisikan oleh Inspektur kepada {$irban->nama_irban}.",
+                'url_target'   => route('opd.konsultasi.show', $konsultasi->id),
+                'status'       => 'terkirim',
+                'dikirim_pada' => now(),
+            ]);
+        }
+
+        return back()->with('status', "Konsultasi berhasil didisposisikan kepada {$irban->nama_irban}. Notifikasi telah dikirimkan ke Irban terkait.");
+    }
+
+    /**
+     * Disposisi Tingkat 2: Irban Menunjuk Tim Konsultasi APIP & Persetujuan Metode (Online / Tatap Muka)
      */
     public function disposisi(Request $request, Konsultasi $konsultasi): RedirectResponse
     {
@@ -154,19 +234,38 @@ class KonsultasiController extends Controller
         $auditors = User::whereIn('id', $timUserIds)->aktif()->get();
         foreach ($auditors as $auditor) {
             \App\Models\Notifikasi::create([
-                'user_id'    => $auditor->id,
-                'jenis'      => 'info_lain',
-                'judul'      => 'Disposisi Konsultasi APIP',
-                'pesan'      => "Konsultasi topik '{$konsultasi->topik}' didisposisikan kepada Anda.",
-                'url_target' => route('konsultasi.show', $konsultasi->id),
-                'status'     => 'terkirim',
+                'user_id'      => $auditor->id,
+                'jenis'        => 'info_lain',
+                'judul'        => 'Penugasan Tim Konsultasi APIP',
+                'pesan'        => "Konsultasi topik '{$konsultasi->topik}' ditugaskan kepada Anda.",
+                'url_target'   => route('konsultasi.show', $konsultasi->id),
+                'status'       => 'terkirim',
                 'dikirim_pada' => now(),
             ]);
 
             try {
-                $auditor->notify(new \App\Notifications\KonsultasiNotifikasiNotification($konsultasi, 'disposisi'));
+                $auditor->notify(new \App\Notifications\KonsultasiNotifikasiNotification($konsultasi, 'disposisi_irban'));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif disposisi konsultasi ke {$auditor->id}: " . $e->getMessage());
+                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif penugasan tim ke {$auditor->id}: " . $e->getMessage());
+            }
+        }
+
+        // Kirim Notifikasi ke Pemohon OPD bahwa Tim telah siap
+        if ($konsultasi->pemohon) {
+            \App\Models\Notifikasi::create([
+                'user_id'      => $konsultasi->user_id,
+                'jenis'        => 'info_lain',
+                'judul'        => 'Tim Konsultasi APIP Telah Siap',
+                'pesan'        => "Permohonan konsultasi #{$konsultasi->nomor_tiket} telah ditanggapi. Tim APIP telah siap melayani.",
+                'url_target'   => route('opd.konsultasi.show', $konsultasi->id),
+                'status'       => 'terkirim',
+                'dikirim_pada' => now(),
+            ]);
+
+            try {
+                $konsultasi->pemohon->notify(new \App\Notifications\KonsultasiNotifikasiNotification($konsultasi, 'disposisi_irban'));
+            } catch (\Throwable $e) {
+                // Ignore error
             }
         }
 

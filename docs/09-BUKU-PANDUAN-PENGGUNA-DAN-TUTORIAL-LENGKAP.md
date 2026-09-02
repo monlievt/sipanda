@@ -260,25 +260,56 @@ Untuk kebutuhan pelaporan eksekutif kepada Bupati Trenggalek atau pemantauan eva
 
 # BAB VI: PANDUAN MODUL LAYANAN E-CONSULTING & ADVISORY APIP
 
-Modul **E-Consulting APIP** memfasilitasi pendampingan dan konsultasi regulasi secara daring maupun tatap muka antara Perangkat Daerah dengan Tim APIP, dilengkapi penerbitan Berita Acara (BA) resmi.
+Modul **E-Consulting APIP** memfasilitasi pendampingan dan konsultasi regulasi secara daring maupun tatap muka antara Perangkat Daerah dengan Tim APIP, dilengkapi alur **Disposisi Bertingkat (Inspektur &rarr; Irban &rarr; Auditor)** serta notifikasi multi-channel (*Web, WhatsApp, dan Email*).
 
-### 6.1 Disposisi Permohonan Konsultasi oleh Irban
-1. Buka menu **E-Consulting APIP (QnA)** (`/konsultasi`).
-2. Klik permohonan baru yang berstatus `MENUNGGU DISPOSISI`.
-3. Tinjau uraian kasus yang diajukan OPD.
-4. Pilih Metode: **Online (Chat Web)** atau **Tatap Muka (Offline di Kantor Inspektorat)**.
-5. Tentukan Tim Penanggap APIP (Auditor/PPUPD yang memiliki keahlian relevan).
-6. Klik **"Tetapkan Disposisi"**. Tim Auditor yang ditunjuk otomatis menerima notifikasi penugasan konsultasi.
+```
+                      ALUR DISPOSISI E-CONSULTING BERTINGKAT
+  ┌─────────────────┐       ┌────────────────────────┐       ┌────────────────────────┐
+  │ OPD AJUKAN      │ ────> │ 1. DISPOSISI INSPEKTUR │ ────> │ 2. DISPOSISI IRBAN     │
+  │ KONSULTASI BARU │       │    • Pilih Irban       │       │    • Tunjuk Tim APIP   │
+  │ (Notif Masuk)   │       │    • Isi Arahan        │       │    • Pilih Chat/Offline│
+  └─────────────────┘       └────────────────────────┘       └────────────────────────┘
+                                                                         │
+                                                                         ▼
+                                                             ┌────────────────────────┐
+                                                             │ 3. DISKUSI CHAT/OFFLINE│
+                                                             │    & TERBITKAN BA (PDF)│
+                                                             └────────────────────────┘
+```
 
-### 6.2 Ruang Obrolan Interaktif (Chat Web & Inbound WhatsApp)
-1. Buka tiket konsultasi di `/konsultasi/{id}`.
-2. Tim Auditor dan PIC OPD dapat saling berbalas pesan teks dan mengunggah dokumen pedoman di ruang chat real-time.
-3. **Inbound WhatsApp:** Jika auditor atau OPD membalas pesan notifikasi WhatsApp dari ponsel, pesan tersebut otomatis masuk ke dalam ruang obrolan web aplikasi.
+### 6.1 Disposisi Tingkat 1 oleh Inspektur Daerah (Sederhana & Cepat)
+1. Setiap kali OPD mengajukan konsultasi baru, Inspektur Daerah otomatis menerima notifikasi Web (lonceng), WhatsApp, dan Email.
+2. Buka menu **E-Consulting APIP (QnA)** (`/konsultasi`) &rarr; Klik tiket berstatus `Menunggu Arahan Inspektur`.
+3. Klik tombol **"✍️ Disposisi Inspektur ke Irban"**.
+4. Lengkapi formulir ringkas:
+   - **Diteruskan Kepada Irban:** Pilih Irban pembina wilayah yang relevan (Irban I s.d. IV / Investigasi).
+   - **Catatan / Petunjuk Arahan Inspektur:** Tuliskan arahan singkat pimpinan (contoh: *"Pelajari regulasi PBJ dan dampingi OPD terkait perbaikan dokumen"*).
+5. Klik **"Kirim Disposisi ke Irban"**. Pejabat Irban yang dituju otomatis menerima notifikasi Web, Email, dan WhatsApp.
 
-### 6.3 Penerbitan Berita Acara (BA) Konsultasi Resmi
-1. Setelah konsultasi tuntas, Auditor mengisi formulir **"Kesimpulan Advis & Rekomendasi Normatif"** di bagian bawah tiket.
-2. Klik tombol **"Terbitkan Berita Acara Konsultasi"**. Status tiket berubah menjadi `SELESAI`.
-3. Klik tombol **"Cetak Berita Acara (PDF)"** untuk mencetak dokumen BA resmi yang siap ditandatangani kedua belah pihak.
+### 6.2 Disposisi Tingkat 2 oleh Irban (Penugasan Tim Teknis APIP)
+1. Pejabat Irban membuka tiket konsultasi yang telah diarahkan oleh Inspektur.
+2. Tinjau lembar disposisi dan arahan Inspektur di bagian atas dokumen.
+3. Klik tombol **"👥 Penugasan Tim APIP (Irban)"**.
+4. Lengkapi penetapan teknis:
+   - **Metode Konsultasi:** Pilih **Online Chat** (percakapan daring) atau **Tatap Muka** (pertemuan langsung di kantor Inspektorat dilengkapi tanggal, jam, dan ruangan).
+   - **Susunan Tim APIP:** Tentukan Penanggung Jawab, Pengendali Teknis (Daltek), Ketua Tim, dan Anggota Tim (Auditor/PPUPD).
+5. Klik **"Simpan & Mulai Konsultasi"**.
+6. **Otomasi Notifikasi:**
+   - Seluruh Auditor/PPUPD yang ditunjuk otomatis menerima notifikasi penugasan via Web, Email, dan WhatsApp.
+   - Pihak OPD menerima konfirmasi bahwa tim APIP telah siap melayani konsultasi.
+
+### 6.3 Ruang Obrolan Interaktif & Notifikasi Real-Time
+1. Buka tiket konsultasi di `/konsultasi/{id}` (APIP) atau `/opd/konsultasi/{id}` (OPD).
+2. Tim Auditor dan PIC OPD dapat saling berbalas pesan teks dan mengunggah dokumen regulasi/bukti permasalahan.
+3. **Notifikasi Pesan Baru:** Setiap kali ada balasan chat, sistem otomatis mengirimkan notifikasi Web dan WhatsApp ke pihak lawan bicara.
+4. **Inbound WhatsApp:** Jika auditor atau OPD membalas langsung pesan notifikasi WhatsApp dari ponsel, pesan tersebut otomatis terhubung dan masuk ke dalam riwayat ruang obrolan web aplikasi.
+
+### 6.4 Penerbitan Berita Acara (BA) Konsultasi Resmi
+1. Setelah konsultasi selesai, Auditor/Irban mengisi formulir **"Formulasi Advis & Terbitkan Berita Acara"**.
+2. Masukkan poin-poin kesimpulan, solusi normatif, dan arahan regulasi resmi Inspektorat.
+3. Klik **"Terbitkan Berita Acara PDF"**. Status tiket otomatis berubah menjadi `SELESAI`.
+4. Klik **"🖨️ Cetak Berita Acara (PDF)"** untuk mengunduh naskah dinas resmi format A4 Pemkab Trenggalek yang siap ditandatangani.
+5. (Opsional) Klik **"➕ Jadikan Artikel FAQ Publik"** jika substansi konsultasi ini bernilai edukasi tinggi agar dapat dipelajari oleh seluruh perangkat daerah lain.
 
 ---
 
