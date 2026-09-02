@@ -64,7 +64,7 @@
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2 shrink-0">
-                    <a href="{{ route('opd.lhp.berita_acara', $lhpSummary->id) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold text-xs rounded-xl shadow-xs transition-all">
+                    <a href="{{ route('opd.lhp.berita_acara', $tindakLanjut->id ?? $lhpSummary->id) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold text-xs rounded-xl shadow-xs transition-all">
                         <span>📑 Cetak Berita Acara (PDF)</span>
                     </a>
 

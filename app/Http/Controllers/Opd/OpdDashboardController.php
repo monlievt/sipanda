@@ -146,6 +146,7 @@ class OpdDashboardController extends Controller
         $sisaSetor   = max(0, $totalTarget - $totalSetor);
 
         $lhpSummary = (object) [
+            'id'                     => $tindakLanjut->id,
             'no_lhp'                 => $tindakLanjut->no_lhp ?: ('SPT: ' . ($tindakLanjut->penugasan?->no_spt ?? '-')),
             'judul_lhp'              => $tindakLanjut->judul_lhp ?: ($tindakLanjut->penugasan?->uraian_penugasan ?? 'Laporan Hasil Pengawasan'),
             'tgl_lhp'                => $tindakLanjut->tgl_lhp ?: $tindakLanjut->created_at,
