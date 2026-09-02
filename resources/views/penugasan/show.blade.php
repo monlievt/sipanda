@@ -75,6 +75,15 @@
                     </p>
                 </div>
 
+                @if($penugasan->dasar_penugasan)
+                <div>
+                    <span class="font-bold text-slate-400 uppercase text-[10px] block mb-1">Dasar Surat Perintah Tugas (Dasar Hukum):</span>
+                    <div class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 whitespace-pre-line">
+                        {{ $penugasan->dasar_penugasan }}
+                    </div>
+                </div>
+                @endif
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                     <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
                         <span class="text-[10px] font-bold text-slate-400 block uppercase">Jenis Penugasan:</span>

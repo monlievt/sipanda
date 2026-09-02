@@ -211,20 +211,18 @@
                                     @endif
                                     @endcan
 
-                                    <!-- Tombol Hapus -->
-                                    @can('pkppt.delete')
-                                    @if($item->status !== 'ditetapkan')
-                                    <form method="POST" action="{{ route('pkppt.destroy', $item->id) }}" onsubmit="return confirm('Yakin ingin menghapus baris PKPPT ini?')">
+                                    <!-- Tombol Hapus (Khusus status draft untuk Irban/Admin/Sekretariat, atau non-ditetapkan untuk Admin) -->
+                                    @if(($item->status === 'draft' && (auth()->user()->hasRole(['irban', 'admin_irban', 'sekretariat', 'admin', 'inspektur']) || auth()->user()->can('pkppt.delete'))) || ($item->status !== 'ditetapkan' && auth()->user()->can('pkppt.delete')))
+                                    <form method="POST" action="{{ route('pkppt.destroy', $item->id) }}" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus rencana PKPPT ini: {{ addslashes($item->area_pengawasan) }}?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg dark:hover:bg-rose-950/50 cursor-pointer" title="Hapus">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <button type="submit" class="p-1.5 text-rose-600 hover:bg-rose-50 hover:text-rose-700 rounded-lg dark:hover:bg-rose-950/50 cursor-pointer transition-colors" title="Hapus Rencana PKPPT">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                         </button>
                                     </form>
                                     @endif
-                                    @endcan
                                 </div>
                             </td>
                         </tr>

@@ -131,8 +131,12 @@ class PenugasanController extends Controller
             ->take(100)
             ->get();
 
+        $defaultDasarPenugasan = "1. Peraturan Daerah Kabupaten Trenggalek tentang Pembentukan dan Susunan Perangkat Daerah;\n"
+            . "2. Peraturan Bupati Trenggalek tentang Kedudukan, Susunan Organisasi, Tugas dan Fungsi serta Tata Kerja Inspektorat Daerah Kabupaten Trenggalek;\n"
+            . "3. Program Kerja Pengawasan Tahunan (PKPT) Inspektorat Daerah Kabupaten Trenggalek Tahun Anggaran " . date('Y') . ";";
+
         return view('penugasan.create', compact(
-            'objekList', 'jenisList', 'sumberList', 'irbans', 'usersList', 'pkpptList', 'parentStList'
+            'objekList', 'jenisList', 'sumberList', 'irbans', 'usersList', 'pkpptList', 'parentStList', 'defaultDasarPenugasan'
         ));
     }
 
@@ -149,6 +153,7 @@ class PenugasanController extends Controller
                 'no_spt'              => ['required', 'string', 'max:60', 'unique:penugasan,no_spt'],
                 'penugasan_induk_id'  => ['required', 'exists:penugasan,id'],
                 'uraian_penugasan'    => ['required', 'string'],
+                'dasar_penugasan'     => ['nullable', 'string'],
                 'tanggal_mulai'       => ['required', 'date'],
                 'tanggal_selesai'     => ['required', 'date', 'after_or_equal:tanggal_mulai'],
             ], [
@@ -166,9 +171,15 @@ class PenugasanController extends Controller
             $tglMulai = \Carbon\Carbon::parse($validated['tanggal_mulai'])->startOfDay();
             $statusOtomatis = now()->startOfDay()->gte($tglMulai) ? 'berjalan' : 'belum_berjalan';
 
+            $dasarPerpanjangan = $validated['dasar_penugasan'] ?? null;
+            if (empty($dasarPerpanjangan)) {
+                $dasarPerpanjangan = ($parentSt->dasar_penugasan ? $parentSt->dasar_penugasan . "\n" : '') . "Surat Perintah Tugas Induk Nomor: " . $parentSt->no_spt . ".";
+            }
+
             $penugasan = Penugasan::create([
                 'no_spt'              => $validated['no_spt'],
                 'uraian_penugasan'    => $validated['uraian_penugasan'],
+                'dasar_penugasan'     => $dasarPerpanjangan,
                 'sumber_penugasan_id' => $parentSt->sumber_penugasan_id,
                 'jenis_penugasan_id'  => $parentSt->jenis_penugasan_id,
                 'tanggal_mulai'       => $validated['tanggal_mulai'],
@@ -202,6 +213,7 @@ class PenugasanController extends Controller
             $validated = $request->validate([
                 'no_spt'              => ['required', 'string', 'max:60', 'unique:penugasan,no_spt'],
                 'uraian_penugasan'    => ['required', 'string'],
+                'dasar_penugasan'     => ['nullable', 'string'],
                 'sumber_penugasan_id' => ['required', 'exists:sumber_penugasan,id'],
                 'jenis_penugasan_id'  => ['required', 'exists:jenis_penugasan,id'],
                 'tanggal_mulai'       => ['required', 'date'],
@@ -259,6 +271,7 @@ class PenugasanController extends Controller
             $penugasan = Penugasan::create([
                 'no_spt'              => $validated['no_spt'],
                 'uraian_penugasan'    => $validated['uraian_penugasan'],
+                'dasar_penugasan'     => $validated['dasar_penugasan'] ?? null,
                 'sumber_penugasan_id' => $validated['sumber_penugasan_id'],
                 'jenis_penugasan_id'  => $validated['jenis_penugasan_id'],
                 'tanggal_mulai'       => $validated['tanggal_mulai'],
@@ -388,6 +401,7 @@ class PenugasanController extends Controller
                 'no_spt'              => ['required', 'string', 'max:60', 'unique:penugasan,no_spt,' . $penugasan->id],
                 'penugasan_induk_id'  => ['required', 'exists:penugasan,id'],
                 'uraian_penugasan'    => ['required', 'string'],
+                'dasar_penugasan'     => ['nullable', 'string'],
                 'tanggal_mulai'       => ['required', 'date'],
                 'tanggal_selesai'     => ['required', 'date', 'after_or_equal:tanggal_mulai'],
                 'status'              => ['required', 'in:belum_berjalan,berjalan,selesai'],
@@ -405,6 +419,7 @@ class PenugasanController extends Controller
             $penugasan->update([
                 'no_spt'              => $validated['no_spt'],
                 'uraian_penugasan'    => $validated['uraian_penugasan'],
+                'dasar_penugasan'     => $validated['dasar_penugasan'] ?? null,
                 'sumber_penugasan_id' => $parentSt->sumber_penugasan_id,
                 'jenis_penugasan_id'  => $parentSt->jenis_penugasan_id,
                 'tanggal_mulai'       => $validated['tanggal_mulai'],
@@ -437,6 +452,7 @@ class PenugasanController extends Controller
             $validated = $request->validate([
                 'no_spt'              => ['required', 'string', 'max:60', 'unique:penugasan,no_spt,' . $penugasan->id],
                 'uraian_penugasan'    => ['required', 'string'],
+                'dasar_penugasan'     => ['nullable', 'string'],
                 'sumber_penugasan_id' => ['required', 'exists:sumber_penugasan,id'],
                 'jenis_penugasan_id'  => ['required', 'exists:jenis_penugasan,id'],
                 'tanggal_mulai'       => ['required', 'date'],
@@ -463,6 +479,7 @@ class PenugasanController extends Controller
             $penugasan->update([
                 'no_spt'              => $validated['no_spt'],
                 'uraian_penugasan'    => $validated['uraian_penugasan'],
+                'dasar_penugasan'     => $validated['dasar_penugasan'] ?? null,
                 'sumber_penugasan_id' => $validated['sumber_penugasan_id'],
                 'jenis_penugasan_id'  => $validated['jenis_penugasan_id'],
                 'tanggal_mulai'       => $validated['tanggal_mulai'],

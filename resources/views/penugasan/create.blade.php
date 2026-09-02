@@ -176,6 +176,15 @@
                     <textarea name="uraian_penugasan" rows="3" required placeholder="Jelaskan uraian atau alasan perpanjangan penugasan..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">{{ old('uraian_penugasan') }}</textarea>
                 </div>
 
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-semibold">Dasar Surat Perintah Tugas (Dasar Hukum / Rujukan Penugasan)</label>
+                        <span class="text-[10px] text-slate-400">Dapat diedit / ditambah per penugasan untuk dicetak di Surat Tugas</span>
+                    </div>
+                    <textarea name="dasar_penugasan" rows="4" placeholder="1. Peraturan Daerah...&#10;2. Peraturan Bupati...&#10;3. PKPT Inspektorat Daerah..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500 leading-relaxed">{{ old('dasar_penugasan', $defaultDasarPenugasan ?? '') }}</textarea>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Teks dasar penugasan ini akan otomatis tercetak pada naskah dinas resmi Surat Perintah Tugas (SPT).</p>
+                </div>
+
                 <!-- Jenis & Sumber (Hanya tampil jika BUKAN ST Perpanjangan) -->
                 <div x-show="isPerpanjangan == '0'" x-transition class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>

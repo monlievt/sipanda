@@ -167,6 +167,15 @@
                                         ✏️ Edit
                                     </a>
                                     @endcan
+                                    @can('penugasan.delete')
+                                    <form method="POST" action="{{ route('penugasan.destroy', $item->id) }}" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data Surat Tugas {{ addslashes($item->no_spt) }} ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="px-2.5 py-1 bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 hover:bg-rose-100 rounded-lg text-[10px] font-bold border border-rose-300 shadow-xs cursor-pointer" title="Hapus Surat Tugas">
+                                            🗑️ Hapus
+                                        </button>
+                                    </form>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

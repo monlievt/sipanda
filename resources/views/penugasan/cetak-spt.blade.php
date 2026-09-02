@@ -65,12 +65,20 @@
             <div class="flex items-start gap-4">
                 <span class="font-bold w-20 shrink-0">Dasar</span>
                 <span class="w-3 shrink-0">:</span>
-                <div class="flex-1 space-y-1.5">
-                    <p>1. Peraturan Daerah Kabupaten Trenggalek tentang Pembentukan dan Susunan Perangkat Daerah;</p>
-                    <p>2. Peraturan Bupati Trenggalek tentang Kedudukan, Susunan Organisasi, Tugas dan Fungsi serta Tata Kerja Inspektorat Daerah Kabupaten Trenggalek;</p>
-                    <p>3. Program Kerja Pengawasan Tahunan (PKPT) Inspektorat Daerah Kabupaten Trenggalek Tahun Anggaran {{ $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->format('Y') : date('Y') }};</p>
-                    @if($penugasan->penugasanInduk)
-                        <p>4. Surat Perintah Tugas Induk Nomor: {{ $penugasan->penugasanInduk->no_spt }}.</p>
+                <div class="flex-1 space-y-1.5 leading-relaxed">
+                    @if(!empty($penugasan->dasar_penugasan))
+                        @foreach(preg_split('/\r\n|\r|\n/', trim($penugasan->dasar_penugasan)) as $barisDasar)
+                            @if(trim($barisDasar))
+                                <p>{{ trim($barisDasar) }}</p>
+                            @endif
+                        @endforeach
+                    @else
+                        <p>1. Peraturan Daerah Kabupaten Trenggalek tentang Pembentukan dan Susunan Perangkat Daerah;</p>
+                        <p>2. Peraturan Bupati Trenggalek tentang Kedudukan, Susunan Organisasi, Tugas dan Fungsi serta Tata Kerja Inspektorat Daerah Kabupaten Trenggalek;</p>
+                        <p>3. Program Kerja Pengawasan Tahunan (PKPT) Inspektorat Daerah Kabupaten Trenggalek Tahun Anggaran {{ $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->format('Y') : date('Y') }};</p>
+                        @if($penugasan->penugasanInduk)
+                            <p>4. Surat Perintah Tugas Induk Nomor: {{ $penugasan->penugasanInduk->no_spt }}.</p>
+                        @endif
                     @endif
                 </div>
             </div>

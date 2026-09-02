@@ -12,7 +12,7 @@ class Penugasan extends Model
     protected $table = 'penugasan';
 
     protected $fillable = [
-        'no_spt', 'pkppt_id', 'penugasan_induk_id', 'is_sesuai_pkppt', 'uraian_penugasan',
+        'no_spt', 'pkppt_id', 'penugasan_induk_id', 'is_sesuai_pkppt', 'uraian_penugasan', 'dasar_penugasan',
         'sumber_penugasan_id', 'jenis_penugasan_id', 'tanggal_mulai',
         'tanggal_selesai', 'status', 'progres_persen', 'keterangan_hasil',
         'irban_id', 'dibuat_oleh', 'diperbarui_oleh',

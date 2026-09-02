@@ -78,21 +78,11 @@ class UserSeeder extends Seeder
 
             // Cari irban_id dari bidang
             $irbanId = null;
-            foreach ($bidangToIrban as $key => $id) {
-                if (stripos($bidang, $key) !== false || stripos($key, $bidang) !== false) {
-                    $irbanId = $id;
-                    break;
-                }
-            }
-            // Fallback: cari langsung berdasarkan INSPEKTUR PEMBANTU x
-            if (! $irbanId && preg_match('/INSPEKTUR PEMBANTU (I{1,4}V?)/i', $bidang, $m)) {
-                $romanToName = ['I'=>'I','II'=>'II','III'=>'III','IV'=>'IV'];
+            if (preg_match('/\b(IV|III|II|I)\b/i', $bidang, $m)) {
                 $roman = strtoupper($m[1]);
                 $irbanKey = "Inspektur Pembantu {$roman}";
                 $irbanId = $irbanMap[$irbanKey] ?? null;
-            }
-            // Sekretariat fallback
-            if (! $irbanId && (stripos($bidang, 'SEKRETARIAT') !== false || stripos($bidang, 'SEKRETARIS') !== false)) {
+            } elseif (stripos($bidang, 'SEKRETARIAT') !== false || stripos($bidang, 'SEKRETARIS') !== false || stripos($bidang, 'KEPEGAWAIAN') !== false) {
                 $irbanId = $irbanMap['Sekretariat'] ?? null;
             }
 
