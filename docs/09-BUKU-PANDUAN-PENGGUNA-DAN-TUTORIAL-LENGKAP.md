@@ -188,6 +188,19 @@ Pada form pembuatan atau pengeditan SPT, sistem menyediakan komponen pemilih das
    - Akumulasi hari kerja pengawasan (mandays).
    - Status ketersediaan personil (*Tersedia, Optimal, atau Padat Tugas*).
 
+### 4.6 Menyelesaikan Penugasan & Sinkronisasi Realisasi PKPPT
+Terdapat 2 skema fleksibel untuk mengklaim bahwa suatu penugasan lapangan telah selesai dilaksanakan:
+1. **Skema A: Tombol Cepat "✓ Tandai Selesai" pada Data Penugasan (`/penugasan`)**
+   - Pada baris penugasan yang masih berstatus `berjalan` atau `belum berjalan`, klik tombol **"✓ Tandai Selesai"**.
+   - Masukkan catatan ringkas/keterangan hasil &rarr; Klik **"Selesaikan Penugasan"**. Status penugasan seketika menjadi **SELESAI (100%)**.
+2. **Skema B: Otomatis Selesai Saat Input LHP di Modul Tindak Lanjut Result (`/tindak-lanjut`)**
+   - Ketika auditor menerbitkan Laporan Hasil Pengawasan (LHP) yang terhubung ke nomor SPT terkait, sistem secara otomatis mengubah status penugasan menjadi **SELESAI (100%)**.
+3. **Keterkaitan dengan Monitoring Realisasi PKPPT (`/kegiatan-pengawasan`):**
+   - Menu Monitoring Realisasi PKPPT secara otomatis membaca jumlah SPT yang telah diselesaikan.
+   - Jika SPT selesai dalam jadwal yang ditetapkan di PKPPT, indikator monitoring otomatis berubah menjadi **🟢 Selesai Sesuai Target**.
+   - Jika SPT belum selesai sementara batas waktu rencana PKPPT telah terlewati, indikator berstatus **🟡 Pelaksanaan Terlambat**.
+   - Jika SPT sedang dikerjakan dalam jadwal rencana, indikator berstatus **🔵 Sedang Dalam Pelaksanaan**.
+
 ---
 
 # BAB V: PANDUAN MODUL TINDAK LANJUT HASIL PENGAWASAN (TLRHP / LHP)

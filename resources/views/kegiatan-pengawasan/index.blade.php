@@ -43,9 +43,9 @@
         </div>
 
         <!-- Summary Indicators Cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3.5 mb-6">
             <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-lg">
                     🟢
                 </div>
                 <div>
@@ -55,7 +55,17 @@
             </div>
 
             <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-lg">
+                    🔵
+                </div>
+                <div>
+                    <p class="text-2xl font-black text-blue-600 dark:text-blue-400">{{ $rekap['indikator_biru'] }}</p>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase">Sedang Berjalan</p>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-lg">
                     🟡
                 </div>
                 <div>
@@ -65,21 +75,21 @@
             </div>
 
             <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center font-bold">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center font-bold text-lg">
                     🔴
                 </div>
                 <div>
-                    <p class="text-2xl font-black text-rose-600 dark:text-rose-400">{{ $rekap['indikator_merah'] }}</p>
+                    <p class="text-2xl font-black text-rose-600 dark:text-rose-400">{{ $rekap['indikator_merah'] + $rekap['indikator_abu'] }}</p>
                     <p class="text-[10px] font-bold text-slate-500 uppercase">Belum Dimulai</p>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold">
-                    🔵
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3 col-span-2 sm:col-span-1">
+                <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold text-lg">
+                    📋
                 </div>
                 <div>
-                    <p class="text-2xl font-black text-blue-600 dark:text-blue-400">{{ $rekap['total_realisasi'] }}</p>
+                    <p class="text-2xl font-black text-purple-600 dark:text-purple-400">{{ $rekap['total_realisasi'] }}</p>
                     <p class="text-[10px] font-bold text-slate-500 uppercase">Total Realisasi SPT</p>
                 </div>
             </div>
@@ -186,7 +196,8 @@
                                         {{ $item->indikator === 'hijau' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200' : '' }}
                                         {{ $item->indikator === 'kuning' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200' : '' }}
                                         {{ $item->indikator === 'merah' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200' : '' }}
-                                        {{ $item->indikator === 'biru' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200' : '' }}">
+                                        {{ $item->indikator === 'biru' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200' : '' }}
+                                        {{ $item->indikator === 'abu' ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200' : '' }}">
                                         {{ $item->indikator_label }}
                                     </span>
                                 </td>

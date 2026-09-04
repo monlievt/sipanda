@@ -563,23 +563,36 @@ class PenugasanController extends Controller
     }
 
     /**
-     * Update cepat status, progres %, dan keterangan hasil penugasan.
+     * Update cepat status, progres %, dan keterangan hasil penugasan (Klaim Selesai).
      */
     public function updateStatus(Request $request, Penugasan $penugasan): RedirectResponse
     {
         $validated = $request->validate([
             'status'           => ['required', 'in:belum_berjalan,berjalan,selesai'],
-            'progres_persen'   => ['required', 'integer', 'min:0', 'max:100'],
-            'keterangan_hasil' => ['nullable', 'required_if:status,selesai', 'string'],
+            'progres_persen'   => ['nullable', 'integer', 'min:0', 'max:100'],
+            'keterangan_hasil' => ['nullable', 'string'],
         ]);
 
         $sebelum = $penugasan->toArray();
+
+        if ($validated['status'] === 'selesai') {
+            $validated['progres_persen'] = 100;
+            if (empty($validated['keterangan_hasil'])) {
+                $validated['keterangan_hasil'] = 'Penugasan telah selesai dilaksanakan.';
+            }
+        } elseif (! isset($validated['progres_persen'])) {
+            $validated['progres_persen'] = $penugasan->progres_persen ?? 0;
+        }
 
         $validated['diperbarui_oleh'] = auth()->id();
         $penugasan->update($validated);
 
         ActivityLog::catat('penugasan', $penugasan->id, 'update', $sebelum, $penugasan->toArray());
 
-        return back()->with('status', "Status penugasan {$penugasan->no_spt} berhasil diperbarui.");
+        $pesan = $validated['status'] === 'selesai'
+            ? "✓ Penugasan {$penugasan->no_spt} berhasil ditandai SELESAI!"
+            : "Status penugasan {$penugasan->no_spt} berhasil diperbarui.";
+
+        return back()->with('status', $pesan);
     }
 }

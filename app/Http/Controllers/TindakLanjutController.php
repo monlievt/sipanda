@@ -373,6 +373,15 @@ class TindakLanjutController extends Controller
             $createdCount++;
         }
 
+        // 🔄 Skema B: Auto-update status Penugasan menjadi 'selesai' (100%) karena LHP telah terbit
+        if ($penugasan->status !== 'selesai') {
+            $penugasan->update([
+                'status'           => 'selesai',
+                'progres_persen'   => 100,
+                'keterangan_hasil' => $penugasan->keterangan_hasil ?: "LHP {$noLhp} telah diterbitkan.",
+            ]);
+        }
+
         $pesanBerkas = $filePath ? " beserta lampiran berkas PDF LHP." : ".";
 
         return redirect()->route('tindak-lanjut.index')

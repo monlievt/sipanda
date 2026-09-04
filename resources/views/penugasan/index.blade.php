@@ -147,12 +147,28 @@
                                 {{ $item->tanggal_mulai->format('d/m/Y') }} — {{ $item->tanggal_selesai->format('d/m/Y') }}
                             </td>
                             <td class="py-3 px-4 text-center whitespace-nowrap">
-                                <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider
-                                    {{ $item->status === 'selesai' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : '' }}
-                                    {{ $item->status === 'berjalan' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' : '' }}
-                                    {{ $item->status === 'belum_berjalan' ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' : '' }}">
-                                    {{ $item->status_label }}
-                                </span>
+                                @if($item->status === 'selesai')
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200">
+                                        <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                        Selesai (100%)
+                                    </span>
+                                @else
+                                    <div class="space-y-1">
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider block
+                                            {{ $item->status === 'berjalan' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }}">
+                                            {{ $item->status_label }}
+                                        </span>
+                                        @can('penugasan.update_status')
+                                        <button type="button" onclick="openModalSelesaikanPenugasan({
+                                            id: {{ $item->id }},
+                                            no_spt: '{{ addslashes($item->no_spt) }}',
+                                            uraian: '{{ addslashes($item->uraian_penugasan) }}'
+                                        })" class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[9px] font-bold shadow-2xs cursor-pointer" title="Klaim Penugasan ini telah Selesai">
+                                            <span>✓ Tandai Selesai</span>
+                                        </button>
+                                        @endcan
+                                    </div>
+                                @endif
                             </td>
                             <td class="py-3 px-4 text-center whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-1">
@@ -196,4 +212,60 @@
             </div>
         @endif
     </div>
+
+    <!-- Modal Cepat Selesaikan Penugasan -->
+    <div id="modalSelesaikanPenugasan" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-800 text-xs">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center justify-center font-bold text-sm">
+                        ✓
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-slate-900 dark:text-white text-base">Tandai Penugasan Selesai</h3>
+                        <p class="text-[11px] text-slate-500">Klaim realisasi pengawasan lapangan telah rampung</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modalSelesaikanPenugasan').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xl font-bold cursor-pointer">&times;</button>
+            </div>
+
+            <form id="formSelesaikanPenugasan" method="POST" action="" class="space-y-4 mt-4">
+                @csrf
+                @method('PATCH')
+
+                <input type="hidden" name="status" value="selesai">
+                <input type="hidden" name="progres_persen" value="100">
+
+                <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+                    <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block">Nomor Surat Tugas (SPT)</span>
+                    <p id="labelNoSpt" class="font-mono font-bold text-slate-900 dark:text-white text-sm"></p>
+                    <p id="labelUraian" class="text-slate-600 dark:text-slate-300 text-xs mt-1"></p>
+                </div>
+
+                <div>
+                    <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Keterangan Hasil / Catatan Ringkas (Opsional)</label>
+                    <textarea name="keterangan_hasil" rows="3" placeholder="mis. Penugasan telah selesai dilaksanakan dan Laporan Hasil Pengawasan (LHP) telah diterbitkan." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs"></textarea>
+                    <p class="text-[10px] text-slate-500 mt-1">Status akan otomatis menjadi <strong>SELESAI (100%)</strong> dan tercatat pada Monitoring Realisasi PKPPT.</p>
+                </div>
+
+                <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('modalSelesaikanPenugasan').classList.add('hidden')" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold rounded-xl cursor-pointer">Batal</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md cursor-pointer flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span>Selesaikan Penugasan</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModalSelesaikanPenugasan(data) {
+            const form = document.getElementById('formSelesaikanPenugasan');
+            form.action = '/penugasan/' + data.id + '/status';
+            document.getElementById('labelNoSpt').innerText = data.no_spt;
+            document.getElementById('labelUraian').innerText = data.uraian;
+            document.getElementById('modalSelesaikanPenugasan').classList.remove('hidden');
+        }
+    </script>
 </x-app-layout>
