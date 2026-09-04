@@ -209,9 +209,24 @@
                                 <p class="font-bold text-slate-900 dark:text-white leading-snug">
                                     {{ $group->judul_lhp ?? 'Laporan Hasil Pengawasan Terkait SPT ' . $group->penugasan?->no_spt }}
                                 </p>
-                                <span class="text-[10px] text-slate-500 font-semibold block truncate max-w-xs mt-0.5">
-                                    Objek: {{ $group->penugasan?->objekPenugasan->pluck('nama')->implode(', ') ?? '-' }}
-                                </span>
+                                <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                    @php
+                                        $uniqueObjek = $group->items->map(function($i) {
+                                            return $i->objekPenugasan ? $i->objekPenugasan->nama : null;
+                                        })->filter()->unique();
+                                    @endphp
+                                    @if($uniqueObjek->isNotEmpty())
+                                        @foreach($uniqueObjek as $oname)
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                                🏛️ {{ $oname }}
+                                            </span>
+                                        @endforeach
+                                    @else
+                                        <span class="text-[10px] text-slate-500 font-semibold block truncate max-w-xs">
+                                            Objek: {{ $group->penugasan?->objekPenugasan->pluck('nama')->implode(', ') ?? '-' }}
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
 
                             <!-- Column 3: Nilai Yang Dilakukan Pengawasan (Sebelah Kiri NILAI RP & SETOR) -->
@@ -298,8 +313,10 @@
     <div id="modalTambahTemuanMulti" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-4xl w-full p-6 border border-slate-200 dark:border-slate-800 text-xs space-y-4"
             x-data="{
+                selectedObjekList: [],
                 items: [
                     {
+                        objek_penugasan_id: '',
                         temuan: '',
                         rekomendasi: [
                             { uraian: '', nilai_diawasi_rp: '', nilai_rekomendasi_rp: '', tanggal_target: '' }
@@ -307,7 +324,9 @@
                     }
                 ],
                 addTemuan() {
+                    let defaultObj = (this.selectedObjekList && this.selectedObjekList.length === 1) ? this.selectedObjekList[0].id : '';
                     this.items.push({
+                        objek_penugasan_id: defaultObj,
                         temuan: '',
                         rekomendasi: [{ uraian: '', nilai_diawasi_rp: '', nilai_rekomendasi_rp: '', tanggal_target: '' }]
                     });
@@ -330,7 +349,7 @@
             <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
                     <h3 class="font-bold text-slate-900 dark:text-white text-base">Tambah Catatan Temuan & Rekomendasi (LHP)</h3>
-                    <p class="text-[11px] text-slate-500 mt-0.5">Input LHP, Judul LHP, Temuan 1, Temuan 2, dst. serta Nilai Rekomendasi (Rp).</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Input LHP, Judul LHP, Temuan 1, Temuan 2, dst. serta pemetaan Objek/OPD sasaran.</p>
                 </div>
                 <button onclick="document.getElementById('modalTambahTemuanMulti').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
@@ -349,7 +368,15 @@
                             selectedLabel: '-- Pilih Nomor SPT --',
                             options: [
                                 @foreach($penugasanList as $p)
-                                    { id: '{{ $p->id }}', label: 'No. SPT: {{ addslashes($p->no_spt) }} — {{ addslashes($p->irban?->nama_irban ?? 'Semua Irban') }} ({{ addslashes(Str::limit($p->uraian_penugasan, 50)) }})' },
+                                    { 
+                                        id: '{{ $p->id }}', 
+                                        label: 'No. SPT: {{ addslashes($p->no_spt) }} — {{ addslashes($p->irban?->nama_irban ?? 'Semua Irban') }} ({{ addslashes(Str::limit($p->uraian_penugasan, 50)) }})',
+                                        objek: [
+                                            @foreach($p->objekPenugasan as $obj)
+                                                { id: {{ $obj->id }}, nama: '{{ addslashes($obj->nama) }}' },
+                                            @endforeach
+                                        ]
+                                    },
                                 @endforeach
                             ],
                             get filteredOptions() {
@@ -361,11 +388,23 @@
                                 this.selectedLabel = opt.label;
                                 this.open = false;
                                 this.search = '';
+                                selectedObjekList = opt.objek || [];
+                                
+                                // Auto set jika hanya ada 1 objek
+                                if (selectedObjekList.length === 1) {
+                                    items.forEach(it => { it.objek_penugasan_id = selectedObjekList[0].id; });
+                                }
                             },
                             init() {
                                 if (this.selectedId) {
                                     let found = this.options.find(o => o.id == this.selectedId);
-                                    if (found) this.selectedLabel = found.label;
+                                    if (found) {
+                                        this.selectedLabel = found.label;
+                                        selectedObjekList = found.objek || [];
+                                        if (selectedObjekList.length === 1) {
+                                            items.forEach(it => { it.objek_penugasan_id = selectedObjekList[0].id; });
+                                        }
+                                    }
                                 }
                             }
                         }" class="relative">
@@ -434,6 +473,31 @@
                                 <button type="button" @click="removeTemuan(tIndex)" x-show="items.length > 1" class="text-rose-600 hover:text-rose-800 text-xs font-semibold flex items-center gap-1">
                                     &times; Hapus Temuan / Catatan ini
                                 </button>
+                            </div>
+
+                            <!-- Pilihan Objek Sasaran Jika SPT Memiliki Banyak Objek -->
+                            <div x-show="selectedObjekList.length > 1" class="p-3 bg-amber-50/80 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800/80 space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <label class="block font-bold text-amber-950 dark:text-amber-200 text-[11px] flex items-center gap-1.5">
+                                        <span>🏛️</span>
+                                        <span>Objek / Instansi Sasaran untuk Temuan Ini:</span>
+                                    </label>
+                                    <span class="text-[10px] text-amber-700 dark:text-amber-400 font-semibold">SPT Multi-Objek (<span x-text="selectedObjekList.length"></span> instansi)</span>
+                                </div>
+                                <select :name="'items[' + tIndex + '][objek_penugasan_id]'" x-model="tItem.objek_penugasan_id" class="w-full rounded-xl border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:ring-amber-500">
+                                    <option value="">-- [Umum] Ditujukan untuk Seluruh Objek dalam SPT Ini --</option>
+                                    <template x-for="obj in selectedObjekList" :key="obj.id">
+                                        <option :value="obj.id" x-text="obj.nama"></option>
+                                    </template>
+                                </select>
+                                <p class="text-[10px] text-amber-800 dark:text-amber-300">Pilih instansi spesifik agar temuan ini hanya tampil dan dapat ditindaklanjuti oleh OPD bersangkutan.</p>
+                            </div>
+
+                            <div x-show="selectedObjekList.length === 1" class="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-[11px] font-medium bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <span class="text-blue-600 font-bold">🏛️ Objek Sasaran:</span>
+                                <span class="font-bold text-slate-900 dark:text-white" x-text="selectedObjekList[0] ? selectedObjekList[0].nama : ''"></span>
+                                <span class="text-[10px] text-emerald-600 font-semibold">(Otomatis Terkunci)</span>
+                                <input type="hidden" :name="'items[' + tIndex + '][objek_penugasan_id]'" :value="selectedObjekList[0] ? selectedObjekList[0].id : ''">
                             </div>
 
                             <div>

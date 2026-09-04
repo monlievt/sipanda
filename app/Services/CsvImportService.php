@@ -304,8 +304,13 @@ class CsvImportService
                 $tglLhp     = $this->parseDate($row[8] ?? null) ?? now()->toDateString();
                 $judulLhp   = $row[7] ?? ($penugasan ? $penugasan->uraian_penugasan : ('LHP No. ' . $noLhp));
 
+                $defaultObjekId = ($penugasan && $penugasan->objekPenugasan->count() === 1) 
+                    ? $penugasan->objekPenugasan->first()->id 
+                    : null;
+
                 TindakLanjut::create([
                     'penugasan_id'         => $penugasan->id,
+                    'objek_penugasan_id'   => $defaultObjekId,
                     'no_lhp'               => $noLhp,
                     'judul_lhp'            => $judulLhp,
                     'tgl_lhp'              => $tglLhp,

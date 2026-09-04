@@ -25,8 +25,15 @@ class OpdDashboardController extends Controller
         $search = $request->input('search');
         $tahun = $request->input('tahun');
 
-        $query = TindakLanjut::with(['penugasan.irban', 'penugasan.objekPenugasan', 'buktiTindakLanjut.arsipDigital', 'rincianPenyetoran'])
-            ->whereHas('penugasan.objekPenugasan', fn($q) => $q->where('objek_penugasan.id', $objekId));
+        // Query khusus hanya untuk temuan/rekomendasi milik OPD bersangkutan
+        $query = TindakLanjut::with(['penugasan.irban', 'penugasan.objekPenugasan', 'objekPenugasan', 'buktiTindakLanjut.arsipDigital', 'rincianPenyetoran'])
+            ->where(function ($q) use ($objekId) {
+                $q->where('tindak_lanjut.objek_penugasan_id', $objekId)
+                  ->orWhere(function ($sub) use ($objekId) {
+                      $sub->whereNull('tindak_lanjut.objek_penugasan_id')
+                          ->whereHas('penugasan.objekPenugasan', fn($pq) => $pq->where('objek_penugasan.id', $objekId));
+                  });
+            });
 
         if ($tahun) {
             $query->where(function ($q) use ($tahun) {
@@ -118,15 +125,22 @@ class OpdDashboardController extends Controller
     public function showLhp(TindakLanjut $tindakLanjut): View|RedirectResponse
     {
         $user = auth('opd')->user();
-        $isMilik = $tindakLanjut->penugasan->objekPenugasan->contains('id', $user->objek_penugasan_id);
+        $isMilik = ($tindakLanjut->objek_penugasan_id && $tindakLanjut->objek_penugasan_id == $user->objek_penugasan_id)
+            || (!$tindakLanjut->objek_penugasan_id && $tindakLanjut->penugasan->objekPenugasan->contains('id', $user->objek_penugasan_id));
 
         if (! $isMilik) {
             return redirect()->route('opd.dashboard')->with('error', 'Akses ditolak. LHP ini ditujukan untuk instansi lain.');
         }
 
-        // Ambil seluruh rekomendasi yang tergabung dalam LHP yang sama
-        $query = TindakLanjut::with(['penugasan.irban', 'buktiTindakLanjut.arsipDigital', 'buktiTindakLanjut.verifikator', 'rincianPenyetoran.pembuatData'])
-            ->whereHas('penugasan.objekPenugasan', fn($q) => $q->where('objek_penugasan.id', $user->objek_penugasan_id));
+        // Ambil seluruh rekomendasi yang tergabung dalam LHP yang sama khusus untuk OPD ini
+        $query = TindakLanjut::with(['penugasan.irban', 'objekPenugasan', 'buktiTindakLanjut.arsipDigital', 'buktiTindakLanjut.verifikator', 'rincianPenyetoran.pembuatData'])
+            ->where(function ($q) use ($user) {
+                $q->where('tindak_lanjut.objek_penugasan_id', $user->objek_penugasan_id)
+                  ->orWhere(function ($sub) use ($user) {
+                      $sub->whereNull('tindak_lanjut.objek_penugasan_id')
+                          ->whereHas('penugasan.objekPenugasan', fn($pq) => $pq->where('objek_penugasan.id', $user->objek_penugasan_id));
+                  });
+            });
 
         if ($tindakLanjut->no_lhp) {
             $query->where('no_lhp', $tindakLanjut->no_lhp);
@@ -175,13 +189,14 @@ class OpdDashboardController extends Controller
     public function show(TindakLanjut $tindakLanjut): View|RedirectResponse
     {
         $user = auth('opd')->user();
-        $isMilik = $tindakLanjut->penugasan->objekPenugasan->contains('id', $user->objek_penugasan_id);
+        $isMilik = ($tindakLanjut->objek_penugasan_id && $tindakLanjut->objek_penugasan_id == $user->objek_penugasan_id)
+            || (!$tindakLanjut->objek_penugasan_id && $tindakLanjut->penugasan->objekPenugasan->contains('id', $user->objek_penugasan_id));
 
         if (! $isMilik) {
             return redirect()->route('opd.dashboard')->with('error', 'Akses ditolak. Rekomendasi ini ditujukan untuk OPD lain.');
         }
 
-        $tindakLanjut->load(['penugasan', 'buktiTindakLanjut.arsipDigital', 'buktiTindakLanjut.verifikator', 'rincianPenyetoran.pembuatData']);
+        $tindakLanjut->load(['penugasan', 'objekPenugasan', 'buktiTindakLanjut.arsipDigital', 'buktiTindakLanjut.verifikator', 'rincianPenyetoran.pembuatData']);
 
         return view('opd.detail-rekomendasi', compact('user', 'tindakLanjut'));
     }
@@ -192,7 +207,8 @@ class OpdDashboardController extends Controller
     public function storeBukti(Request $request, TindakLanjut $tindakLanjut): RedirectResponse
     {
         $user = auth('opd')->user();
-        $isMilik = $tindakLanjut->penugasan->objekPenugasan->contains('id', $user->objek_penugasan_id);
+        $isMilik = ($tindakLanjut->objek_penugasan_id && $tindakLanjut->objek_penugasan_id == $user->objek_penugasan_id)
+            || (!$tindakLanjut->objek_penugasan_id && $tindakLanjut->penugasan->objekPenugasan->contains('id', $user->objek_penugasan_id));
 
         if (! $isMilik) {
             return redirect()->route('opd.dashboard')->with('error', 'Akses ditolak.');

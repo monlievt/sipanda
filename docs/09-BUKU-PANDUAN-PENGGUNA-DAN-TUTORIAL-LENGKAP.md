@@ -209,10 +209,14 @@ Modul **Tindak Lanjut Result** mengatur siklus pengawasan pasca-audit, penatausa
                                                 └─────────────────────────┘
 ```
 
-### 5.1 Menginput Matriks Temuan & Rekomendasi LHP Baru
+### 5.1 Menginput Matriks Temuan & Rekomendasi LHP Baru (Mendukung Multi-Objek / Multi-OPD)
 1. Buka menu **Tindak Lanjut Result** (`/tindak-lanjut`) &rarr; Klik **"+ Tambah Rekomendasi LHP"**.
 2. Hubungkan dengan Nomor SPT Penugasan terkait.
-3. Isi rincian temuan:
+3. **Pemetaan Objek Sasaran Temuan (Multi-OPD Support):**
+   - Jika SPT penugasan melibatkan **banyak objek pemeriksaan sekaligus** (misalnya: SPT Audit Serentak 14 Desa atau SPT Monitoring Belanja 10 OPD), sistem secara dinamis menampilkan pemilih **"🏛️ Objek / Instansi Sasaran untuk Temuan Ini"** pada setiap blok temuan.
+   - Auditor dapat menetapkan temuan #1 khusus untuk *Desa A*, temuan #2 untuk *Desa B*, dan seterusnya.
+   - **Jaminan Isolasi Data Auditi:** Ketika akun OPD *Desa A* login ke Portal OPD, sistem menyaring secara ketat sehingga *Desa A* hanya melihat temuan yang ditujukan untuk *Desa A*, dan sama sekali tidak dapat melihat temuan milik *Desa B*.
+4. Isi rincian temuan & rekomendasi:
    - **Nomor LHP & Tanggal LHP:** Nomor laporan hasil audit resmi.
    - **Judul LHP:** Judul pengawasan (misal: *LHP Kinerja Pelayanan Publik RSUD dr. Soedomo*).
    - **Uraian Temuan Pemeriksaan:** Ringkasan kondisi ketidaksesuaian fakta lapangan.
@@ -220,7 +224,7 @@ Modul **Tindak Lanjut Result** mengatur siklus pengawasan pasca-audit, penatausa
    - **Nilai Target Rekomendasi (Rp):** Jumlah kewajiban penyetoran ke Kas Daerah / pengembalian belanja (kosongkan jika rekomendasi administratif non-rupiah).
    - **Nilai Anggaran Diawasi (Rp):** Total pagu anggaran program/kegiatan yang diaudit.
    - **Tanggal Target Penyelesaian:** Otomatis dihitung maksimal 60 hari kalender sejak tanggal LHP sesuai ketentuan perundang-undangan.
-4. Klik **"Simpan Rekomendasi"**.
+5. Klik **"Simpan Rekomendasi"**.
 
 ### 5.2 Memverifikasi Bukti Tindak Lanjut dari OPD
 1. Buka menu **Tindak Lanjut Result** (`/tindak-lanjut`) atau menu **Verifikasi Bukti OPD** (`/tindak-lanjut/verifikasi-bukti`).

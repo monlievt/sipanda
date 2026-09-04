@@ -199,7 +199,14 @@
                             <span class="w-7 h-7 rounded-xl bg-blue-600 text-white font-black flex items-center justify-center text-xs shadow-xs">
                                 {{ $idx + 1 }}
                             </span>
-                            <span class="font-black text-slate-900 dark:text-white text-sm">Item Rekomendasi #{{ $idx + 1 }}</span>
+                            <div>
+                                <span class="font-black text-slate-900 dark:text-white text-sm">Item Rekomendasi #{{ $idx + 1 }}</span>
+                                @if($item->nama_objek_sasaran)
+                                    <span class="ml-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shadow-2xs">
+                                        🏛️ {{ $item->nama_objek_sasaran }}
+                                    </span>
+                                @endif
+                            </div>
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2">
@@ -216,6 +223,7 @@
                             <!-- ✏️ Tombol Edit Item Rekomendasi -->
                             <button type="button" onclick="openModalEditTl({
                                 id: {{ $item->id }},
+                                objek_penugasan_id: '{{ $item->objek_penugasan_id ?? '' }}',
                                 no_lhp: '{{ addslashes($item->no_lhp ?? '') }}',
                                 judul_lhp: '{{ addslashes($item->judul_lhp ?? '') }}',
                                 tgl_lhp: '{{ $item->tgl_lhp ? $item->tgl_lhp->format('Y-m-d') : '' }}',
@@ -485,21 +493,34 @@
                 @csrf
                 @method('PUT')
 
-                <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 grid grid-cols-1 sm:grid-cols-12 gap-3">
-                    <div class="sm:col-span-4">
-                        <label class="block font-bold mb-1 text-blue-700 dark:text-blue-400">Nomor LHP</label>
-                        <input type="text" id="editNoLhp" name="no_lhp" placeholder="mis. 700/85/LHP/406.008/2026" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                        <div class="sm:col-span-4">
+                            <label class="block font-bold mb-1 text-blue-700 dark:text-blue-400">Nomor LHP</label>
+                            <input type="text" id="editNoLhp" name="no_lhp" placeholder="mis. 700/85/LHP/406.008/2026" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                        </div>
+
+                        <div class="sm:col-span-5">
+                            <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Judul LHP</label>
+                            <input type="text" id="editJudulLhp" name="judul_lhp" placeholder="mis. LHP atas Pengelolaan Keuangan OPD..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                        </div>
+
+                        <div class="sm:col-span-3">
+                            <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Tanggal LHP</label>
+                            <input type="date" id="editTglLhp" name="tgl_lhp" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
                     </div>
 
-                    <div class="sm:col-span-5">
-                        <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Judul LHP</label>
-                        <input type="text" id="editJudulLhp" name="judul_lhp" placeholder="mis. LHP atas Pengelolaan Keuangan OPD..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
-                    </div>
-
-                    <div class="sm:col-span-3">
-                        <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Tanggal LHP</label>
-                        <input type="date" id="editTglLhp" name="tgl_lhp" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                    </div>
+                    @if($tindakLanjut->penugasan && $tindakLanjut->penugasan->objekPenugasan->count() > 0)
+                        <div class="pt-2 border-t border-slate-200 dark:border-slate-700">
+                            <label class="block font-bold mb-1 text-purple-700 dark:text-purple-300">🏛️ Objek / Instansi Sasaran Khusus Temuan Ini</label>
+                            <select id="editObjekPenugasanId" name="objek_penugasan_id" class="w-full rounded-xl border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200">
+                                @foreach($tindakLanjut->penugasan->objekPenugasan as $obj)
+                                    <option value="{{ $obj->id }}">{{ $obj->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -578,6 +599,10 @@
             document.getElementById('editNoLhp').value = data.no_lhp || '';
             document.getElementById('editJudulLhp').value = data.judul_lhp || '';
             document.getElementById('editTglLhp').value = data.tgl_lhp || '';
+            const objSelect = document.getElementById('editObjekPenugasanId');
+            if (objSelect && data.objek_penugasan_id) {
+                objSelect.value = data.objek_penugasan_id;
+            }
             document.getElementById('editUraianTemuan').value = data.uraian_temuan;
             document.getElementById('editRekomendasi').value = data.rekomendasi;
             if (data.nilai_diawasi_rp) {

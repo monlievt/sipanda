@@ -22,7 +22,7 @@ class TindakLanjutController extends Controller
         $search = $request->input('search');
         $tahun  = $request->input('tahun');
 
-        $query = TindakLanjut::with(['penugasan.irban', 'penugasan.objekPenugasan', 'buktiTindakLanjut.pengunggah', 'rincianPenyetoran']);
+        $query = TindakLanjut::with(['penugasan.irban', 'penugasan.objekPenugasan', 'objekPenugasan', 'buktiTindakLanjut.pengunggah', 'rincianPenyetoran']);
 
         if ($status) {
             if ($status === 'proses') {
@@ -47,7 +47,8 @@ class TindakLanjutController extends Controller
                 $q->where('uraian_temuan', 'like', "%{$search}%")
                   ->orWhere('rekomendasi', 'like', "%{$search}%")
                   ->orWhere('no_lhp', 'like', "%{$search}%")
-                  ->orWhere('judul_lhp', 'like', "%{$search}%");
+                  ->orWhere('judul_lhp', 'like', "%{$search}%")
+                  ->orWhereHas('objekPenugasan', fn($oq) => $oq->where('nama', 'like', "%{$search}%"));
             });
         }
 
@@ -92,7 +93,7 @@ class TindakLanjutController extends Controller
             ];
         })->values();
 
-        $penugasanList = Penugasan::select(['id', 'no_spt', 'uraian_penugasan'])->orderBy('no_spt', 'desc')->get();
+        $penugasanList = Penugasan::with(['irban', 'objekPenugasan'])->select(['id', 'no_spt', 'uraian_penugasan', 'irban_id'])->orderBy('no_spt', 'desc')->get();
 
         // Daftar Pilihan Tahun untuk Filter
         $availableYears = range(date('Y') + 1, 2020);
@@ -288,7 +289,8 @@ class TindakLanjutController extends Controller
             'berkas_dasar_lhp.max'   => 'Ukuran berkas lampiran maksimal 10 MB.',
         ]);
 
-        $penugasan = Penugasan::findOrFail($request->penugasan_id);
+        $penugasan = Penugasan::with('objekPenugasan')->findOrFail($request->penugasan_id);
+        $defaultObjekId  = $penugasan->objekPenugasan->count() === 1 ? $penugasan->objekPenugasan->first()->id : null;
         $noLhp           = trim($request->input('no_lhp'));
         $judulLhp        = trim($request->input('judul_lhp'));
         $tglLhp          = $request->input('tgl_lhp');
@@ -319,6 +321,11 @@ class TindakLanjutController extends Controller
             foreach ($request->items as $tIndex => $tData) {
                 $uraianTemuan = "Temuan " . ($tIndex + 1) . ": " . trim($tData['temuan']);
 
+                // Tentukan Objek/OPD sasaran untuk Temuan ini
+                $objekSasaranId = !empty($tData['objek_penugasan_id']) 
+                    ? (int) $tData['objek_penugasan_id'] 
+                    : ($request->filled('objek_penugasan_id') ? (int) $request->input('objek_penugasan_id') : $defaultObjekId);
+
                 if (isset($tData['rekomendasi']) && is_array($tData['rekomendasi'])) {
                     foreach ($tData['rekomendasi'] as $rIndex => $rData) {
                         $uraianRekomendasi = "Rekomendasi " . ($rIndex + 1) . ": " . trim($rData['uraian']);
@@ -326,6 +333,7 @@ class TindakLanjutController extends Controller
 
                         $tl = TindakLanjut::create([
                             'penugasan_id'         => $penugasan->id,
+                            'objek_penugasan_id'   => $objekSasaranId,
                             'no_lhp'               => $noLhp,
                             'judul_lhp'            => $judulLhp,
                             'tgl_lhp'              => $tglLhp,
@@ -345,8 +353,10 @@ class TindakLanjutController extends Controller
                 }
             }
         } else {
+            $singleObjekId = $request->filled('objek_penugasan_id') ? (int) $request->input('objek_penugasan_id') : $defaultObjekId;
             $tl = TindakLanjut::create([
                 'penugasan_id'         => $penugasan->id,
+                'objek_penugasan_id'   => $singleObjekId,
                 'no_lhp'               => $noLhp,
                 'judul_lhp'            => $judulLhp,
                 'tgl_lhp'              => $tglLhp,
@@ -416,6 +426,7 @@ class TindakLanjutController extends Controller
     public function update(Request $request, TindakLanjut $tindakLanjut): RedirectResponse
     {
         $validated = $request->validate([
+            'objek_penugasan_id'   => ['nullable', 'exists:objek_penugasan,id'],
             'no_lhp'               => ['nullable', 'string', 'max:100'],
             'judul_lhp'            => ['nullable', 'string', 'max:255'],
             'tgl_lhp'              => ['nullable', 'date'],

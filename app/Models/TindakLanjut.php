@@ -11,7 +11,7 @@ class TindakLanjut extends Model
 
     protected $table = 'tindak_lanjut';
     protected $fillable = [
-        'penugasan_id', 'no_lhp', 'judul_lhp', 'tgl_lhp',
+        'penugasan_id', 'objek_penugasan_id', 'no_lhp', 'judul_lhp', 'tgl_lhp',
         'uraian_temuan', 'rekomendasi', 'nilai_diawasi_rp', 'nilai_rekomendasi_rp', 'berkas_dasar_lhp',
         'status_tindak_lanjut', 'tanggal_target', 'tanggal_selesai_aktual', 'dibuat_oleh',
     ];
@@ -23,11 +23,23 @@ class TindakLanjut extends Model
         'tanggal_selesai_aktual' => 'date',
     ];
 
-    public function penugasan()   { return $this->belongsTo(Penugasan::class); }
-    public function pembuatData() { return $this->belongsTo(User::class, 'dibuat_oleh'); }
+    public function penugasan()      { return $this->belongsTo(Penugasan::class); }
+    public function objekPenugasan() { return $this->belongsTo(ObjekPenugasan::class, 'objek_penugasan_id'); }
+    public function pembuatData()    { return $this->belongsTo(User::class, 'dibuat_oleh'); }
     public function buktiTindakLanjut() { return $this->hasMany(BuktiTindakLanjut::class); }
-    public function arsipDigital() { return $this->hasMany(ArsipDigital::class, 'tindak_lanjut_id'); }
+    public function arsipDigital()   { return $this->hasMany(ArsipDigital::class, 'tindak_lanjut_id'); }
     public function rincianPenyetoran() { return $this->hasMany(RincianPenyetoranTl::class, 'tindak_lanjut_id'); }
+
+    public function getNamaObjekSasaranAttribute(): string
+    {
+        if ($this->objekPenugasan) {
+            return $this->objekPenugasan->nama;
+        }
+        if ($this->penugasan && $this->penugasan->objekPenugasan->isNotEmpty()) {
+            return $this->penugasan->objekPenugasan->pluck('nama')->implode(', ');
+        }
+        return '-';
+    }
 
     public function getTotalSetorRpAttribute(): float
     {
