@@ -127,6 +127,10 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/master/users/{user}/toggle-status', [MasterDataController::class, 'toggleUserStatus'])->middleware('can:users.edit')->name('master.users.toggle_status');
     Route::get('/master/opd-users', [OpdUserManagementController::class, 'index'])->middleware('can:opd_users.manage')->name('master.opd-users.index');
     Route::post('/master/opd-users', [OpdUserManagementController::class, 'store'])->middleware('can:opd_users.manage')->name('master.opd-users.store');
+    Route::put('/master/opd-users/{user}', [OpdUserManagementController::class, 'update'])->middleware('can:opd_users.manage')->name('master.opd-users.update');
+    Route::patch('/master/opd-users/{user}/toggle-status', [OpdUserManagementController::class, 'toggleStatus'])->middleware('can:opd_users.manage')->name('master.opd-users.toggle_status');
+    Route::post('/master/opd-users/{user}/regenerate-token', [OpdUserManagementController::class, 'regenerateToken'])->middleware('can:opd_users.manage')->name('master.opd-users.regenerate_token');
+    Route::delete('/master/opd-users/{user}', [OpdUserManagementController::class, 'destroy'])->middleware('can:opd_users.manage')->name('master.opd-users.destroy');
     Route::get('/master/objek-penugasan', [MasterDataController::class, 'objekPenugasan'])->middleware('can:master.view')->name('master.objek-penugasan.index');
     Route::post('/master/objek-penugasan', [MasterDataController::class, 'storeObjekPenugasan'])->middleware('can:master.create')->name('master.objek-penugasan.store');
     Route::put('/master/objek-penugasan/{objek}', [MasterDataController::class, 'updateObjekPenugasan'])->middleware('can:master.edit')->name('master.objek-penugasan.update');

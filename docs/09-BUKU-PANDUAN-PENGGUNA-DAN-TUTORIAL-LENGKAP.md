@@ -394,11 +394,25 @@ Setiap berkas disimpan dengan enkripsi nama unik (UUID) pada direktori penyimpan
 3. Lengkapi formulir: Nama Lengkap, Gelar, NIP, Email, Nomor WhatsApp, Jabatan, Golongan, Unit Irban, dan Role Spatie.
 4. Klik **"Simpan Pegawai"**.
 
-### 10.2 Mengundang PIC Perangkat Daerah (OPD)
-1. Buka menu **Kelola Pengguna OPD** (`/master/opd-users`).
-2. Klik **"Undang PIC OPD Baru"**.
-3. Pilih Instansi OPD sasaran, masukkan Nama PIC, Email, dan Nomor WhatsApp.
-4. Sistem otomatis mengirimkan tautan undangan aktivasi akun via WhatsApp & Email kepada PIC bersangkutan.
+### 10.2 Mengelola & Menginput Akun PIC Perangkat Daerah (Portal OPD)
+Sistem SIPANDA telah mengakomodir penuh kebutuhan manajemen akun khusus bagi seluruh Perangkat Daerah (Dinas, Badan, Kantor, Bagian, RSUD, Kecamatan, hingga Pemerintah Desa):
+
+1. **Akses Menu:**
+   - Buka menu **Master Data & Sistem** &rarr; **Akun PIC OPD (Auditi)** (`/master/opd-users`), atau klik tab **"🏛️ Akun PIC Perangkat Daerah (OPD)"** di halaman Kelola Pengguna.
+2. **Membuat Akun Baru (`+ Buat Akun PIC OPD Baru`):**
+   - **Nama PIC OPD:** Masukkan nama pejabat/staf penanggung jawab tindak lanjut (misal: *PIC Tindak Lanjut Dinas Kesehatan*).
+   - **Username / Email Resmi OPD:** Masukkan alamat email resmi OPD (misal: *dinkes@trenggalek.go.id*). Ini bertindak sebagai **Username Login**.
+   - **Instansi Objek Penugasan:** Pilih OPD/Kecamatan/Desa yang dinaungi. Sistem akan mengunci data agar instansi ini hanya dapat melihat temuan milik instansinya sendiri.
+   - **Nomor WhatsApp:** Nomor kontak untuk menerima notifikasi otomatis verifikasi & tenggat waktu LHP.
+   - **Pilihan Pembuatan Kata Sandi (Password):**
+     - **Opsi A: Input Password Langsung (Direct Password):** Admin memasukkan kata sandi awal (misal: `Trenggalek2026!`). Akun langsung berstatus **AKTIF** dan dapat langsung dipakai login oleh OPD tanpa perlu langkah aktivasi tambahan.
+     - **Opsi B: Undangan Aktivasi Mandiri (Self Activation):** Jika kolom password dikosongkan, sistem secara otomatis menerbitkan tautan undangan aktivasi (berlaku 3 hari) agar pihak OPD menentukan kata sandinya sendiri secara mandiri.
+3. **Reset Password / Ganti Password OPD oleh Admin:**
+   - Jika suatu saat pihak OPD lupa kata sandi atau terjadi pergantian personil/pejabat:
+   - Klik tombol **Edit (ikon pensil)** pada baris OPD bersangkutan.
+   - Masukkan kata sandi baru pada kolom **"Reset / Ganti Password Baru"** &rarr; Klik **"Simpan Perubahan"**.
+4. **Nonaktifkan / Aktifkan Akun:**
+   - Admin dapat mengunci akses akun OPD sementara melalui tombol gembok status (Toggle Active).
 
 ### 10.3 Mengimpor Data Historis dari Excel (.xlsx) / CSV
 Aplikasi SIPANDA mendukung import data massal secara praktis menggunakan berkas **Microsoft Excel (.xlsx)** yang sudah terbagi rapi per kolom (Kolom A, B, C, dst.) maupun file CSV:
