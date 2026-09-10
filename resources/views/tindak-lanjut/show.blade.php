@@ -21,25 +21,194 @@
 
         <div class="flex flex-wrap items-center gap-2">
             <a href="{{ route('tindak-lanjut.export_lhp', $tindakLanjut->id) }}" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5 transition-all">
-                📥 Ekspor Matriks LHP (Excel)
+                📥 Ekspor Excel
             </a>
 
-            <a href="{{ route('tindak-lanjut.berita_acara', $tindakLanjut->id) }}" target="_blank" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5 transition-all">
-                📑 Berita Acara Rekonsiliasi (PDF)
+            <a href="{{ route('tindak-lanjut.berita_acara', $tindakLanjut->id) }}" target="_blank" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5 transition-all">
+                📑 Berita Acara (PDF)
             </a>
 
-            <button onclick="window.print()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5 transition-all">
-                🖨️ Cetak Matriks
+            <!-- Naskah Dinas Matriks TL Resmi -->
+            @if($tindakLanjut->status_telaah === 'disetujui_inspektur' || auth()->user()->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban']))
+                <a href="{{ route('tindak-lanjut.cetak_matriks', $tindakLanjut->id) }}" target="_blank" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5 transition-all" title="Cetak Naskah Matriks Tindak Lanjut Hasil Pengawasan Resmi">
+                    📄 Cetak Matriks TL
+                </a>
+                <a href="{{ route('tindak-lanjut.cetak_surat_pengantar', $tindakLanjut->id) }}" target="_blank" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center gap-1.5 transition-all" title="Cetak Naskah Surat Pengantar Matriks ke OPD/Desa">
+                    ✉️ Cetak Surat Pengantar
+                </a>
+            @else
+                <button disabled class="px-3.5 py-2 bg-slate-200 dark:bg-slate-800 text-slate-400 font-bold text-xs rounded-xl inline-flex items-center gap-1.5 cursor-not-allowed opacity-60" title="Matriks & Surat Pengantar baru dapat digenerate setelah Telaah disetujui final oleh Inspektur">
+                    🔒 Matriks & Surat Pengantar
+                </button>
+            @endif
+
+            <button type="button" onclick="document.getElementById('modalSuratPengantar').classList.remove('hidden')" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-300 dark:border-slate-700 inline-flex items-center gap-1 shadow-2xs" title="Atur Nomor, Tanggal, dan Tujuan Instansi Surat Pengantar">
+                ⚙️ Atur Surat
             </button>
-
-            <span class="px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
-                Total: {{ $lhpItems->count() }} Rekomendasi
-            </span>
         </div>
     </div>
 
     <!-- Main Content Grid -->
     <div class="space-y-6 text-xs">
+
+        <!-- 🛡️ WORKFLOW PERSETUJUAN & TELAAH TINDAK LANJUT HASIL PENGAWASAN (TLHP) -->
+        <div class="p-6 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-900/80 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div>
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400 block">Proses Bisnis Pengawasan Internal</span>
+                    <h3 class="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>🔄 Alur Workflow Telaah & Persetujuan Matriks Tindak Lanjut</span>
+                    </h3>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider
+                        {{ $tindakLanjut->status_telaah === 'disetujui_inspektur' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200' : '' }}
+                        {{ $tindakLanjut->status_telaah === 'diajukan_inspektur' || $tindakLanjut->status_telaah === 'diajukan_irban' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200' : '' }}
+                        {{ $tindakLanjut->status_telaah === 'ditolak_irban' || $tindakLanjut->status_telaah === 'ditolak_inspektur' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200' : '' }}
+                        {{ $tindakLanjut->status_telaah === 'draft' ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-300' : '' }}">
+                        {{ $tindakLanjut->status_telaah_label }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Stepper Timeline 5 Tahap -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+                <!-- Tahap 1: ST Pemantauan & Input OPD -->
+                <div class="p-4 rounded-2xl border relative transition-all {{ $tindakLanjut->st_pemantauan_id ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700' }}">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-6 h-6 rounded-lg {{ $tindakLanjut->st_pemantauan_id ? 'bg-emerald-600' : 'bg-slate-400' }} text-white font-black text-xs flex items-center justify-center">1</span>
+                        <h5 class="font-bold text-slate-900 dark:text-white">ST Pemantauan TL</h5>
+                    </div>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-300 mb-2">Surat Tugas dasar pemantauan atas pengawasan assurance.</p>
+                    @if($tindakLanjut->stPemantauan)
+                        <span class="inline-block font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded text-[10px] border border-emerald-200">
+                            📄 {{ $tindakLanjut->stPemantauan->no_spt }}
+                        </span>
+                    @else
+                        <span class="inline-block text-slate-400 italic text-[10px]">Belum dikaitkan ST Pemantauan</span>
+                    @endif
+                </div>
+
+                <!-- Tahap 2: Telaah Tim Pemantauan -->
+                <div class="p-4 rounded-2xl border relative transition-all {{ $tindakLanjut->ditelaah_oleh ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700' }}">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-6 h-6 rounded-lg {{ $tindakLanjut->ditelaah_oleh ? 'bg-emerald-600' : 'bg-slate-400' }} text-white font-black text-xs flex items-center justify-center">2</span>
+                        <h5 class="font-bold text-slate-900 dark:text-white">Telaah Tim TL</h5>
+                    </div>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-300 mb-2">Pemeriksaan bukti respon tindak lanjut oleh tim.</p>
+                    @if($tindakLanjut->ditelaah_oleh)
+                        <div class="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold">
+                            ✓ Ditelaah: {{ $tindakLanjut->penelaah?->nama }}
+                            <span class="block text-[9px] font-normal text-slate-400">{{ $tindakLanjut->ditelaah_pada?->format('d/m/Y H:i') }}</span>
+                        </div>
+                    @else
+                        <span class="inline-block text-slate-400 italic text-[10px]">Menunggu telaah tim</span>
+                    @endif
+
+                    <div class="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <button type="button" onclick="document.getElementById('modalTelaahTim').classList.remove('hidden')" class="w-full py-1.5 px-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-bold shadow-2xs flex items-center justify-center gap-1">
+                            <span>✍️ {{ $tindakLanjut->ditelaah_oleh ? 'Ubah Hasil Telaah' : 'Input Telaah Tim' }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tahap 3: Verifikasi Irban -->
+                <div class="p-4 rounded-2xl border relative transition-all {{ in_array($tindakLanjut->status_telaah, ['diajukan_inspektur', 'disetujui_inspektur']) ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800' : ($tindakLanjut->status_telaah === 'ditolak_irban' ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-300' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700') }}">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-6 h-6 rounded-lg {{ in_array($tindakLanjut->status_telaah, ['diajukan_inspektur', 'disetujui_inspektur']) ? 'bg-emerald-600' : 'bg-slate-400' }} text-white font-black text-xs flex items-center justify-center">3</span>
+                        <h5 class="font-bold text-slate-900 dark:text-white">Verifikasi Irban</h5>
+                    </div>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-300 mb-2">Validasi hasil telaah tim oleh Inspektur Pembantu.</p>
+                    @if(in_array($tindakLanjut->status_telaah, ['diajukan_inspektur', 'disetujui_inspektur']))
+                        <div class="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold">
+                            ✓ Diverifikasi: {{ $tindakLanjut->irbanPenyetuju?->nama }}
+                            <span class="block text-[9px] font-normal text-slate-400">{{ $tindakLanjut->diverifikasi_irban_pada?->format('d/m/Y H:i') }}</span>
+                        </div>
+                    @elseif($tindakLanjut->status_telaah === 'ditolak_irban')
+                        <span class="text-[10px] font-bold text-rose-600 block">✕ Ditolak Irban (Revisi)</span>
+                    @else
+                        <span class="inline-block text-slate-400 italic text-[10px]">Menunggu verifikasi</span>
+                    @endif
+
+                    @if(auth()->user()->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban', 'admin_irban']))
+                        <div class="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+                            <button type="button" onclick="document.getElementById('modalVerifikasiIrban').classList.remove('hidden')" class="w-full py-1.5 px-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-[10px] font-bold shadow-2xs flex items-center justify-center gap-1">
+                                <span>🔍 Aksi Irban</span>
+                            </button>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Tahap 4: Persetujuan Akhir Inspektur -->
+                <div class="p-4 rounded-2xl border relative transition-all {{ $tindakLanjut->status_telaah === 'disetujui_inspektur' ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800' : ($tindakLanjut->status_telaah === 'ditolak_inspektur' ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-300' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700') }}">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-6 h-6 rounded-lg {{ $tindakLanjut->status_telaah === 'disetujui_inspektur' ? 'bg-emerald-600' : 'bg-slate-400' }} text-white font-black text-xs flex items-center justify-center">4</span>
+                        <h5 class="font-bold text-slate-900 dark:text-white">Persetujuan Inspektur</h5>
+                    </div>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-300 mb-2">Persetujuan final penerbitan Matriks & Surat Pengantar.</p>
+                    @if($tindakLanjut->status_telaah === 'disetujui_inspektur')
+                        <div class="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold">
+                            ✓ Disetujui: {{ $tindakLanjut->inspekturPenyetuju?->nama ?? 'Inspektur' }}
+                            <span class="block text-[9px] font-normal text-slate-400">{{ $tindakLanjut->disetujui_inspektur_pada?->format('d/m/Y H:i') }}</span>
+                        </div>
+                    @elseif($tindakLanjut->status_telaah === 'ditolak_inspektur')
+                        <span class="text-[10px] font-bold text-rose-600 block">✕ Ditolak Inspektur</span>
+                    @else
+                        <span class="inline-block text-slate-400 italic text-[10px]">Menunggu persetujuan</span>
+                    @endif
+
+                    @if(auth()->user()->hasRole(['admin', 'administrator', 'inspektur']))
+                        <div class="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+                            <button type="button" onclick="document.getElementById('modalPersetujuanInspektur').classList.remove('hidden')" class="w-full py-1.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold shadow-2xs flex items-center justify-center gap-1">
+                                <span>🛡️ Aksi Inspektur</span>
+                            </button>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Catatan-catatan Verifikasi / Revisi (Jika Ada) -->
+            @if($tindakLanjut->catatan_telaah_tim || $tindakLanjut->catatan_verifikasi_irban || $tindakLanjut->catatan_persetujuan_inspektur)
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    @if($tindakLanjut->catatan_telaah_tim)
+                        <div class="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900 text-xs">
+                            <span class="font-bold text-blue-800 dark:text-blue-300 block uppercase text-[10px] mb-1">📝 Catatan Telaah Tim:</span>
+                            <p class="text-slate-800 dark:text-slate-200 italic">"{{ $tindakLanjut->catatan_telaah_tim }}"</p>
+                        </div>
+                    @endif
+
+                    @if($tindakLanjut->catatan_verifikasi_irban)
+                        <div class="p-3 bg-purple-50 dark:bg-purple-950/40 rounded-xl border border-purple-200 dark:border-purple-900 text-xs">
+                            <span class="font-bold text-purple-800 dark:text-purple-300 block uppercase text-[10px] mb-1">🔍 Catatan Verifikasi Irban:</span>
+                            <p class="text-slate-800 dark:text-slate-200 italic">"{{ $tindakLanjut->catatan_verifikasi_irban }}"</p>
+                        </div>
+                    @endif
+
+                    @if($tindakLanjut->catatan_persetujuan_inspektur)
+                        <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-900 text-xs">
+                            <span class="font-bold text-emerald-800 dark:text-emerald-300 block uppercase text-[10px] mb-1">🛡️ Catatan Persetujuan Inspektur:</span>
+                            <p class="text-slate-800 dark:text-slate-200 italic">"{{ $tindakLanjut->catatan_persetujuan_inspektur }}"</p>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
+            <!-- Info Surat Pengantar Yang Terkonfigurasi -->
+            <div class="p-3.5 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="space-y-0.5">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">Informasi Surat Pengantar Matriks TL:</span>
+                    <p class="font-bold text-slate-800 dark:text-slate-200 text-xs">
+                        No. Surat: <span class="font-mono text-blue-600 dark:text-blue-400">{{ $tindakLanjut->no_surat_pengantar ?? '(Belum Diatur)' }}</span> 
+                        | Tgl: <span class="font-mono">{{ $tindakLanjut->tgl_surat_pengantar ? $tindakLanjut->tgl_surat_pengantar->format('d/m/Y') : '-' }}</span>
+                        | Tujuan: <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $tindakLanjut->tujuanSuratObjek?->nama ?? $tindakLanjut->penugasan?->objekPenugasan->pluck('nama')->first() ?? '(Pilih dari Master OPD)' }}</span>
+                    </p>
+                </div>
+                <button type="button" onclick="document.getElementById('modalSuratPengantar').classList.remove('hidden')" class="px-3 py-1.5 bg-white dark:bg-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-600 shadow-2xs self-start sm:self-auto">
+                    ✏️ Edit Data Surat Pengantar
+                </button>
+            </div>
+        </div>
 
         <!-- 📊 4 Banner Metric Status Rekapitulasi LHP Ini -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -568,6 +737,227 @@
                 <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800">
                     <button type="button" onclick="document.getElementById('modalEditTindakLanjut').classList.add('hidden')" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-xl">Batal</button>
                     <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 1. Modal Telaah Tim Pemantauan TL -->
+    <div id="modalTelaahTim" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-w-xl w-full space-y-4 animate-in fade-in zoom-in duration-150">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2 text-blue-600">
+                    <span class="text-lg">✍️</span>
+                    <h3 class="font-black text-slate-900 dark:text-white text-sm">Form Hasil Telaah Tim Pemantauan TL</h3>
+                </div>
+                <button type="button" onclick="document.getElementById('modalTelaahTim').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">
+                    &times;
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('tindak-lanjut.ajukan_telaah', $tindakLanjut->id) }}" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Surat Perintah Tugas (SPT) Pemantauan Terkait
+                    </label>
+                    <select name="st_pemantauan_id" class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white font-semibold">
+                        <option value="">-- Pilih Surat Tugas Pemantauan TL (Jika Ada) --</option>
+                        @foreach($stPemantauanList as $stP)
+                            <option value="{{ $stP->id }}" {{ $tindakLanjut->st_pemantauan_id == $stP->id ? 'selected' : '' }}>
+                                {{ $stP->no_spt }} — {{ Str::limit($stP->uraian_penugasan, 55) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Kesimpulan Status Rekomendasi Setelah Ditelaah
+                    </label>
+                    <select name="status_rekomendasi" class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white font-bold">
+                        <option value="selesai" {{ $tindakLanjut->status_tindak_lanjut === 'selesai' ? 'selected' : '' }}>SESUAI (SELESAI)</option>
+                        <option value="proses" {{ in_array($tindakLanjut->status_tindak_lanjut, ['proses', 'menunggu_verifikasi']) ? 'selected' : '' }}>BELUM SESUAI (PROSES)</option>
+                        <option value="belum" {{ $tindakLanjut->status_tindak_lanjut === 'belum' ? 'selected' : '' }}>BELUM DITINDAKLANJUTI</option>
+                        <option value="tdt" {{ $tindakLanjut->status_tindak_lanjut === 'tdt' ? 'selected' : '' }}>TIDAK DAPAT DITINDAKLANJUTI (TDT)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Catatan & Pertimbangan Hasil Telaah Tim <span class="text-rose-500">*</span>
+                    </label>
+                    <textarea name="catatan_telaah_tim" rows="4" required placeholder="Tuliskan analisis kelayakan bukti, kesesuaian dokumen, dan kesimpulan telaah tim..." class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500">{{ $tindakLanjut->catatan_telaah_tim }}</textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('modalTelaahTim').classList.add('hidden')" class="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md">
+                        Simpan & Ajukan ke Irban
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Modal Verifikasi Irban -->
+    <div id="modalVerifikasiIrban" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-w-lg w-full space-y-4 animate-in fade-in zoom-in duration-150">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2 text-purple-600">
+                    <span class="text-lg">🔍</span>
+                    <h3 class="font-black text-slate-900 dark:text-white text-sm">Verifikasi Hasil Telaah oleh Irban</h3>
+                </div>
+                <button type="button" onclick="document.getElementById('modalVerifikasiIrban').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">
+                    &times;
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('tindak-lanjut.verifikasi_irban', $tindakLanjut->id) }}" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Keputusan Verifikasi Irban <span class="text-rose-500">*</span>
+                    </label>
+                    <select name="aksi" required class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white font-bold">
+                        <option value="setujui">✓ SETUJUI & Usulkan kepada Inspektur</option>
+                        <option value="tolak">✕ TOLAK & Kembalikan ke Tim Pemantauan (Revisi)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Catatan Verifikasi / Catatan Perbaikan Irban
+                    </label>
+                    <textarea name="catatan_verifikasi_irban" rows="3" placeholder="Tuliskan arahan atau catatan verifikasi untuk Inspektur atau Tim..." class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500">{{ $tindakLanjut->catatan_verifikasi_irban }}</textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('modalVerifikasiIrban').classList.add('hidden')" class="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs shadow-md">
+                        Kirim Keputusan Irban
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Modal Persetujuan Akhir Inspektur -->
+    <div id="modalPersetujuanInspektur" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-w-lg w-full space-y-4 animate-in fade-in zoom-in duration-150">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2 text-emerald-600">
+                    <span class="text-lg">🛡️</span>
+                    <h3 class="font-black text-slate-900 dark:text-white text-sm">Persetujuan Final Matriks TL oleh Inspektur</h3>
+                </div>
+                <button type="button" onclick="document.getElementById('modalPersetujuanInspektur').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">
+                    &times;
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('tindak-lanjut.persetujuan_inspektur', $tindakLanjut->id) }}" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Keputusan Akhir Inspektur <span class="text-rose-500">*</span>
+                    </label>
+                    <select name="aksi" required class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white font-bold">
+                        <option value="setujui">✓ SETUJUI FINAL (Matriks TL & Surat Pengantar Siap Diterbitkan)</option>
+                        <option value="tolak">✕ TOLAK (Kembalikan ke Irban & Tim untuk Disesuaikan)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Catatan / Arahan Khusus Inspektur
+                    </label>
+                    <textarea name="catatan_persetujuan_inspektur" rows="3" placeholder="Tuliskan arahan tindak lanjut pimpinan atau catatan penyesuaian..." class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500">{{ $tindakLanjut->catatan_persetujuan_inspektur }}</textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('modalPersetujuanInspektur').classList.add('hidden')" class="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md">
+                        Simpan Persetujuan Inspektur
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. Modal Pengaturan Surat Pengantar Matriks TL -->
+    <div id="modalSuratPengantar" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-w-xl w-full space-y-4 animate-in fade-in zoom-in duration-150">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2 text-indigo-600">
+                    <span class="text-lg">✉️</span>
+                    <h3 class="font-black text-slate-900 dark:text-white text-sm">Pengaturan Surat Pengantar Matriks TL</h3>
+                </div>
+                <button type="button" onclick="document.getElementById('modalSuratPengantar').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">
+                    &times;
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('tindak-lanjut.simpan_surat_pengantar', $tindakLanjut->id) }}" class="space-y-4">
+                @csrf
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            Nomor Surat Pengantar <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" name="no_surat_pengantar" required value="{{ $tindakLanjut->no_surat_pengantar ?? '700/   /406.008/' . date('Y') }}" placeholder="mis. 700/123/406.008/2026" class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white font-mono font-bold">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            Tanggal Surat Pengantar <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="date" name="tgl_surat_pengantar" required value="{{ $tindakLanjut->tgl_surat_pengantar ? $tindakLanjut->tgl_surat_pengantar->format('Y-m-d') : date('Y-m-d') }}" class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white font-bold">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Pilih Perangkat Daerah / Desa / Instansi Tujuan <span class="text-rose-500">*</span>
+                    </label>
+                    <select name="tujuan_surat_objek_id" required class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white font-bold">
+                        <option value="">-- Pilih Instansi / OPD Tujuan Surat dari Master --</option>
+                        @foreach($objekList as $obj)
+                            <option value="{{ $obj->id }}" {{ ($tindakLanjut->tujuan_surat_objek_id == $obj->id || ($tindakLanjut->penugasan && $tindakLanjut->penugasan->objekPenugasan->pluck('id')->contains($obj->id))) ? 'selected' : '' }}>
+                                {{ $obj->nama }} ({{ ucfirst($obj->kategori ?? 'OPD') }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1">Daftar tujuan surat diambil otomatis dari data master Objek Penugasan.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            Sifat Surat
+                        </label>
+                        <input type="text" name="sifat_surat" value="{{ $tindakLanjut->sifat_surat ?? 'Biasa / Rahasia' }}" class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            Hal Surat
+                        </label>
+                        <input type="text" name="hal_surat" value="{{ $tindakLanjut->hal_surat ?? 'Penyampaian Matriks Tindak Lanjut Hasil Pengawasan' }}" class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('modalSuratPengantar').classList.add('hidden')" class="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow-md">
+                        Simpan Data Surat Pengantar
+                    </button>
                 </div>
             </form>
         </div>

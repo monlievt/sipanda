@@ -97,8 +97,13 @@ class PenugasanController extends Controller
     /**
      * Cetak Naskah Dinas Surat Perintah Tugas (SPT) Resmi Format Pemkab Trenggalek.
      */
-    public function cetak(Penugasan $penugasan): View
+    public function cetak(Penugasan $penugasan): View|RedirectResponse
     {
+        if ($penugasan->status_persetujuan !== 'disetujui' && !auth()->user()->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban'])) {
+            return redirect()->route('penugasan.show', $penugasan)
+                ->with('error', 'Surat Tugas belum disetujui oleh Irban sehingga naskah dinas resmi belum dapat dicetak.');
+        }
+
         $penugasan->load([
             'irban', 'irbans', 'jenisPenugasan', 'sumberPenugasan',
             'objekPenugasan', 'tim.user', 'pkppt', 'pembuatData',
@@ -193,6 +198,7 @@ class PenugasanController extends Controller
             if (empty($dasarPerpanjangan)) {
                 $dasarPerpanjangan = ($parentSt->dasar_penugasan ? $parentSt->dasar_penugasan . "\n" : '') . "Surat Perintah Tugas Induk Nomor: " . $parentSt->no_spt . ".";
             }
+            $statusPersetujuan = $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban', 'admin_irban']) ? 'disetujui' : 'diajukan';
 
             $penugasan = Penugasan::create([
                 'no_spt'              => $validated['no_spt'],
@@ -203,6 +209,9 @@ class PenugasanController extends Controller
                 'tanggal_mulai'       => $validated['tanggal_mulai'],
                 'tanggal_selesai'     => $validated['tanggal_selesai'],
                 'status'              => $statusOtomatis,
+                'status_persetujuan'  => $statusPersetujuan,
+                'diverifikasi_oleh'   => ($statusPersetujuan === 'disetujui') ? $user->id : null,
+                'diverifikasi_pada'   => ($statusPersetujuan === 'disetujui') ? now() : null,
                 'progres_persen'      => 0,
                 'is_sesuai_pkppt'     => (bool) $parentSt->is_sesuai_pkppt,
                 'pkppt_id'            => $parentSt->pkppt_id,
@@ -282,6 +291,7 @@ class PenugasanController extends Controller
 
             $tglMulai = \Carbon\Carbon::parse($validated['tanggal_mulai'])->startOfDay();
             $statusOtomatis = now()->startOfDay()->gte($tglMulai) ? 'berjalan' : 'belum_berjalan';
+            $statusPersetujuan = $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban', 'admin_irban']) ? 'disetujui' : 'diajukan';
 
             $isSesuaiPkppt = (bool) ($validated['is_sesuai_pkppt'] ?? false);
             $pkpptId = $isSesuaiPkppt ? ($validated['pkppt_id'] ?? null) : null;
@@ -295,6 +305,9 @@ class PenugasanController extends Controller
                 'tanggal_mulai'       => $validated['tanggal_mulai'],
                 'tanggal_selesai'     => $validated['tanggal_selesai'],
                 'status'              => $statusOtomatis,
+                'status_persetujuan'  => $statusPersetujuan,
+                'diverifikasi_oleh'   => ($statusPersetujuan === 'disetujui') ? $user->id : null,
+                'diverifikasi_pada'   => ($statusPersetujuan === 'disetujui') ? now() : null,
                 'progres_persen'      => 0,
                 'is_sesuai_pkppt'     => $isSesuaiPkppt,
                 'pkppt_id'            => $pkpptId,
@@ -607,10 +620,69 @@ class PenugasanController extends Controller
 
         ActivityLog::catat('penugasan', $penugasan->id, 'update', $sebelum, $penugasan->toArray());
 
-        $pesan = $validated['status'] === 'selesai'
-            ? "✓ Penugasan {$penugasan->no_spt} berhasil ditandai SELESAI!"
-            : "Status penugasan {$penugasan->no_spt} berhasil diperbarui.";
-
         return back()->with('status', $pesan);
     }
+
+    /**
+     * Verifikasi konsep Surat Perintah Tugas (SPT) oleh Irban / Admin.
+     */
+    public function verifikasiSpt(Request $request, Penugasan $penugasan): RedirectResponse
+    {
+        $user = auth()->user();
+
+        // Pastikan user berwenang (Irban/Admin Irban wilayah bersangkutan, atau Admin/Inspektur/Sekretaris)
+        $isAuthorized = $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris']) ||
+            ($user->hasRole(['irban', 'admin_irban']) && ($user->irban_id == $penugasan->irban_id || $penugasan->irbans->pluck('id')->contains($user->irban_id)));
+
+        if (! $isAuthorized) {
+            return back()->with('error', 'Anda tidak memiliki wewenang untuk memverifikasi Surat Perintah Tugas ini.');
+        }
+
+        $validated = $request->validate([
+            'status_persetujuan' => ['required', 'in:disetujui,ditolak'],
+            'catatan_revisi'     => ['nullable', 'string'],
+        ]);
+
+        if ($validated['status_persetujuan'] === 'ditolak' && empty($validated['catatan_revisi'])) {
+            return back()->with('error', 'Catatan revisi wajib diisi jika Anda menolak/mengembalikan konsep SPT.');
+        }
+
+        $sebelum = $penugasan->toArray();
+
+        $penugasan->update([
+            'status_persetujuan' => $validated['status_persetujuan'],
+            'catatan_revisi'     => $validated['catatan_revisi'] ?? null,
+            'diverifikasi_oleh'  => $user->id,
+            'diverifikasi_pada'  => now(),
+        ]);
+
+        ActivityLog::catat(
+            'penugasan',
+            $penugasan->id,
+            'verifikasi_spt',
+            $sebelum,
+            $penugasan->toArray()
+        );
+
+        // Notifikasi ke pembuat SPT
+        if ($penugasan->dibuat_oleh) {
+            $statusText = $validated['status_persetujuan'] === 'disetujui' ? 'Disetujui' : 'Ditolak (Perlu Revisi)';
+            \App\Models\Notifikasi::create([
+                'user_id'      => $penugasan->dibuat_oleh,
+                'penugasan_id' => $penugasan->id,
+                'jenis'        => 'info_lain',
+                'judul'        => "Status SPT {$penugasan->no_spt}: {$statusText}",
+                'pesan'        => "Surat Tugas {$penugasan->no_spt} telah diverifikasi oleh {$user->nama} dengan status: {$statusText}." . (!empty($validated['catatan_revisi']) ? " Catatan: {$validated['catatan_revisi']}" : ""),
+                'status'       => 'terkirim',
+                'dikirim_pada' => now(),
+            ]);
+        }
+
+        $msg = $validated['status_persetujuan'] === 'disetujui'
+            ? 'Surat Perintah Tugas berhasil disetujui dan siap diterbitkan/dicetak!'
+            : 'Surat Perintah Tugas ditolak dan dikembalikan ke pengusul dengan catatan revisi.';
+
+        return back()->with('status', $msg);
+    }
 }
+

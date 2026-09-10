@@ -25,12 +25,18 @@
         </div>
 
         <div class="flex items-center gap-2">
+            @if($penugasan->status_persetujuan === 'disetujui' || auth()->user()->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban']))
             <a href="{{ route('penugasan.cetak', $penugasan->id) }}" target="_blank" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
                 <span>Cetak Surat Tugas (SPT)</span>
             </a>
+            @else
+            <button disabled class="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-400 font-bold rounded-xl text-xs flex items-center gap-1.5 cursor-not-allowed opacity-70" title="SPT belum disetujui oleh Irban">
+                <span>🔒 Cetak SPT (Terkunci)</span>
+            </button>
+            @endif
 
             @can('penugasan.edit')
             <a href="{{ route('penugasan.edit', $penugasan->id) }}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md">
@@ -54,6 +60,90 @@
             </form>
             @endcan
         </div>
+    </div>
+
+    <!-- Approval Workflow Banner -->
+    <div class="mb-6">
+        @if($penugasan->status_persetujuan === 'disetujui')
+            <div class="p-4 bg-emerald-50 dark:bg-emerald-950/50 rounded-2xl border border-emerald-200 dark:border-emerald-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-lg">
+                        ✓
+                    </div>
+                    <div>
+                        <h4 class="font-black text-emerald-900 dark:text-emerald-200 text-sm">Surat Tugas Telah Disetujui Irban</h4>
+                        <p class="text-xs text-emerald-700 dark:text-emerald-400">
+                            SPT ini sah dan resmi dapat dicetak serta dilaksanakan di lapangan. 
+                            @if($penugasan->diverifikasi_pada)
+                                Diverifikasi pada: {{ $penugasan->diverifikasi_pada->format('d M Y, H:i') }}
+                            @endif
+                        </p>
+                    </div>
+                </div>
+                <span class="px-3 py-1 bg-emerald-600 text-white font-black text-xs rounded-full self-start sm:self-auto">
+                    Status: Disetujui
+                </span>
+            </div>
+        @elseif($penugasan->status_persetujuan === 'ditolak')
+            <div class="p-4 bg-rose-50 dark:bg-rose-950/50 rounded-2xl border border-rose-200 dark:border-rose-800 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-300 flex items-center justify-center font-bold text-lg">
+                            ✕
+                        </div>
+                        <div>
+                            <h4 class="font-black text-rose-900 dark:text-rose-200 text-sm">Konsep Surat Tugas Ditolak / Perlu Revisi</h4>
+                            <p class="text-xs text-rose-700 dark:text-rose-400">
+                                Harap perbaiki data pengajuan SPT melalui tombol <strong>Edit Surat Tugas</strong> sesuai catatan verifikator di bawah.
+                            </p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 bg-rose-600 text-white font-black text-xs rounded-full self-start sm:self-auto">
+                        Status: Ditolak
+                    </span>
+                </div>
+                @if($penugasan->catatan_revisi)
+                    <div class="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-rose-300 dark:border-rose-700 text-xs text-slate-800 dark:text-slate-200">
+                        <span class="font-bold text-rose-600 block uppercase text-[10px] mb-1">Catatan Revisi dari Irban:</span>
+                        <p class="italic">"{{ $penugasan->catatan_revisi }}"</p>
+                    </div>
+                @endif
+            </div>
+        @else
+            <div class="p-4 bg-amber-50 dark:bg-amber-950/50 rounded-2xl border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold text-lg">
+                        ⏳
+                    </div>
+                    <div>
+                        <h4 class="font-black text-amber-900 dark:text-amber-200 text-sm">Menunggu Verifikasi Irban</h4>
+                        <p class="text-xs text-amber-700 dark:text-amber-400">
+                            Konsep Surat Tugas ini telah diajukan oleh {{ $penugasan->pembuatData?->nama ?? 'Staf' }} dan menunggu persetujuan Irban penanggung jawab.
+                        </p>
+                    </div>
+                </div>
+
+                @if(auth()->user()->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban', 'admin_irban']))
+                    <div class="flex items-center gap-2 self-end sm:self-auto">
+                        <button type="button" onclick="document.getElementById('modalTolakSpt').classList.remove('hidden')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs">
+                            ✕ Tolak (Revisi)
+                        </button>
+                        <form method="POST" action="{{ route('penugasan.verifikasi', $penugasan->id) }}" onsubmit="return confirm('Apakah Anda yakin menyetujui penerbitan Surat Tugas {{ $penugasan->no_spt }} ini?')">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="status_persetujuan" value="disetujui">
+                            <button type="submit" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-1">
+                                <span>✓ Setujui SPT</span>
+                            </button>
+                        </form>
+                    </div>
+                @else
+                    <span class="px-3 py-1 bg-amber-500 text-white font-black text-xs rounded-full self-start sm:self-auto">
+                        Status: Diajukan
+                    </span>
+                @endif
+            </div>
+        @endif
     </div>
 
     <!-- Main Grid Content -->
@@ -234,7 +324,42 @@
                 @endforelse
             </div>
 
-        </div>
+    </div>
 
+    <!-- Modal Tolak SPT (Catatan Revisi) -->
+    <div id="modalTolakSpt" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full space-y-4 animate-in fade-in zoom-in duration-150">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2 text-rose-600">
+                    <span class="text-lg">✕</span>
+                    <h3 class="font-black text-slate-900 dark:text-white text-sm">Kembalikan / Tolak Konsep SPT</h3>
+                </div>
+                <button type="button" onclick="document.getElementById('modalTolakSpt').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">
+                    &times;
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('penugasan.verifikasi', $penugasan->id) }}" class="space-y-4">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="status_persetujuan" value="ditolak">
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Catatan Revisi / Alasan Penolakan <span class="text-rose-500">*</span>
+                    </label>
+                    <textarea name="catatan_revisi" rows="4" required placeholder="Jelaskan hal-hal yang perlu diperbaiki oleh staf/tim pengusul SPT..." class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-rose-500"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onclick="document.getElementById('modalTolakSpt').classList.add('hidden')" class="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-300">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-md">
+                        Kirim Catatan & Tolak
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </x-app-layout>

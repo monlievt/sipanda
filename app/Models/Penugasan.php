@@ -13,16 +13,18 @@ class Penugasan extends Model
 
     protected $fillable = [
         'no_spt', 'pkppt_id', 'penugasan_induk_id', 'is_sesuai_pkppt', 'uraian_penugasan', 'dasar_penugasan',
-        'sumber_penugasan_id', 'jenis_penugasan_id', 'tanggal_mulai',
-        'tanggal_selesai', 'status', 'progres_persen', 'keterangan_hasil',
+        'sumber_penugasan_id', 'jenis_penugasan_id', 'jenis_pengawasan_spt', 'tanggal_mulai',
+        'tanggal_selesai', 'status', 'status_persetujuan', 'catatan_revisi_spt', 'diverifikasi_oleh',
+        'diverifikasi_pada', 'progres_persen', 'keterangan_hasil',
         'irban_id', 'dibuat_oleh', 'diperbarui_oleh',
     ];
 
     protected $casts = [
-        'tanggal_mulai'    => 'date',
-        'tanggal_selesai'  => 'date',
-        'is_sesuai_pkppt'  => 'boolean',
-        'progres_persen'   => 'integer',
+        'tanggal_mulai'      => 'date',
+        'tanggal_selesai'    => 'date',
+        'diverifikasi_pada'  => 'datetime',
+        'is_sesuai_pkppt'    => 'boolean',
+        'progres_persen'     => 'integer',
     ];
 
     // ─── Relasi ───────────────────────────────────────────
@@ -105,6 +107,16 @@ class Penugasan extends Model
     public function pembuatData()
     {
         return $this->belongsTo(User::class, 'dibuat_oleh');
+    }
+
+    public function verifikator()
+    {
+        return $this->belongsTo(User::class, 'diverifikasi_oleh');
+    }
+
+    public function tindakLanjutPemantauan()
+    {
+        return $this->hasMany(TindakLanjut::class, 'st_pemantauan_id');
     }
 
     // ─── Scope ────────────────────────────────────────────
@@ -207,6 +219,17 @@ class Penugasan extends Model
             'berjalan'       => 'Berjalan',
             'selesai'        => 'Selesai',
             default          => $this->status,
+        };
+    }
+
+    public function getStatusPersetujuanLabelAttribute(): string
+    {
+        return match($this->status_persetujuan) {
+            'draft'      => 'Draft Konsep',
+            'diajukan'   => 'Menunggu Verifikasi Irban',
+            'disetujui'  => 'Disetujui / Terbit',
+            'ditolak'    => 'Perlu Revisi',
+            default      => ucfirst($this->status_persetujuan ?? 'Disetujui'),
         };
     }
 }

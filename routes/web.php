@@ -72,6 +72,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/penugasan', [PenugasanController::class, 'store'])->middleware('can:penugasan.create')->name('penugasan.store');
     Route::get('/penugasan/{penugasan}', [PenugasanController::class, 'show'])->name('penugasan.show');
     Route::get('/penugasan/{penugasan}/cetak', [PenugasanController::class, 'cetak'])->name('penugasan.cetak');
+    Route::patch('/penugasan/{penugasan}/verifikasi', [PenugasanController::class, 'verifikasiSpt'])->name('penugasan.verifikasi');
     Route::get('/penugasan/{penugasan}/edit', [PenugasanController::class, 'edit'])->middleware('can:penugasan.edit')->name('penugasan.edit');
     Route::put('/penugasan/{penugasan}', [PenugasanController::class, 'update'])->middleware('can:penugasan.edit')->name('penugasan.update');
     Route::delete('/penugasan/{penugasan}', [PenugasanController::class, 'destroy'])->middleware('can:penugasan.delete')->name('penugasan.destroy');
@@ -96,6 +97,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tindak-lanjut/{tindakLanjut}/respon', [TindakLanjutController::class, 'storeRespon'])->whereNumber('tindakLanjut')->name('tindak-lanjut.store_respon');
     Route::patch('/tindak-lanjut/{tindakLanjut}/status', [TindakLanjutController::class, 'updateStatus'])->whereNumber('tindakLanjut')->name('tindak-lanjut.update_status');
     Route::post('/bukti-tindak-lanjut/{bukti}/verifikasi', [VerifikasiBuktiController::class, 'verifikasi'])->whereNumber('bukti')->name('tindak-lanjut.bukti.verifikasi');
+
+    // Workflow Persetujuan & Output Naskah TLHP (ST Pemantauan, Telaah Tim, Verifikasi Irban, Approval Inspektur, Generate PDF)
+    Route::post('/tindak-lanjut/{tindakLanjut}/ajukan-telaah', [TindakLanjutController::class, 'ajukanTelaah'])->whereNumber('tindakLanjut')->name('tindak-lanjut.ajukan_telaah');
+    Route::post('/tindak-lanjut/{tindakLanjut}/verifikasi-irban', [TindakLanjutController::class, 'verifikasiTelaahIrban'])->whereNumber('tindakLanjut')->name('tindak-lanjut.verifikasi_irban');
+    Route::post('/tindak-lanjut/{tindakLanjut}/persetujuan-inspektur', [TindakLanjutController::class, 'persetujuanTelaahInspektur'])->whereNumber('tindakLanjut')->name('tindak-lanjut.persetujuan_inspektur');
+    Route::post('/tindak-lanjut/{tindakLanjut}/surat-pengantar', [TindakLanjutController::class, 'simpanDataSuratPengantar'])->whereNumber('tindakLanjut')->name('tindak-lanjut.simpan_surat_pengantar');
+    Route::get('/tindak-lanjut/{tindakLanjut}/cetak-matriks', [TindakLanjutController::class, 'cetakMatriksPdf'])->whereNumber('tindakLanjut')->name('tindak-lanjut.cetak_matriks');
+    Route::get('/tindak-lanjut/{tindakLanjut}/cetak-surat-pengantar', [TindakLanjutController::class, 'cetakSuratPengantarPdf'])->whereNumber('tindakLanjut')->name('tindak-lanjut.cetak_surat_pengantar');
 
     // Arsip Digital
     Route::get('/arsip', [ArsipDigitalController::class, 'index'])->name('arsip.index');

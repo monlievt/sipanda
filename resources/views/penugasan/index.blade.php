@@ -123,6 +123,20 @@
                                 @else
                                     <span class="block text-[9px] font-sans font-semibold text-slate-400 mt-0.5">Non-PKPPT</span>
                                 @endif
+
+                                @if($item->status_persetujuan === 'disetujui')
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 mt-1">
+                                        ✓ Disetujui
+                                    </span>
+                                @elseif($item->status_persetujuan === 'ditolak')
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800 mt-1" title="Catatan: {{ $item->catatan_revisi }}">
+                                        ✕ Ditolak
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800 mt-1">
+                                        ⏳ Menunggu Verifikasi
+                                    </span>
+                                @endif
                             </td>
                             <td class="py-3 px-4 max-w-xs">
                                 <a href="{{ route('penugasan.show', $item->id) }}" class="font-bold text-slate-900 dark:text-white hover:text-blue-600 line-clamp-2">
@@ -160,24 +174,30 @@
                                         </span>
                                         @can('penugasan.update_status')
                                         <button type="button" onclick="openModalSelesaikanPenugasan({
-                                            id: {{ $item->id }},
-                                            no_spt: '{{ addslashes($item->no_spt) }}',
-                                            uraian: '{{ addslashes($item->uraian_penugasan) }}'
-                                        })" class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[9px] font-bold shadow-2xs cursor-pointer" title="Klaim Penugasan ini telah Selesai">
-                                            <span>✓ Tandai Selesai</span>
-                                        </button>
-                                        @endcan
-                                    </div>
-                                @endif
-                            </td>
-                            <td class="py-3 px-4 text-center whitespace-nowrap">
-                                <div class="flex items-center justify-center gap-1">
-                                    <a href="{{ route('penugasan.show', $item->id) }}" class="px-2.5 py-1 bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-100 rounded-lg text-[10px] font-bold border border-slate-300 shadow-xs" title="Lihat Rincian Isi Surat Tugas">
-                                        👁️ Detail
-                                    </a>
-                                    <a href="{{ route('penugasan.cetak', $item->id) }}" target="_blank" class="px-2.5 py-1 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 hover:bg-blue-100 rounded-lg text-[10px] font-bold border border-blue-300 shadow-xs" title="Cetak Naskah Dinas SPT Resmi">
-                                        🖨️ Cetak
-                                    </a>
+                                             id: {{ $item->id }},
+                                             no_spt: '{{ addslashes($item->no_spt) }}',
+                                             uraian: '{{ addslashes($item->uraian_penugasan) }}'
+                                         })" class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[9px] font-bold shadow-2xs cursor-pointer" title="Klaim Penugasan ini telah Selesai">
+                                             <span>✓ Tandai Selesai</span>
+                                         </button>
+                                         @endcan
+                                     </div>
+                                 @endif
+                             </td>
+                             <td class="py-3 px-4 text-center whitespace-nowrap">
+                                 <div class="flex items-center justify-center gap-1">
+                                     <a href="{{ route('penugasan.show', $item->id) }}" class="px-2.5 py-1 bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-100 rounded-lg text-[10px] font-bold border border-slate-300 shadow-xs" title="Lihat Rincian Isi Surat Tugas">
+                                         👁️ Detail
+                                     </a>
+                                     @if($item->status_persetujuan === 'disetujui' || auth()->user()->hasRole(['admin','administrator','inspektur','sekretaris','irban']))
+                                         <a href="{{ route('penugasan.cetak', $item->id) }}" target="_blank" class="px-2.5 py-1 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 hover:bg-blue-100 rounded-lg text-[10px] font-bold border border-blue-300 shadow-xs" title="Cetak Naskah Dinas SPT Resmi">
+                                             🖨️ Cetak
+                                         </a>
+                                     @else
+                                         <button disabled class="px-2.5 py-1 bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 rounded-lg text-[10px] font-bold border border-slate-200 dark:border-slate-700 cursor-not-allowed opacity-60" title="SPT belum disetujui Irban">
+                                             🔒 Cetak
+                                         </button>
+                                     @endif
                                     @can('penugasan.edit')
                                     <a href="{{ route('penugasan.edit', $item->id) }}" class="px-2.5 py-1 bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300 hover:bg-amber-100 rounded-lg text-[10px] font-bold border border-amber-300 shadow-xs" title="Edit Surat Tugas">
                                         ✏️ Edit

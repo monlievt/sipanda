@@ -11,23 +11,35 @@ class TindakLanjut extends Model
 
     protected $table = 'tindak_lanjut';
     protected $fillable = [
-        'penugasan_id', 'objek_penugasan_id', 'no_lhp', 'judul_lhp', 'tgl_lhp',
+        'penugasan_id', 'st_pemantauan_id', 'objek_penugasan_id', 'no_lhp', 'judul_lhp', 'tgl_lhp',
         'uraian_temuan', 'rekomendasi', 'nilai_diawasi_rp', 'nilai_rekomendasi_rp', 'berkas_dasar_lhp',
-        'status_tindak_lanjut', 'tanggal_target', 'tanggal_selesai_aktual', 'dibuat_oleh',
+        'status_tindak_lanjut', 'status_telaah', 'hasil_telaah_tim', 'telaah_oleh', 'telaah_pada',
+        'catatan_irban', 'irban_disetujui_oleh', 'irban_disetujui_pada',
+        'catatan_inspektur', 'inspektur_disetujui_oleh', 'inspektur_disetujui_pada',
+        'no_surat_pengantar', 'tgl_surat_pengantar', 'tujuan_surat_pengantar',
+        'tanggal_target', 'tanggal_selesai_aktual', 'dibuat_oleh',
     ];
     protected $casts = [
         'tgl_lhp'                => 'date',
+        'tgl_surat_pengantar'    => 'date',
         'nilai_diawasi_rp'       => 'float',
         'nilai_rekomendasi_rp'   => 'float',
         'tanggal_target'         => 'date',
         'tanggal_selesai_aktual' => 'date',
+        'telaah_pada'            => 'datetime',
+        'irban_disetujui_pada'   => 'datetime',
+        'inspektur_disetujui_pada'=> 'datetime',
     ];
 
-    public function penugasan()      { return $this->belongsTo(Penugasan::class); }
-    public function objekPenugasan() { return $this->belongsTo(ObjekPenugasan::class, 'objek_penugasan_id'); }
-    public function pembuatData()    { return $this->belongsTo(User::class, 'dibuat_oleh'); }
+    public function penugasan()         { return $this->belongsTo(Penugasan::class); }
+    public function stPemantauan()      { return $this->belongsTo(Penugasan::class, 'st_pemantauan_id'); }
+    public function objekPenugasan()    { return $this->belongsTo(ObjekPenugasan::class, 'objek_penugasan_id'); }
+    public function pembuatData()       { return $this->belongsTo(User::class, 'dibuat_oleh'); }
+    public function penelaah()          { return $this->belongsTo(User::class, 'telaah_oleh'); }
+    public function irbanPenyetuju()    { return $this->belongsTo(User::class, 'irban_disetujui_oleh'); }
+    public function inspekturPenyetuju(){ return $this->belongsTo(User::class, 'inspektur_disetujui_oleh'); }
     public function buktiTindakLanjut() { return $this->hasMany(BuktiTindakLanjut::class); }
-    public function arsipDigital()   { return $this->hasMany(ArsipDigital::class, 'tindak_lanjut_id'); }
+    public function arsipDigital()      { return $this->hasMany(ArsipDigital::class, 'tindak_lanjut_id'); }
     public function rincianPenyetoran() { return $this->hasMany(RincianPenyetoranTl::class, 'tindak_lanjut_id'); }
 
     public function getNamaObjekSasaranAttribute(): string
@@ -73,5 +85,23 @@ class TindakLanjut extends Model
             'tdt'                 => 'Tidak Dapat Ditindaklanjuti (TDT)',
             default               => 'Belum Sesuai',
         };
+    }
+
+    public function getStatusTelaahLabelAttribute(): string
+    {
+        return match($this->status_telaah) {
+            'draft'               => 'Draft Telaah Tim',
+            'diajukan_irban'      => 'Diajukan ke Irban',
+            'revisi_irban'        => 'Revisi dari Irban',
+            'diajukan_inspektur'  => 'Diusulkan ke Inspektur',
+            'revisi_inspektur'    => 'Revisi dari Inspektur',
+            'disetujui_inspektur' => 'Disetujui Inspektur (Final)',
+            default               => 'Draft Telaah',
+        };
+    }
+
+    public function isSiapGenerateDokumen(): bool
+    {
+        return $this->status_telaah === 'disetujui_inspektur';
     }
 }

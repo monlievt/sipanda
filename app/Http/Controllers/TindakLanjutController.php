@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\ArsipDigital;
 use App\Models\BuktiTindakLanjut;
+use App\Models\Notifikasi;
+use App\Models\ObjekPenugasan;
 use App\Models\Penugasan;
 use App\Models\RincianPenyetoranTl;
 use App\Models\TindakLanjut;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -141,6 +144,11 @@ class TindakLanjutController extends Controller
         $tindakLanjut->load([
             'penugasan.irban',
             'penugasan.objekPenugasan',
+            'stPemantauan',
+            'penelaah',
+            'irbanPenyetuju',
+            'inspekturPenyetuju',
+            'tujuanSuratObjek',
             'buktiTindakLanjut.pengunggah',
             'rincianPenyetoran.pembuatData',
             'pembuatData',
@@ -150,6 +158,11 @@ class TindakLanjutController extends Controller
         $lhpItems = TindakLanjut::with([
             'penugasan.irban',
             'penugasan.objekPenugasan',
+            'stPemantauan',
+            'penelaah',
+            'irbanPenyetuju',
+            'inspekturPenyetuju',
+            'tujuanSuratObjek',
             'buktiTindakLanjut.pengunggah',
             'buktiTindakLanjut.arsipDigital',
             'rincianPenyetoran.pembuatData',
@@ -172,10 +185,17 @@ class TindakLanjutController extends Controller
             return $tl->rincianPenyetoran->sum('nilai_setor_rp');
         });
 
+        $stPemantauanList = Penugasan::where('status_persetujuan', 'disetujui')
+            ->orderBy('no_spt', 'desc')
+            ->take(100)
+            ->get();
+
+        $objekList = ObjekPenugasan::aktif()->orderBy('nama')->get();
+
         return view('tindak-lanjut.show', compact(
             'tindakLanjut', 'lhpItems',
             'countSesuai', 'countBelumSesuai', 'countBelum', 'countTdt',
-            'totalNilaiTarget', 'totalSetorRp'
+            'totalNilaiTarget', 'totalSetorRp', 'stPemantauanList', 'objekList'
         ));
     }
 
@@ -515,4 +535,280 @@ class TindakLanjutController extends Controller
 
         return back()->with('status', 'Catatan temuan & rekomendasi berhasil dihapus.');
     }
+
+    /**
+     * Tim Pemantauan TL mengajukan hasil telaah atas TL yang diinput OPD.
+     */
+    public function ajukanTelaah(Request $request, TindakLanjut $tindakLanjut): RedirectResponse
+    {
+        $validated = $request->validate([
+            'st_pemantauan_id'   => ['nullable', 'exists:penugasan,id'],
+            'catatan_telaah_tim' => ['required', 'string'],
+            'status_rekomendasi' => ['nullable', 'in:belum,proses,menunggu_verifikasi,selesai,tdt'],
+        ], [
+            'catatan_telaah_tim.required' => 'Catatan hasil telaah tim pemantauan wajib diisi.',
+        ]);
+
+        $sebelum = $tindakLanjut->toArray();
+
+        $updateData = [
+            'st_pemantauan_id'   => $validated['st_pemantauan_id'] ?? $tindakLanjut->st_pemantauan_id,
+            'catatan_telaah_tim' => $validated['catatan_telaah_tim'],
+            'status_telaah'      => 'diajukan_irban',
+            'ditelaah_oleh'      => auth()->id(),
+            'ditelaah_pada'      => now(),
+        ];
+
+        if (!empty($validated['status_rekomendasi'])) {
+            $updateData['status_tindak_lanjut'] = $validated['status_rekomendasi'];
+            if ($validated['status_rekomendasi'] === 'selesai' && !$tindakLanjut->tanggal_selesai_aktual) {
+                $updateData['tanggal_selesai_aktual'] = now()->toDateString();
+            }
+        }
+
+        $tindakLanjut->update($updateData);
+
+        ActivityLog::catat('tindak_lanjut', $tindakLanjut->id, 'ajukan_telaah', $sebelum, $tindakLanjut->toArray());
+
+        // Kirim Notifikasi ke Irban terkait
+        $irbanUser = null;
+        if ($tindakLanjut->penugasan?->irban_id) {
+            $irbanUser = User::role('irban')->where('irban_id', $tindakLanjut->penugasan->irban_id)->first();
+        }
+        if (!$irbanUser) {
+            $irbanUser = User::role('irban')->first();
+        }
+
+        if ($irbanUser) {
+            Notifikasi::create([
+                'user_id'      => $irbanUser->id,
+                'penugasan_id' => $tindakLanjut->penugasan_id,
+                'jenis'        => 'info_lain',
+                'judul'        => 'Pengajuan Telaah TL: ' . ($tindakLanjut->no_lhp ?? $tindakLanjut->penugasan?->no_spt),
+                'pesan'        => "Tim Pemantauan telah mengajukan hasil telaah tindak lanjut LHP untuk diverifikasi oleh Irban.",
+                'status'       => 'terkirim',
+                'dikirim_pada' => now(),
+            ]);
+        }
+
+        return back()->with('status', 'Hasil telaah tim berhasil disimpan dan diajukan ke Irban untuk diverifikasi.');
+    }
+
+    /**
+     * Irban memverifikasi telaah tim: Setujui (usulkan ke Inspektur) atau Tolak (kembalikan ke tim).
+     */
+    public function verifikasiTelaahIrban(Request $request, TindakLanjut $tindakLanjut): RedirectResponse
+    {
+        $user = auth()->user();
+        if (!$user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban', 'admin_irban'])) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk memverifikasi telaah ini.');
+        }
+
+        $validated = $request->validate([
+            'aksi'                      => ['required', 'in:setujui,tolak'],
+            'catatan_verifikasi_irban'  => ['nullable', 'string'],
+        ]);
+
+        if ($validated['aksi'] === 'tolak' && empty($validated['catatan_verifikasi_irban'])) {
+            return back()->with('error', 'Catatan revisi wajib diisi jika Irban menolak/mengembalikan hasil telaah ke Tim.');
+        }
+
+        $sebelum = $tindakLanjut->toArray();
+
+        $statusTelaah = ($validated['aksi'] === 'setujui') ? 'diajukan_inspektur' : 'ditolak_irban';
+
+        $tindakLanjut->update([
+            'status_telaah'             => $statusTelaah,
+            'catatan_verifikasi_irban'  => $validated['catatan_verifikasi_irban'] ?? null,
+            'irban_penyetuju_id'        => $user->id,
+            'diverifikasi_irban_pada'   => now(),
+        ]);
+
+        ActivityLog::catat('tindak_lanjut', $tindakLanjut->id, 'verifikasi_irban_telaah', $sebelum, $tindakLanjut->toArray());
+
+        // Notifikasi
+        if ($validated['aksi'] === 'setujui') {
+            $inspektur = User::role('inspektur')->first();
+            if ($inspektur) {
+                Notifikasi::create([
+                    'user_id'      => $inspektur->id,
+                    'penugasan_id' => $tindakLanjut->penugasan_id,
+                    'jenis'        => 'info_lain',
+                    'judul'        => 'Usulan Persetujuan Telaah TL dari Irban',
+                    'pesan'        => "Irban telah memverifikasi telaah TL ({$tindakLanjut->no_lhp}) dan mengusulkannya kepada Inspektur untuk disetujui.",
+                    'status'       => 'terkirim',
+                    'dikirim_pada' => now(),
+                ]);
+            }
+            $pesan = 'Hasil telaah disetujui Irban dan diteruskan kepada Inspektur untuk persetujuan final.';
+        } else {
+            if ($tindakLanjut->ditelaah_oleh) {
+                Notifikasi::create([
+                    'user_id'      => $tindakLanjut->ditelaah_oleh,
+                    'penugasan_id' => $tindakLanjut->penugasan_id,
+                    'jenis'        => 'info_lain',
+                    'judul'        => 'Telaah TL Dikembalikan oleh Irban',
+                    'pesan'        => "Hasil telaah TL dikembalikan oleh Irban untuk diperbaiki. Catatan: {$validated['catatan_verifikasi_irban']}",
+                    'status'       => 'terkirim',
+                    'dikirim_pada' => now(),
+                ]);
+            }
+            $pesan = 'Hasil telaah ditolak dan dikembalikan ke Tim Pemantauan untuk diperbaiki.';
+        }
+
+        return back()->with('status', $pesan);
+    }
+
+    /**
+     * Inspektur memberikan persetujuan final atas telaah TL (atau menolak untuk disesuaikan Irban & Tim).
+     */
+    public function persetujuanTelaahInspektur(Request $request, TindakLanjut $tindakLanjut): RedirectResponse
+    {
+        $user = auth()->user();
+        if (!$user->hasRole(['admin', 'administrator', 'inspektur'])) {
+            return back()->with('error', 'Hanya Inspektur atau Administrator yang dapat menyetujui persetujuan final telaah ini.');
+        }
+
+        $validated = $request->validate([
+            'aksi'                            => ['required', 'in:setujui,tolak'],
+            'catatan_persetujuan_inspektur'   => ['nullable', 'string'],
+        ]);
+
+        if ($validated['aksi'] === 'tolak' && empty($validated['catatan_persetujuan_inspektur'])) {
+            return back()->with('error', 'Catatan revisi wajib diisi jika Inspektur menolak/mengembalikan usulan telaah.');
+        }
+
+        $sebelum = $tindakLanjut->toArray();
+
+        $statusTelaah = ($validated['aksi'] === 'setujui') ? 'disetujui_inspektur' : 'ditolak_inspektur';
+
+        $tindakLanjut->update([
+            'status_telaah'                   => $statusTelaah,
+            'catatan_persetujuan_inspektur'   => $validated['catatan_persetujuan_inspektur'] ?? null,
+            'inspektur_penyetuju_id'          => $user->id,
+            'disetujui_inspektur_pada'        => now(),
+        ]);
+
+        ActivityLog::catat('tindak_lanjut', $tindakLanjut->id, 'persetujuan_inspektur_telaah', $sebelum, $tindakLanjut->toArray());
+
+        // Notifikasi ke Irban
+        if ($tindakLanjut->irban_penyetuju_id) {
+            $statusText = ($validated['aksi'] === 'setujui') ? 'Disetujui Final' : 'Ditolak/Perlu Penyesuaian';
+            Notifikasi::create([
+                'user_id'      => $tindakLanjut->irban_penyetuju_id,
+                'penugasan_id' => $tindakLanjut->penugasan_id,
+                'jenis'        => 'info_lain',
+                'judul'        => "Persetujuan Akhir Telaah TL: {$statusText}",
+                'pesan'        => "Inspektur telah memproses usulan telaah TL ({$tindakLanjut->no_lhp}) dengan status: {$statusText}." . (!empty($validated['catatan_persetujuan_inspektur']) ? " Catatan: {$validated['catatan_persetujuan_inspektur']}" : ""),
+                'status'       => 'terkirim',
+                'dikirim_pada' => now(),
+            ]);
+        }
+
+        $pesan = ($validated['aksi'] === 'setujui')
+            ? '✓ Hasil telaah telah Disetujui Final oleh Inspektur! Matriks Tindak Lanjut & Surat Pengantar siap digenerate/dicetak.'
+            : 'Hasil telaah ditolak oleh Inspektur dan dikembalikan kepada Irban beserta Tim untuk disesuaikan.';
+
+        return back()->with('status', $pesan);
+    }
+
+    /**
+     * Simpan Nomor Surat Pengantar, Tanggal, dan Pilihan Instansi/OPD Tujuan (Master Objek).
+     */
+    public function simpanDataSuratPengantar(Request $request, TindakLanjut $tindakLanjut): RedirectResponse
+    {
+        $validated = $request->validate([
+            'no_surat_pengantar'     => ['required', 'string', 'max:100'],
+            'tgl_surat_pengantar'    => ['required', 'date'],
+            'tujuan_surat_objek_id'  => ['required', 'exists:objek_penugasan,id'],
+            'sifat_surat'            => ['nullable', 'string', 'max:50'],
+            'hal_surat'              => ['nullable', 'string', 'max:255'],
+        ], [
+            'no_surat_pengantar.required'    => 'Nomor Surat Pengantar wajib diisi.',
+            'tgl_surat_pengantar.required'   => 'Tanggal Surat Pengantar wajib diisi.',
+            'tujuan_surat_objek_id.required' => 'Pilihan Perangkat Daerah / Instansi tujuan surat wajib dipilih dari daftar master.',
+        ]);
+
+        $sebelum = $tindakLanjut->toArray();
+
+        // Update semua record rekomendasi dalam LHP yang sama
+        $lhpQuery = TindakLanjut::where(function ($q) use ($tindakLanjut) {
+            if ($tindakLanjut->no_lhp) {
+                $q->where('no_lhp', $tindakLanjut->no_lhp);
+            } else {
+                $q->where('penugasan_id', $tindakLanjut->penugasan_id);
+            }
+        });
+
+        $lhpQuery->update([
+            'no_surat_pengantar'     => $validated['no_surat_pengantar'],
+            'tgl_surat_pengantar'    => $validated['tgl_surat_pengantar'],
+            'tujuan_surat_objek_id'  => $validated['tujuan_surat_objek_id'],
+            'sifat_surat'            => $validated['sifat_surat'] ?? 'Biasa',
+            'hal_surat'              => $validated['hal_surat'] ?? 'Penyampaian Matriks Tindak Lanjut Hasil Pengawasan',
+        ]);
+
+        ActivityLog::catat('tindak_lanjut', $tindakLanjut->id, 'update_surat_pengantar', $sebelum, $validated);
+
+        return back()->with('status', 'Data Nomor, Tanggal, dan Instansi Tujuan Surat Pengantar berhasil disimpan!');
+    }
+
+    /**
+     * Cetak Naskah Dinas Resmi Matriks Tindak Lanjut Hasil Pengawasan (PDF / Print View).
+     */
+    public function cetakMatriksPdf(Request $request, TindakLanjut $tindakLanjut): View|RedirectResponse
+    {
+        $user = auth()->user();
+        if ($tindakLanjut->status_telaah !== 'disetujui_inspektur' && !$user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban'])) {
+            return back()->with('error', 'Matriks Tindak Lanjut belum dapat digenerate karena telaah belum disetujui final oleh Inspektur.');
+        }
+
+        $lhpItems = TindakLanjut::with([
+            'penugasan.irban',
+            'penugasan.objekPenugasan',
+            'stPemantauan',
+            'penelaah',
+            'irbanPenyetuju',
+            'inspekturPenyetuju',
+            'tujuanSuratObjek',
+            'buktiTindakLanjut',
+            'rincianPenyetoran',
+        ])->where(function ($q) use ($tindakLanjut) {
+            if ($tindakLanjut->no_lhp) {
+                $q->where('no_lhp', $tindakLanjut->no_lhp);
+            } else {
+                $q->where('penugasan_id', $tindakLanjut->penugasan_id);
+            }
+        })->orderBy('id', 'asc')->get();
+
+        $inspektur = User::role('inspektur')->first();
+
+        return view('tindak-lanjut.cetak-matriks', compact('tindakLanjut', 'lhpItems', 'inspektur'));
+    }
+
+    /**
+     * Cetak Naskah Dinas Resmi Surat Pengantar Matriks Tindak Lanjut (PDF / Print View).
+     */
+    public function cetakSuratPengantarPdf(Request $request, TindakLanjut $tindakLanjut): View|RedirectResponse
+    {
+        $user = auth()->user();
+        if ($tindakLanjut->status_telaah !== 'disetujui_inspektur' && !$user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban'])) {
+            return back()->with('error', 'Surat Pengantar Matriks belum dapat digenerate karena telaah belum disetujui final oleh Inspektur.');
+        }
+
+        $tindakLanjut->load([
+            'penugasan.irban',
+            'penugasan.objekPenugasan',
+            'stPemantauan',
+            'penelaah',
+            'irbanPenyetuju',
+            'inspekturPenyetuju',
+            'tujuanSuratObjek',
+        ]);
+
+        $inspektur = User::role('inspektur')->first();
+
+        return view('tindak-lanjut.cetak-surat-pengantar', compact('tindakLanjut', 'inspektur'));
+    }
 }
+
