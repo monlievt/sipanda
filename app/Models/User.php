@@ -82,6 +82,11 @@ class User extends Authenticatable
         return $query;
     }
 
+    public function isPimpinanOrAdmin(): bool
+    {
+        return $this->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris']);
+    }
+
     public function isOpd(): bool
     {
         return $this->tipe_akun === 'opd';

@@ -538,14 +538,17 @@ class ExportController extends Controller
      */
     public function exportPenugasan(Request $request): StreamedResponse
     {
+        $user    = auth()->user();
         $tahun   = $request->input('tahun', date('Y'));
         $irbanId = $request->input('irban_id');
 
         $query = Penugasan::with(['irban', 'jenisPenugasan', 'sumberPenugasan', 'objekPenugasan'])
             ->whereYear('tanggal_mulai', $tahun);
 
-        if ($irbanId) {
-            $query->where('irban_id', $irbanId);
+        if (! $user->isPimpinanOrAdmin()) {
+            $query->accessibleBy($user);
+        } elseif ($irbanId) {
+            $query->irban($irbanId);
         }
 
         $listPenugasan = $query->orderBy('tanggal_mulai', 'desc')->get();
@@ -618,12 +621,21 @@ class ExportController extends Controller
      */
     public function exportPkppt(Request $request): StreamedResponse
     {
-        $tahun = $request->input('tahun', date('Y'));
+        $user    = auth()->user();
+        $tahun   = $request->input('tahun', date('Y'));
+        $irbanId = $request->input('irban_id');
 
-        $listPkppt = Pkppt::with(['irban', 'penugasan'])
+        $query = Pkppt::with(['irban', 'penugasan'])
             ->tahun($tahun)
-            ->orderBy('rencana_mulai', 'asc')
-            ->get();
+            ->orderBy('rencana_mulai', 'asc');
+
+        if (! $user->isPimpinanOrAdmin() && $user->irban_id) {
+            $query->where('irban_id', $user->irban_id);
+        } elseif ($irbanId) {
+            $query->where('irban_id', $irbanId);
+        }
+
+        $listPkppt = $query->get();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();

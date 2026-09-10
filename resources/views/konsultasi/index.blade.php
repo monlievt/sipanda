@@ -71,7 +71,7 @@
                     </select>
                 </div>
 
-                @if(!auth()->user()->hasRole(['irban', 'admin_irban']))
+                @if(auth()->user()->isPimpinanOrAdmin())
                 <div class="sm:col-span-3">
                     <select name="irban_id" onchange="this.form.submit()" class="w-full text-sm rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                         <option value="">-- Semua Irban --</option>

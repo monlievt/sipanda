@@ -151,8 +151,14 @@ class Penugasan extends Model
             return $query;
         }
 
-        // 2. Irban / Admin Irban: hanya penugasan yang berada di bawah kewenangan Irban-nya
-        if ($user->hasRole(['irban', 'admin_irban']) && $user->irban_id) {
+        // 2. Pengguna OPD: hanya penugasan yang mengawasi OPD terkait
+        if ($user->isOpd() && $user->objek_penugasan_id) {
+            return $query->whereHas('objekPenugasan', fn($sub) => $sub->where('objek_penugasan.id', $user->objek_penugasan_id));
+        }
+
+        // 3. User internal yang terikat pada unit Irban (Irban, Admin Irban, Auditor, PPUPD, Anggota Tim):
+        // Melihat penugasan di bawah Irban-nya ATAU penugasan di mana ia menjadi anggota tim / pembuat data
+        if ($user->irban_id) {
             return $query->where(function ($q) use ($user) {
                 $q->where('irban_id', $user->irban_id)
                   ->orWhereHas('irbans', fn($sub) => $sub->where('irbans.id', $user->irban_id))
@@ -161,12 +167,7 @@ class Penugasan extends Model
             });
         }
 
-        // 3. Pengguna OPD: hanya penugasan yang mengawasi OPD terkait
-        if ($user->isOpd() && $user->objek_penugasan_id) {
-            return $query->whereHas('objekPenugasan', fn($sub) => $sub->where('objek_penugasan.id', $user->objek_penugasan_id));
-        }
-
-        // 4. Auditor / PPUPD / Anggota / Personil biasa:
+        // 4. Personil internal tanpa irban_id (misal staf lepas):
         // Hanya penugasan di mana user terdaftar dalam susunan tim atau pembuat data
         return $query->where(function ($q) use ($user) {
             $q->whereHas('tim', fn($sub) => $sub->where('user_id', $user->id))
@@ -180,18 +181,16 @@ class Penugasan extends Model
             return true;
         }
 
-        if ($user->hasRole(['irban', 'admin_irban'])) {
-            if ($user->irban_id && ($this->irban_id == $user->irban_id || $this->irbans()->where('irbans.id', $user->irban_id)->exists())) {
-                return true;
-            }
+        if ($user->isOpd() && $user->objek_penugasan_id) {
+            return $this->objekPenugasan()->where('objek_penugasan.id', $user->objek_penugasan_id)->exists();
+        }
+
+        if ($user->irban_id && ($this->irban_id == $user->irban_id || $this->irbans()->where('irbans.id', $user->irban_id)->exists())) {
+            return true;
         }
 
         if ($this->isAnggotaTim($user) || $this->dibuat_oleh == $user->id) {
             return true;
-        }
-
-        if ($user->isOpd() && $user->objek_penugasan_id) {
-            return $this->objekPenugasan()->where('objek_penugasan.id', $user->objek_penugasan_id)->exists();
         }
 
         return false;

@@ -16,6 +16,7 @@ class PkpptController extends Controller
      */
     public function index(Request $request): View
     {
+        $user    = auth()->user();
         $tahun   = $request->input('tahun', date('Y'));
         $irbanId = $request->input('irban_id');
         $status  = $request->input('status');
@@ -30,7 +31,10 @@ class PkpptController extends Controller
             'riwayatRevisi'
         ])->where('tahun', $tahun);
 
-        if ($irbanId) {
+        if (! $user->isPimpinanOrAdmin() && $user->irban_id) {
+            $query->where('irban_id', $user->irban_id);
+            $irbanId = $user->irban_id;
+        } elseif ($irbanId) {
             $query->where('irban_id', $irbanId);
         }
 

@@ -25,7 +25,7 @@ class BebanKerjaController extends Controller
             $q->whereBetween('tanggal_mulai', [$tglAwal, $tglAkhir]);
         }]);
 
-        if ($user->hasRole(['irban', 'admin_irban']) && $user->irban_id) {
+        if (! $user->isPimpinanOrAdmin() && $user->irban_id) {
             $queryUsers->where('irban_id', $user->irban_id);
             $irbanId = $user->irban_id;
         } elseif ($irbanId) {

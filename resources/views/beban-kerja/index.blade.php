@@ -62,7 +62,7 @@
                 <input type="date" name="tanggal_akhir" value="{{ $tglAkhir }}" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 px-3 py-2.5 focus:ring-2 focus:ring-emerald-500">
             </div>
 
-            @if(!auth()->user()->hasRole(['irban', 'admin_irban']))
+            @if(auth()->user()->isPimpinanOrAdmin())
             <div>
                 <label class="block font-semibold text-slate-500 uppercase mb-1">Unit Irban</label>
                 <select name="irban_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 px-3 py-2.5 focus:ring-2 focus:ring-emerald-500">

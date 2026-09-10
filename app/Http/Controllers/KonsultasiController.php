@@ -28,8 +28,12 @@ class KonsultasiController extends Controller
 
         $query = Konsultasi::with(['pemohon', 'objekPenugasan', 'irban', 'timUsers']);
 
-        if ($user->hasRole(['irban', 'admin_irban']) && $user->irban_id) {
-            $query->where('irban_id', $user->irban_id);
+        if (! $user->isPimpinanOrAdmin() && $user->irban_id) {
+            $query->where(function ($q) use ($user) {
+                $q->where('irban_id', $user->irban_id)
+                  ->orWhereHas('tim', fn($sub) => $sub->where('user_id', $user->id));
+            });
+            $irbanId = $user->irban_id;
         } elseif ($irbanId) {
             $query->where('irban_id', $irbanId);
         }

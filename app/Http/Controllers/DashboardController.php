@@ -21,8 +21,8 @@ class DashboardController extends Controller
         $tahun = (int) $request->input('tahun', date('Y'));
         $irbanId = $request->input('irban_id');
 
-        // Auto scope if user has irban role
-        if ($user->hasRole(['irban', 'admin_irban']) && $user->irban_id) {
+        // Auto scope if user is not pimpinan/admin and has an irban unit
+        if (! $user->isPimpinanOrAdmin() && $user->irban_id) {
             $irbanId = $user->irban_id;
         }
 

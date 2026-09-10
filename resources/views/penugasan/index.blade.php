@@ -46,7 +46,7 @@
                 </select>
             </div>
 
-            @if(!auth()->user()->hasRole(['irban', 'admin_irban']))
+            @if(auth()->user()->isPimpinanOrAdmin())
             <div>
                 <label class="block font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase mb-1">Irban</label>
                 <select name="irban_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-800 dark:text-slate-200 px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">

@@ -42,9 +42,10 @@ class PenugasanController extends Controller
             'penugasanInduk', 'stPerpanjangan'
         ])->tahun($tahun);
 
-        // Auto-scope Irban jika user adalah Irban / Admin Irban
-        if ($user->hasRole(['irban', 'admin_irban']) && $user->irban_id) {
-            $query->irban($user->irban_id);
+        // Scoping hak akses penugasan
+        if (! $user->isPimpinanOrAdmin()) {
+            $query->accessibleBy($user);
+            $irbanId = $user->irban_id;
         } elseif ($irbanId) {
             $query->irban($irbanId);
         }

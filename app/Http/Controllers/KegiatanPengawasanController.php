@@ -14,6 +14,7 @@ class KegiatanPengawasanController extends Controller
      */
     public function index(Request $request): View
     {
+        $user = auth()->user();
         $tahun = $request->input('tahun', date('Y'));
         $irbanId = $request->input('irban_id');
 
@@ -25,7 +26,10 @@ class KegiatanPengawasanController extends Controller
             'penugasan.tindakLanjut',
         ])->where('tahun', $tahun);
 
-        if ($irbanId) {
+        if (! $user->isPimpinanOrAdmin() && $user->irban_id) {
+            $query->where('irban_id', $user->irban_id);
+            $irbanId = $user->irban_id;
+        } elseif ($irbanId) {
             $query->where('irban_id', $irbanId);
         }
 

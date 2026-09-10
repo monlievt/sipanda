@@ -15,6 +15,7 @@
                 </select>
             </div>
 
+            @if(auth()->user()->isPimpinanOrAdmin())
             <div>
                 <select name="irban_id" onchange="this.form.submit()" class="text-xs font-semibold rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-emerald-500 px-3 py-2.5">
                     <option value="">-- Semua Irban --</option>
@@ -23,6 +24,7 @@
                     @endforeach
                 </select>
             </div>
+            @endif
 
             <div>
                 <select name="status" onchange="this.form.submit()" class="text-xs font-semibold rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-emerald-500 px-3 py-2.5">

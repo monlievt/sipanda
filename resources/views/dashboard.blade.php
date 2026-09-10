@@ -22,7 +22,7 @@
                 </select>
             </div>
 
-            @if(!auth()->user()->hasRole(['irban', 'admin_irban']))
+            @if(auth()->user()->isPimpinanOrAdmin())
             <div>
                 <select name="irban_id" onchange="this.form.submit()" class="text-xs font-semibold rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-emerald-500 shadow-xs">
                     <option value="">-- Semua Irban --</option>
