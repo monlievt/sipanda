@@ -164,7 +164,7 @@
                                     👤
                                 </div>
                                 <div>
-                                    <p class="font-bold text-slate-900 dark:text-white text-xs">{{ $pTim->user?->nama_display ?? $pTim->user?->nama ?? 'Personil Tim' }}</p>
+                                    <p class="font-bold text-slate-900 dark:text-white text-xs">{{ $pTim->user?->nama ?? 'Personil Tim' }}</p>
                                     <span class="text-[10px] text-slate-400 font-mono">NIP: {{ $pTim->user?->nip ?? '-' }}</span>
                                 </div>
                             </div>

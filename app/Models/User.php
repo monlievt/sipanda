@@ -94,7 +94,7 @@ class User extends Authenticatable
 
     public function getNamaDisplayAttribute(): string
     {
-        return $this->nama_tanpa_gelar ?? $this->nama;
+        return $this->nama ?? ($this->nama_tanpa_gelar ?? '');
     }
 
     public function getTokenMasihBerlakuAttribute(): bool

@@ -490,7 +490,7 @@
                                 <input type="checkbox" name="tim_wakil_pj[]" value="{{ $u->id }}"
                                     {{ is_array(old('tim_wakil_pj')) && in_array($u->id, old('tim_wakil_pj')) ? 'checked' : '' }}
                                     class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-                                <span>{{ $u->nama_display ?? $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
+                                <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
                             </label>
                         @endforeach
                     </div>
@@ -506,7 +506,7 @@
                                 <input type="checkbox" name="tim_daltek[]" value="{{ $u->id }}"
                                     {{ is_array(old('tim_daltek')) && in_array($u->id, old('tim_daltek')) ? 'checked' : '' }}
                                     class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-                                <span>{{ $u->nama_display ?? $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
+                                <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
                             </label>
                         @endforeach
                     </div>
@@ -522,7 +522,7 @@
                                 <input type="checkbox" name="tim_ketua[]" value="{{ $u->id }}"
                                     {{ is_array(old('tim_ketua')) && in_array($u->id, old('tim_ketua')) ? 'checked' : '' }}
                                     class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-                                <span>{{ $u->nama_display ?? $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
+                                <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
                             </label>
                         @endforeach
                     </div>
@@ -538,7 +538,7 @@
                                 <input type="checkbox" name="tim_anggota[]" value="{{ $u->id }}"
                                     {{ is_array(old('tim_anggota')) && in_array($u->id, old('tim_anggota')) ? 'checked' : '' }}
                                     class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-                                <span>{{ $u->nama_display ?? $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
+                                <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
                             </label>
                         @endforeach
                     </div>
