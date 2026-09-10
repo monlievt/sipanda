@@ -31,7 +31,7 @@ class DokumenStreamController extends Controller
     }
 
     /**
-     * Cari file fisik di seluruh storage disk (public, local/private, root app) lalu sajikan dengan header inline.
+     * Cari file fisik di seluruh storage disk yang diizinkan lalu sajikan dengan header keamanan inline.
      */
     protected function resolveAndServe(?string $rawPath, bool $forceDownload): Response
     {
@@ -45,51 +45,75 @@ class DokumenStreamController extends Controller
             $cleanPath = substr($cleanPath, 8);
         }
 
-        // Mencegah directory traversal attack
-        if (str_contains($cleanPath, '..')) {
+        // 1. Mencegah directory traversal attack & null bytes
+        if (str_contains($cleanPath, '..') || str_contains($cleanPath, "\0") || str_contains($cleanPath, '\\')) {
             abort(403, 'Akses path tidak valid.');
         }
 
+        // 2. Blokir ekstensi file berbahaya yang tidak boleh di-stream ke publik
+        $ext = strtolower(pathinfo($cleanPath, PATHINFO_EXTENSION));
+        $blockedExtensions = ['php', 'phtml', 'phar', 'exe', 'sh', 'bat', 'env', 'sql', 'key', 'pem', 'log', 'sqlite', 'sqlite3', 'htaccess'];
+        if (in_array($ext, $blockedExtensions)) {
+            abort(403, 'Format berkas tidak diizinkan untuk diakses langsung.');
+        }
+
+        // 3. Pengecekan Otorisasi: Direktori sensitif internal & bukti audit wajib login
+        $sensitivePrefixes = ['arsip', 'arsip_digital', 'bukti_tl', 'surat_pengantar', 'berkas_konsultasi', 'private'];
+        $isSensitive = false;
+        foreach ($sensitivePrefixes as $prefix) {
+            if (str_starts_with($cleanPath, $prefix . '/') || $cleanPath === $prefix) {
+                $isSensitive = true;
+                break;
+            }
+        }
+
+        if ($isSensitive) {
+            $isLoggedIn = auth('web')->check() || auth('opd')->check();
+            if (! $isLoggedIn) {
+                abort(401, 'Silakan login terlebih dahulu untuk mengakses dokumen ini.');
+            }
+        }
+
+        // 4. Batasi direktori pencarian yang aman (hanya di disk public dan storage app yang sah)
         $candidates = [
             Storage::disk('public')->path($cleanPath),
-            Storage::disk('local')->path($cleanPath),
             storage_path('app/public/' . $cleanPath),
             storage_path('app/private/' . $cleanPath),
-            storage_path('app/' . $cleanPath),
             public_path('storage/' . $cleanPath),
         ];
 
         $targetFile = null;
         foreach ($candidates as $candidate) {
-            if (file_exists($candidate) && is_file($candidate)) {
-                $targetFile = $candidate;
+            $real = realpath($candidate);
+            if ($real && is_file($real)) {
+                $targetFile = $real;
                 break;
             }
         }
 
         if (! $targetFile) {
-            abort(404, "Berkas dokumen fisik tidak ditemukan di server ({$cleanPath}).");
+            abort(404, "Berkas dokumen fisik tidak ditemukan di server.");
         }
 
-        $mimeType = mime_content_type($targetFile) ?: 'application/pdf';
+        $mimeType = mime_content_type($targetFile) ?: 'application/octet-stream';
         $filename = basename($targetFile);
 
-        // Jika ekstensi adalah PDF tapi mime gagal dideteksi
-        if (str_ends_with(strtolower($targetFile), '.pdf')) {
+        if ($ext === 'pdf') {
             $mimeType = 'application/pdf';
         }
 
+        $headers = [
+            'Content-Type'           => $mimeType,
+            'Content-Disposition'    => ($forceDownload ? 'attachment' : 'inline') . '; filename="' . addslashes($filename) . '"',
+            'Cache-Control'          => 'private, no-transform, max-age=3600',
+            'X-Content-Type-Options' => 'nosniff',
+            'X-Frame-Options'        => 'SAMEORIGIN',
+        ];
+
         if ($forceDownload) {
-            return response()->download($targetFile, $filename, [
-                'Content-Type' => $mimeType,
-            ]);
+            return response()->download($targetFile, $filename, $headers);
         }
 
-        return response()->file($targetFile, [
-            'Content-Type'        => $mimeType,
-            'Content-Disposition' => 'inline; filename="' . $filename . '"',
-            'Cache-Control'       => 'private, max-age=3600',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        return response()->file($targetFile, $headers);
     }
 }

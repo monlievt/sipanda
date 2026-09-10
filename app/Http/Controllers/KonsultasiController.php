@@ -78,6 +78,11 @@ class KonsultasiController extends Controller
      */
     public function show(Konsultasi $konsultasi): View
     {
+        $user = auth()->user();
+        if (! $user->isPimpinanOrAdmin() && $user->irban_id && $konsultasi->irban_id && $konsultasi->irban_id != $user->irban_id && ! $konsultasi->timUsers->contains('id', $user->id)) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk melihat tiket konsultasi ini.');
+        }
+
         $konsultasi->load([
             'pemohon.objekPenugasan',
             'objekPenugasan',
@@ -104,6 +109,10 @@ class KonsultasiController extends Controller
      */
     public function disposisiInspektur(Request $request, Konsultasi $konsultasi): RedirectResponse
     {
+        $user = auth()->user();
+        if (! $user->hasRole(['admin', 'administrator', 'inspektur'])) {
+            abort(403, 'Akses Ditolak: Hanya Inspektur yang dapat mendisposisikan tiket konsultasi.');
+        }
         $request->validate([
             'irban_id'                    => ['required', 'exists:irbans,id'],
             'catatan_disposisi_inspektur' => ['required', 'string', 'max:1000'],
@@ -180,6 +189,11 @@ class KonsultasiController extends Controller
      */
     public function disposisi(Request $request, Konsultasi $konsultasi): RedirectResponse
     {
+        $user = auth()->user();
+        if (! $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban', 'admin_irban'])) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki hak akses untuk menunjuk tim konsultasi.');
+        }
+
         $request->validate([
             'metode_disetujui'    => ['required', 'in:online,offline'],
             'tanggal_tatap_muka'  => ['nullable', 'required_if:metode_disetujui,offline', 'date'],
@@ -281,6 +295,11 @@ class KonsultasiController extends Controller
      */
     public function sendChat(Request $request, Konsultasi $konsultasi): RedirectResponse
     {
+        $user = auth()->user();
+        if (! $user->isPimpinanOrAdmin() && $user->irban_id && $konsultasi->irban_id && $konsultasi->irban_id != $user->irban_id && ! $konsultasi->timUsers->contains('id', $user->id)) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk mengirim pesan pada tiket konsultasi ini.');
+        }
+
         $request->validate([
             'pesan'         => ['required', 'string'],
             'lampiran_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx,zip', 'max:10240'],
@@ -332,6 +351,11 @@ class KonsultasiController extends Controller
      */
     public function terbitkanBa(Request $request, Konsultasi $konsultasi): RedirectResponse
     {
+        $user = auth()->user();
+        if (! $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban', 'admin_irban']) && ! $konsultasi->timUsers->contains('id', $user->id)) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk menerbitkan Berita Acara ini.');
+        }
+
         $request->validate([
             'kesimpulan_advis' => ['required', 'string'],
         ], [
@@ -367,6 +391,11 @@ class KonsultasiController extends Controller
      */
     public function toggleFaq(Konsultasi $konsultasi): RedirectResponse
     {
+        $user = auth()->user();
+        if (! $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban', 'admin_irban'])) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk mempublikasikan FAQ ini.');
+        }
+
         $konsultasi->update([
             'is_faq_public' => ! $konsultasi->is_faq_public,
         ]);
@@ -381,6 +410,11 @@ class KonsultasiController extends Controller
      */
     public function cetakBa(Konsultasi $konsultasi): View
     {
+        $user = auth()->user();
+        if (! $user->isPimpinanOrAdmin() && $user->irban_id && $konsultasi->irban_id && $konsultasi->irban_id != $user->irban_id && ! $konsultasi->timUsers->contains('id', $user->id)) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk mencetak Berita Acara ini.');
+        }
+
         $konsultasi->load([
             'pemohon.objekPenugasan',
             'objekPenugasan',

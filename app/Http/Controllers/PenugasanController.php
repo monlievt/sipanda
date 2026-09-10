@@ -86,6 +86,10 @@ class PenugasanController extends Controller
      */
     public function show(Penugasan $penugasan): View
     {
+        if (! $penugasan->canAccess(auth()->user())) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki hak akses ke data penugasan ini.');
+        }
+
         $penugasan->load([
             'irban', 'irbans', 'jenisPenugasan', 'sumberPenugasan',
             'objekPenugasan', 'tim.user', 'pkppt', 'pembuatData',
@@ -100,6 +104,10 @@ class PenugasanController extends Controller
      */
     public function cetak(Penugasan $penugasan): View|RedirectResponse
     {
+        if (! $penugasan->canAccess(auth()->user())) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki hak akses untuk mencetak naskah SPT ini.');
+        }
+
         if ($penugasan->status_persetujuan !== 'disetujui' && !auth()->user()->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban'])) {
             return redirect()->route('penugasan.show', $penugasan)
                 ->with('error', 'Surat Tugas belum disetujui oleh Irban sehingga naskah dinas resmi belum dapat dicetak.');
@@ -384,6 +392,10 @@ class PenugasanController extends Controller
      */
     public function edit(Penugasan $penugasan): View
     {
+        if (! $penugasan->canAccess(auth()->user())) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki hak akses untuk mengubah penugasan ini.');
+        }
+
         $penugasan->load(['irbans', 'objekPenugasan', 'tim']);
 
         $objekList = ObjekPenugasan::aktif()->orderBy('nama')->get();
@@ -437,6 +449,10 @@ class PenugasanController extends Controller
     public function update(Request $request, Penugasan $penugasan): RedirectResponse
     {
         $user = auth()->user();
+        if (! $penugasan->canAccess($user)) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki hak akses untuk mengubah penugasan ini.');
+        }
+
         $isPerpanjangan = (bool) $request->input('is_perpanjangan', 0);
 
         if ($isPerpanjangan) {
@@ -583,6 +599,11 @@ class PenugasanController extends Controller
      */
     public function destroy(Penugasan $penugasan): RedirectResponse
     {
+        $user = auth()->user();
+        if (! $user->isPimpinanOrAdmin() && (! $penugasan->canAccess($user) || ($user->irban_id && $penugasan->irban_id != $user->irban_id))) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk menghapus penugasan ini.');
+        }
+
         $noSpt = $penugasan->no_spt;
         $sebelum = $penugasan->toArray();
 
@@ -599,6 +620,11 @@ class PenugasanController extends Controller
      */
     public function updateStatus(Request $request, Penugasan $penugasan): RedirectResponse
     {
+        $user = auth()->user();
+        if (! $penugasan->canAccess($user)) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk memperbarui status penugasan ini.');
+        }
+
         $validated = $request->validate([
             'status'           => ['required', 'in:belum_berjalan,berjalan,selesai'],
             'progres_persen'   => ['nullable', 'integer', 'min:0', 'max:100'],
@@ -616,12 +642,12 @@ class PenugasanController extends Controller
             $validated['progres_persen'] = $penugasan->progres_persen ?? 0;
         }
 
-        $validated['diperbarui_oleh'] = auth()->id();
+        $validated['diperbarui_oleh'] = $user->id;
         $penugasan->update($validated);
 
         ActivityLog::catat('penugasan', $penugasan->id, 'update', $sebelum, $penugasan->toArray());
 
-        return back()->with('status', $pesan);
+        return back()->with('status', 'Status penugasan berhasil diperbarui.');
     }
 
     /**

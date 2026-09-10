@@ -156,22 +156,22 @@ Route::middleware(['auth'])->group(function () {
 
     // Master Bank Regulasi & Dasar Hukum APIP
     Route::get('/master/regulasi', [\App\Http\Controllers\RegulasiHukumController::class, 'index'])->name('master.regulasi.index');
-    Route::post('/master/regulasi', [\App\Http\Controllers\RegulasiHukumController::class, 'store'])->name('master.regulasi.store');
-    Route::put('/master/regulasi/{regulasi}', [\App\Http\Controllers\RegulasiHukumController::class, 'update'])->name('master.regulasi.update');
-    Route::delete('/master/regulasi/{regulasi}', [\App\Http\Controllers\RegulasiHukumController::class, 'destroy'])->name('master.regulasi.destroy');
+    Route::post('/master/regulasi', [\App\Http\Controllers\RegulasiHukumController::class, 'store'])->middleware('can:master.create')->name('master.regulasi.store');
+    Route::put('/master/regulasi/{regulasi}', [\App\Http\Controllers\RegulasiHukumController::class, 'update'])->middleware('can:master.edit')->name('master.regulasi.update');
+    Route::delete('/master/regulasi/{regulasi}', [\App\Http\Controllers\RegulasiHukumController::class, 'destroy'])->middleware('can:master.delete')->name('master.regulasi.destroy');
     Route::get('/master/regulasi/{regulasi}/preview', [\App\Http\Controllers\RegulasiHukumController::class, 'preview'])->name('master.regulasi.preview');
     Route::get('/master/regulasi/{regulasi}/download', [\App\Http\Controllers\RegulasiHukumController::class, 'download'])->name('master.regulasi.download');
 
     // Master Bank Artikel FAQ APIP
     Route::get('/master/faq', [\App\Http\Controllers\FaqArtikelController::class, 'index'])->name('master.faq.index');
-    Route::post('/master/faq', [\App\Http\Controllers\FaqArtikelController::class, 'store'])->name('master.faq.store');
-    Route::put('/master/faq/{faq}', [\App\Http\Controllers\FaqArtikelController::class, 'update'])->name('master.faq.update');
-    Route::delete('/master/faq/{faq}', [\App\Http\Controllers\FaqArtikelController::class, 'destroy'])->name('master.faq.destroy');
+    Route::post('/master/faq', [\App\Http\Controllers\FaqArtikelController::class, 'store'])->middleware('can:master.create')->name('master.faq.store');
+    Route::put('/master/faq/{faq}', [\App\Http\Controllers\FaqArtikelController::class, 'update'])->middleware('can:master.edit')->name('master.faq.update');
+    Route::delete('/master/faq/{faq}', [\App\Http\Controllers\FaqArtikelController::class, 'destroy'])->middleware('can:master.delete')->name('master.faq.destroy');
 
     // Kotak Masukan, Saran & Bug Report UAT
-    Route::get('/master/feedback', [\App\Http\Controllers\UatFeedbackController::class, 'index'])->name('master.feedback.index');
-    Route::patch('/master/feedback/{feedback}/status', [\App\Http\Controllers\UatFeedbackController::class, 'updateStatus'])->name('master.feedback.update_status');
-    Route::delete('/master/feedback/{feedback}', [\App\Http\Controllers\UatFeedbackController::class, 'destroy'])->name('master.feedback.destroy');
+    Route::get('/master/feedback', [\App\Http\Controllers\UatFeedbackController::class, 'index'])->middleware('role:admin|sekretariat|inspektur')->name('master.feedback.index');
+    Route::patch('/master/feedback/{feedback}/status', [\App\Http\Controllers\UatFeedbackController::class, 'updateStatus'])->middleware('role:admin|sekretariat')->name('master.feedback.update_status');
+    Route::delete('/master/feedback/{feedback}', [\App\Http\Controllers\UatFeedbackController::class, 'destroy'])->middleware('role:admin|sekretariat')->name('master.feedback.destroy');
 
     // Import Data Historis dari Spreadsheet / CSV
     Route::get('/import', [ImportController::class, 'index'])->middleware('can:master.create')->name('import.index');
