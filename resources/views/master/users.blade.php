@@ -256,24 +256,30 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="block font-semibold mb-1">Nama Pegawai <span class="text-rose-500">*</span></label>
+                        <label class="block font-semibold mb-1">Nama Lengkap (dg Gelar) <span class="text-rose-500">*</span></label>
                         <input type="text" id="editNama" name="nama" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
                     </div>
                     <div>
-                        <label class="block font-semibold mb-1">NIP Pegawai <span class="text-rose-500">*</span></label>
-                        <input type="text" id="editNip" name="nip" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-mono">
+                        <label class="block font-semibold mb-1">Nama Panggilan / Sapaan</label>
+                        <input type="text" id="editNamaTanpaGelar" name="nama_tanpa_gelar" placeholder="Contoh: Pak Retno" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
+                        <label class="block font-semibold mb-1">NIP Pegawai <span class="text-rose-500">*</span></label>
+                        <input type="text" id="editNip" name="nip" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-mono">
+                    </div>
+                    <div>
                         <label class="block font-semibold mb-1">Email <span class="text-rose-500">*</span></label>
                         <input type="email" id="editEmail" name="email" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
                     </div>
-                    <div>
-                        <label class="block font-semibold mb-1">No. WhatsApp / HP</label>
-                        <input type="text" id="editNoHp" name="no_hp" placeholder="081234567890" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold mb-1">No. WhatsApp / HP</label>
+                    <input type="text" id="editNoHp" name="no_hp" placeholder="081234567890" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                    <span class="text-[10px] text-slate-400">Untuk pengiriman notifikasi penugasan via WA.</span>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -339,6 +345,7 @@
         function openModalEditUser(user, role) {
             document.getElementById('formEditUser').action = '/master/users/' + user.id;
             document.getElementById('editNama').value = user.nama || '';
+            document.getElementById('editNamaTanpaGelar').value = user.nama_tanpa_gelar || '';
             document.getElementById('editNip').value = user.nip || '';
             document.getElementById('editEmail').value = user.email || '';
             document.getElementById('editNoHp').value = user.no_hp || '';

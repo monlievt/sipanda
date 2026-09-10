@@ -101,31 +101,37 @@ class MasterDataController extends Controller
     public function updateUserRole(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
-            'nama'      => ['required', 'string', 'max:150'],
-            'nip'       => ['required', 'string', 'max:30', 'unique:users,nip,' . $user->id],
-            'email'     => ['required', 'email', 'max:150', 'unique:users,email,' . $user->id],
-            'no_hp'     => ['nullable', 'string', 'max:25'],
-            'jabatan'   => ['nullable', 'string', 'max:150'],
-            'pangkat'   => ['nullable', 'string', 'max:100'],
-            'golongan'  => ['nullable', 'string', 'max:50'],
-            'role'      => ['required', 'exists:roles,name'],
-            'irban_id'  => ['nullable', 'exists:irbans,id'],
-            'is_active' => ['required', 'boolean'],
-            'password'  => ['nullable', 'string', 'min:6'],
+            'nama'              => ['required', 'string', 'max:150'],
+            'nama_tanpa_gelar'  => ['nullable', 'string', 'max:150'],
+            'nip'               => ['required', 'string', 'max:30', 'unique:users,nip,' . $user->id],
+            'email'             => ['required', 'email', 'max:150', 'unique:users,email,' . $user->id],
+            'no_hp'             => ['nullable', 'string', 'max:25'],
+            'jabatan'           => ['nullable', 'string', 'max:150'],
+            'pangkat'           => ['nullable', 'string', 'max:100'],
+            'golongan'          => ['nullable', 'string', 'max:50'],
+            'role'              => ['required', 'exists:roles,name'],
+            'irban_id'          => ['nullable', 'exists:irbans,id'],
+            'is_active'         => ['required', 'boolean'],
+            'password'          => ['nullable', 'string', 'min:6'],
         ]);
 
         $sebelum = $user->toArray();
 
+        $namaTanpaGelar = !empty($validated['nama_tanpa_gelar']) 
+            ? $validated['nama_tanpa_gelar'] 
+            : preg_replace('/,.*$/', '', $validated['nama']);
+
         $updateData = [
-            'nama'      => $validated['nama'],
-            'nip'       => $validated['nip'],
-            'email'     => $validated['email'],
-            'no_hp'     => $validated['no_hp'],
-            'jabatan'   => $validated['jabatan'],
-            'pangkat'   => $validated['pangkat'],
-            'golongan'  => $validated['golongan'],
-            'irban_id'  => $validated['irban_id'],
-            'is_active' => $validated['is_active'],
+            'nama'              => $validated['nama'],
+            'nama_tanpa_gelar'  => $namaTanpaGelar,
+            'nip'               => $validated['nip'],
+            'email'             => $validated['email'],
+            'no_hp'             => $validated['no_hp'],
+            'jabatan'           => $validated['jabatan'],
+            'pangkat'           => $validated['pangkat'],
+            'golongan'          => $validated['golongan'],
+            'irban_id'          => $validated['irban_id'],
+            'is_active'         => $validated['is_active'],
         ];
 
         if (! empty($validated['password'])) {
@@ -137,7 +143,7 @@ class MasterDataController extends Controller
 
         ActivityLog::catat('users', $user->id, 'update', $sebelum, $user->toArray());
 
-        return back()->with('status', "Data pegawai '{$user->nama_display}' berhasil diperbarui.");
+        return back()->with('status', "Data pegawai '{$user->nama}' berhasil diperbarui.");
     }
 
     /**
