@@ -47,6 +47,56 @@ class RegulasiHukum extends Model
         'sk_kepala_pd'       => 'Surat Keputusan Kepala Perangkat Daerah',
     ];
 
+    public const HIERARKI_LEVELS = [
+        'uu_perppu'          => 10,
+        'pp'                 => 20,
+        'perpres'            => 30,
+        'permen_lembaga'     => 40,
+        'sk_menteri_lembaga' => 50,
+        'perda'              => 60,
+        'perkada'            => 70,
+        'perbup'             => 70,
+        'sk_kepala_daerah'   => 80,
+        'surat_edaran'       => 90,
+        'sk_kepala_pd'       => 100,
+        'keputusan_inspektur'=> 100,
+        'juknis'             => 100,
+        'disposisi'          => 110,
+        'surat'              => 110,
+        'lainnya'            => 120,
+    ];
+
+    public function getHierarkiOrderAttribute(): int
+    {
+        return self::HIERARKI_LEVELS[$this->jenis_regulasi] ?? 999;
+    }
+
+    public function getFormatDasarSptAttribute(): string
+    {
+        $nomor = trim($this->nomor_regulasi);
+        $jenis = $this->jenis_regulasi;
+
+        // Pastikan prefix "Nomor" jika belum ada kata "Nomor" / "No."
+        $formatNomor = preg_match('/^(nomor|no\.)/i', $nomor) ? $nomor : 'Nomor ' . $nomor;
+
+        $prefix = match ($jenis) {
+            'uu_perppu'          => 'Undang-Undang ' . $formatNomor,
+            'pp'                 => 'Peraturan Pemerintah ' . $formatNomor,
+            'perpres'            => 'Peraturan Presiden ' . $formatNomor,
+            'permen_lembaga'     => 'Peraturan Menteri/Lembaga ' . $formatNomor,
+            'sk_menteri_lembaga' => 'Keputusan Menteri/Lembaga ' . $formatNomor,
+            'perda'              => 'Peraturan Daerah Kabupaten Trenggalek ' . $formatNomor,
+            'perkada', 'perbup'  => 'Peraturan Bupati Trenggalek ' . $formatNomor,
+            'sk_kepala_daerah'   => 'Keputusan Bupati Trenggalek ' . $formatNomor,
+            'surat_edaran'       => 'Surat Edaran ' . $formatNomor,
+            'sk_kepala_pd', 'keputusan_inspektur', 'juknis' => 'Keputusan Kepala Perangkat Daerah / Inspektur ' . $formatNomor,
+            default              => ($this->jenis_regulasi_label ?? 'Peraturan') . ' ' . $formatNomor,
+        };
+
+        $prefix = preg_replace('/\s+/', ' ', trim($prefix));
+        return $prefix . ' tentang ' . trim($this->judul) . ';';
+    }
+
     public function getJenisRegulasiLabelAttribute(): string
     {
         $key = $this->jenis_regulasi;

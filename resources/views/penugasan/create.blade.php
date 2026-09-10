@@ -187,7 +187,7 @@
                     allRegulasi: {{ Js::from($allRegulasi) }},
                     dasarItems: [
                         @foreach($regulasiBaku as $rb)
-                            '{{ addslashes($rb->jenis_regulasi == 'perda' ? 'Peraturan Daerah' : ($rb->jenis_regulasi == 'perbup' ? 'Peraturan Bupati' : strtoupper($rb->jenis_regulasi))) }} Kabupaten Trenggalek {{ addslashes($rb->nomor_regulasi) }} tentang {{ addslashes($rb->judul) }};',
+                            '{{ addslashes($rb->format_dasar_spt) }}',
                         @endforeach
                     ],
                     dasarText: `{{ old('dasar_penugasan', $defaultDasarPenugasan ?? '') }}`,
@@ -201,28 +201,74 @@
                         this.dasarText = res.trim();
                     },
 
+                    getHierarkiScore(text) {
+                        let t = (text || '').toLowerCase();
+                        if (t.includes('undang-undang') || t.includes('perppu')) return 10;
+                        if (t.includes('peraturan pemerintah')) return 20;
+                        if (t.includes('peraturan presiden') || t.includes('perpres')) return 30;
+                        if (t.includes('peraturan menteri') || t.includes('permendagri') || t.includes('permen')) return 40;
+                        if (t.includes('keputusan menteri') || t.includes('kepmen')) return 50;
+                        if (t.includes('peraturan daerah') || t.includes('perda')) return 60;
+                        if (t.includes('peraturan bupati') || t.includes('peraturan kepala daerah') || t.includes('perbup') || t.includes('perkada')) return 70;
+                        if (t.includes('keputusan bupati') || t.includes('keputusan kepala daerah') || t.includes('surat keputusan')) return 80;
+                        if (t.includes('surat edaran')) return 90;
+                        if (t.includes('keputusan kepala perangkat daerah') || t.includes('keputusan inspektur')) return 100;
+                        if (t.includes('surat perintah') || t.includes('disposisi') || t.includes('nota dinas')) return 110;
+                        return 120;
+                    },
+
+                    urutkanHierarki() {
+                        this.dasarItems.sort((a, b) => this.getHierarkiScore(a) - this.getHierarkiScore(b));
+                        this.syncToTextarea();
+                    },
+
                     tambahRegulasi(reg) {
-                        let jenisMap = {
-                            'uu_perppu': 'Undang-Undang / Perppu',
-                            'pp': 'Peraturan Pemerintah',
-                            'perpres': 'Peraturan Presiden',
-                            'permen_lembaga': 'Peraturan Menteri/Lembaga',
-                            'sk_menteri_lembaga': 'Keputusan Menteri/Lembaga',
-                            'perda': 'Peraturan Daerah',
-                            'perkada': 'Peraturan Bupati',
-                            'sk_kepala_daerah': 'Keputusan Bupati',
-                            'surat_edaran': 'Surat Edaran',
-                            'sk_kepala_pd': 'Keputusan Kepala OPD / Inspektur',
-                            'perbup': 'Peraturan Bupati',
-                            'permendagri': 'Permendagri',
-                            'juknis': 'Petunjuk Teknis'
-                        };
-                        let jenis = jenisMap[reg.jenis_regulasi] || reg.jenis_regulasi.toUpperCase();
-                        let daerah = (reg.jenis_regulasi === 'perda' || reg.jenis_regulasi === 'perkada' || reg.jenis_regulasi === 'perbup' || reg.jenis_regulasi === 'sk_kepala_daerah') ? ' Kabupaten Trenggalek ' : ' ';
-                        let itemText = jenis + daerah + reg.nomor_regulasi + ' tentang ' + reg.judul + ';';
+                        let nomor = (reg.nomor_regulasi || '').trim();
+                        let formatNomor = (/^(nomor|no\.)/i.test(nomor)) ? nomor : 'Nomor ' + nomor;
+                        let prefix = '';
+
+                        switch (reg.jenis_regulasi) {
+                            case 'uu_perppu':
+                                prefix = 'Undang-Undang ' + formatNomor;
+                                break;
+                            case 'pp':
+                                prefix = 'Peraturan Pemerintah ' + formatNomor;
+                                break;
+                            case 'perpres':
+                                prefix = 'Peraturan Presiden ' + formatNomor;
+                                break;
+                            case 'permen_lembaga':
+                                prefix = 'Peraturan Menteri/Lembaga ' + formatNomor;
+                                break;
+                            case 'sk_menteri_lembaga':
+                                prefix = 'Keputusan Menteri/Lembaga ' + formatNomor;
+                                break;
+                            case 'perda':
+                                prefix = 'Peraturan Daerah Kabupaten Trenggalek ' + formatNomor;
+                                break;
+                            case 'perkada':
+                            case 'perbup':
+                                prefix = 'Peraturan Bupati Trenggalek ' + formatNomor;
+                                break;
+                            case 'sk_kepala_daerah':
+                                prefix = 'Keputusan Bupati Trenggalek ' + formatNomor;
+                                break;
+                            case 'surat_edaran':
+                                prefix = 'Surat Edaran ' + formatNomor;
+                                break;
+                            case 'sk_kepala_pd':
+                            case 'keputusan_inspektur':
+                            case 'juknis':
+                                prefix = 'Keputusan Kepala Perangkat Daerah / Inspektur ' + formatNomor;
+                                break;
+                            default:
+                                prefix = (reg.jenis_regulasi || 'Peraturan').toUpperCase() + ' ' + formatNomor;
+                        }
+
+                        let itemText = prefix.replace(/\s+/g, ' ').trim() + ' tentang ' + (reg.judul || '').trim() + ';';
                         if (!this.dasarItems.includes(itemText)) {
                             this.dasarItems.push(itemText);
-                            this.syncToTextarea();
+                            this.urutkanHierarki();
                         }
                         this.openRegulasiModal = false;
                         this.searchRegulasi = '';
@@ -234,7 +280,7 @@
                                        (this.suratTanggal ? ' tanggal ' + this.suratTanggal : '') + 
                                        (this.suratPerihal ? ' perihal ' + this.suratPerihal.trim() : '') + ';';
                         this.dasarItems.push(itemText);
-                        this.syncToTextarea();
+                        this.urutkanHierarki();
                         this.suratNomor = '';
                         this.suratTanggal = '';
                         this.suratPerihal = '';
@@ -242,13 +288,13 @@
                     },
 
                     resetDasarBaku() {
-                        if (confirm('Kembalikan dasar penugasan ke 3 regulasi standar baku Pemkab Trenggalek?')) {
+                        if (confirm('Kembalikan dasar penugasan ke regulasi standar baku Pemkab Trenggalek?')) {
                             this.dasarItems = [
                                 @foreach($regulasiBaku as $rb)
-                                    '{{ addslashes($rb->jenis_regulasi == 'perda' ? 'Peraturan Daerah' : ($rb->jenis_regulasi == 'perbup' ? 'Peraturan Bupati' : strtoupper($rb->jenis_regulasi))) }} Kabupaten Trenggalek {{ addslashes($rb->nomor_regulasi) }} tentang {{ addslashes($rb->judul) }};',
+                                    '{{ addslashes($rb->format_dasar_spt) }}',
                                 @endforeach
                             ];
-                            this.syncToTextarea();
+                            this.urutkanHierarki();
                         }
                     },
 
@@ -274,14 +320,17 @@
                             <button type="button" @click="openSuratModal = true" class="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-lg border border-blue-300 dark:border-blue-700 shadow-2xs transition-all cursor-pointer">
                                 📩 + Surat / Disposisi
                             </button>
-                            <button type="button" @click="resetDasarBaku()" class="px-2 py-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-[10px] font-semibold underline cursor-pointer" title="Reset ke 3 Dasar Baku">
+                            <button type="button" @click="urutkanHierarki()" class="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold text-[11px] rounded-lg border border-amber-300 dark:border-amber-700 shadow-2xs transition-all cursor-pointer" title="Urutkan dari Perda, Perbup, SK Bupati, hingga Disposisi">
+                                ⚖️ Urutkan Hierarki
+                            </button>
+                            <button type="button" @click="resetDasarBaku()" class="px-2 py-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-[10px] font-semibold underline cursor-pointer" title="Reset ke Regulasi Baku">
                                 🔄 Reset Baku
                             </button>
                         </div>
                     </div>
 
                     <textarea name="dasar_penugasan" x-model="dasarText" rows="4" placeholder="1. Peraturan Daerah...&#10;2. Peraturan Bupati...&#10;3. PKPT Inspektorat Daerah..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500 leading-relaxed font-sans"></textarea>
-                    <p class="text-[10px] text-slate-400">Teks di atas dapat Anda sunting secara langsung. Angka 1, 2, 3... otomatis tersusun pada cetakan resmi naskah dinas SPT.</p>
+                    <p class="text-[10px] text-slate-400">Teks di atas otomatis tersusun sesuai hierarki perundang-undangan (Perda &gt; Perbup &gt; SK Kepala Daerah &gt; Disposisi) dan dapat Anda sunting secara langsung.</p>
 
                     <!-- Modal Picker: Tambah dari Bank Regulasi -->
                     <div x-show="openRegulasiModal" style="display: none;" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
