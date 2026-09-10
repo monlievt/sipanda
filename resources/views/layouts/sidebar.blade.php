@@ -164,6 +164,15 @@
                     </svg>
                     <span>Evaluasi Tahunan (N+1)</span>
                 </a>
+                <a href="{{ route('ikhtisar-laporan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all {{ request()->is('ikhtisar-laporan*') ? 'bg-emerald-600 text-white font-semibold shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <div class="flex items-center justify-between flex-1">
+                        <span>Ikhtisar Eksekutif (ILHP)</span>
+                        <span class="text-[9px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded uppercase">Bupati</span>
+                    </div>
+                </a>
             </div>
         </div>
 

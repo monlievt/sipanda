@@ -129,6 +129,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/evaluasi', [EvaluasiTahunanController::class, 'index'])->middleware('can:evaluasi.view')->name('evaluasi.index');
     Route::post('/evaluasi/generate', [EvaluasiTahunanController::class, 'generate'])->middleware('can:evaluasi.generate')->name('evaluasi.generate');
 
+    // Ikhtisar Laporan Hasil Pengawasan (ILHP) — Laporan Berkala Bupati
+    Route::get('/ikhtisar-laporan', [\App\Http\Controllers\IkhtisarLaporanController::class, 'index'])->name('ikhtisar-laporan.index');
+    Route::get('/ikhtisar-laporan/create', [\App\Http\Controllers\IkhtisarLaporanController::class, 'create'])->name('ikhtisar-laporan.create');
+    Route::post('/ikhtisar-laporan', [\App\Http\Controllers\IkhtisarLaporanController::class, 'store'])->name('ikhtisar-laporan.store');
+    Route::get('/ikhtisar-laporan/{ikhtisarLaporan}', [\App\Http\Controllers\IkhtisarLaporanController::class, 'show'])->name('ikhtisar-laporan.show');
+    Route::get('/ikhtisar-laporan/{ikhtisarLaporan}/cetak', [\App\Http\Controllers\IkhtisarLaporanController::class, 'cetak'])->name('ikhtisar-laporan.cetak');
+    Route::get('/ikhtisar-laporan/{ikhtisarLaporan}/edit', [\App\Http\Controllers\IkhtisarLaporanController::class, 'edit'])->name('ikhtisar-laporan.edit');
+    Route::put('/ikhtisar-laporan/{ikhtisarLaporan}', [\App\Http\Controllers\IkhtisarLaporanController::class, 'update'])->name('ikhtisar-laporan.update');
+    Route::delete('/ikhtisar-laporan/{ikhtisarLaporan}', [\App\Http\Controllers\IkhtisarLaporanController::class, 'destroy'])->name('ikhtisar-laporan.destroy');
+
     // Master Data
     Route::get('/master/users', [MasterDataController::class, 'users'])->middleware('can:users.view')->name('master.users.index');
     Route::post('/master/users', [MasterDataController::class, 'storeUser'])->middleware('can:users.create')->name('master.users.store');
