@@ -34,6 +34,35 @@ class RegulasiHukum extends Model
         'is_dasar_spt_baku' => 'boolean',
     ];
 
+    public const JENIS_REGULASI = [
+        'uu_perppu'          => 'Undang-Undang (UU) / Peraturan Pemerintah Pengganti Undang-Undang (Perppu)',
+        'pp'                 => 'Peraturan Pemerintah (PP)',
+        'perpres'            => 'Peraturan Presiden (Perpres)',
+        'permen_lembaga'     => 'Peraturan Menteri/Lembaga/Badan Negara',
+        'sk_menteri_lembaga' => 'Surat Keputusan Menteri/Lembaga/Badan Negara',
+        'perda'              => 'Peraturan Daerah',
+        'perkada'            => 'Peraturan Kepala Daerah',
+        'sk_kepala_daerah'   => 'Surat Keputusan Kepala Daerah',
+        'surat_edaran'       => 'Surat Edaran',
+        'sk_kepala_pd'       => 'Surat Keputusan Kepala Perangkat Daerah',
+    ];
+
+    public function getJenisRegulasiLabelAttribute(): string
+    {
+        $key = $this->jenis_regulasi;
+        if (isset(self::JENIS_REGULASI[$key])) {
+            return self::JENIS_REGULASI[$key];
+        }
+
+        return match ($key) {
+            'perbup'              => 'Peraturan Kepala Daerah',
+            'permendagri'         => 'Peraturan Menteri/Lembaga/Badan Negara',
+            'keputusan_inspektur' => 'Surat Keputusan Kepala Perangkat Daerah',
+            'juknis'              => 'Surat Keputusan Kepala Perangkat Daerah',
+            default               => ucwords(str_replace('_', ' ', $key ?? '-')),
+        };
+    }
+
     // ─── Relasi ───────────────────────────────────────────
 
     public function pengunggah()

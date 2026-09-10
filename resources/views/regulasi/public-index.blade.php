@@ -93,7 +93,7 @@
                     <div>
                         <div class="flex items-center justify-between gap-2 mb-3">
                             <span class="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide bg-emerald-950/80 text-emerald-300 border border-emerald-800/60">
-                                {{ strtoupper($reg->jenis_regulasi) }} &bull; {{ $reg->tahun }}
+                                {{ $reg->jenis_regulasi_label }} &bull; {{ $reg->tahun }}
                             </span>
                             <span class="text-[10px] text-slate-400 font-medium">
                                 {{ ucfirst($reg->kategori) }}

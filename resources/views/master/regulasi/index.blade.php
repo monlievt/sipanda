@@ -44,12 +44,9 @@
                 <label class="block font-semibold text-xs text-slate-500 uppercase mb-1">Jenis Dokumen</label>
                 <select name="jenis" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                     <option value="">-- Semua Jenis --</option>
-                    <option value="perbup" {{ $jenis === 'perbup' ? 'selected' : '' }}>Peraturan Bupati (Perbup)</option>
-                    <option value="perda" {{ $jenis === 'perda' ? 'selected' : '' }}>Peraturan Daerah (Perda)</option>
-                    <option value="perpres" {{ $jenis === 'perpres' ? 'selected' : '' }}>Peraturan Presiden (Perpres)</option>
-                    <option value="permendagri" {{ $jenis === 'permendagri' ? 'selected' : '' }}>Permendagri</option>
-                    <option value="surat_edaran" {{ $jenis === 'surat_edaran' ? 'selected' : '' }}>Surat Edaran (SE)</option>
-                    <option value="juknis" {{ $jenis === 'juknis' ? 'selected' : '' }}>Petunjuk Teknis (Juknis)</option>
+                    @foreach(\App\Models\RegulasiHukum::JENIS_REGULASI as $val => $label)
+                        <option value="{{ $val }}" {{ $jenis === $val ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
                 </select>
             </div>
 
@@ -83,7 +80,7 @@
                             <td class="py-3 px-4 font-semibold text-center text-slate-500">{{ $regulasiList->firstItem() + $index }}</td>
                             <td class="py-3 px-4 whitespace-nowrap">
                                 <span class="font-bold text-slate-900 dark:text-white block">{{ $reg->nomor_regulasi }}</span>
-                                <span class="text-[10px] text-slate-400">Tahun {{ $reg->tahun }} &bull; {{ strtoupper($reg->jenis_regulasi) }}</span>
+                                <span class="text-[10px] text-slate-400">Tahun {{ $reg->tahun }} &bull; {{ $reg->jenis_regulasi_label }}</span>
                             </td>
                             <td class="py-3 px-4 max-w-xs">
                                 <p class="font-semibold text-slate-800 dark:text-slate-200">{{ $reg->judul }}</p>
@@ -163,7 +160,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block font-semibold mb-1">Nomor Regulasi <span class="text-rose-500">*</span></label>
-                        <input type="text" name="nomor_regulasi" required placeholder="Perbup No. 25 Tahun 2025" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        <input type="text" name="nomor_regulasi" required placeholder="Contoh: Nomor 25 Tahun 2025" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
                     </div>
                     <div>
                         <label class="block font-semibold mb-1">Tahun Terbit <span class="text-rose-500">*</span></label>
@@ -175,14 +172,9 @@
                     <div>
                         <label class="block font-semibold mb-1">Jenis Regulasi <span class="text-rose-500">*</span></label>
                         <select name="jenis_regulasi" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                            <option value="perbup">Peraturan Bupati (Perbup)</option>
-                            <option value="perda">Peraturan Daerah (Perda)</option>
-                            <option value="perpres">Peraturan Presiden (Perpres)</option>
-                            <option value="permendagri">Permendagri</option>
-                            <option value="surat_edaran">Surat Edaran (SE)</option>
-                            <option value="keputusan_inspektur">Keputusan Inspektur</option>
-                            <option value="juknis">Petunjuk Teknis (Juknis)</option>
-                            <option value="lainnya">Lainnya</option>
+                            @foreach(\App\Models\RegulasiHukum::JENIS_REGULASI as $val => $label)
+                                <option value="{{ $val }}">{{ $label }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
@@ -261,14 +253,9 @@
                     <div>
                         <label class="block font-semibold mb-1">Jenis Regulasi <span class="text-rose-500">*</span></label>
                         <select id="editJenis" name="jenis_regulasi" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                            <option value="perbup">Peraturan Bupati (Perbup)</option>
-                            <option value="perda">Peraturan Daerah (Perda)</option>
-                            <option value="perpres">Peraturan Presiden (Perpres)</option>
-                            <option value="permendagri">Permendagri</option>
-                            <option value="surat_edaran">Surat Edaran (SE)</option>
-                            <option value="keputusan_inspektur">Keputusan Inspektur</option>
-                            <option value="juknis">Petunjuk Teknis (Juknis)</option>
-                            <option value="lainnya">Lainnya</option>
+                            @foreach(\App\Models\RegulasiHukum::JENIS_REGULASI as $val => $label)
+                                <option value="{{ $val }}">{{ $label }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
@@ -323,7 +310,13 @@
             document.getElementById('editJudul').value = reg.judul || '';
             document.getElementById('editNomor').value = reg.nomor_regulasi || '';
             document.getElementById('editTahun').value = reg.tahun || '';
-            document.getElementById('editJenis').value = reg.jenis_regulasi || 'perbup';
+            
+            let jenisVal = reg.jenis_regulasi || 'perkada';
+            if (jenisVal === 'perbup') jenisVal = 'perkada';
+            else if (jenisVal === 'permendagri') jenisVal = 'permen_lembaga';
+            else if (jenisVal === 'keputusan_inspektur' || jenisVal === 'juknis') jenisVal = 'sk_kepala_pd';
+
+            document.getElementById('editJenis').value = jenisVal;
             document.getElementById('editKategori').value = reg.kategori || 'umum';
             document.getElementById('editRingkasan').value = reg.ringkasan_eksekutif || '';
             document.getElementById('editVisibilitas').value = reg.visibilitas || 'publik';

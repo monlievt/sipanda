@@ -157,8 +157,24 @@
                     },
 
                     tambahRegulasi(reg) {
-                        let jenis = reg.jenis_regulasi === 'perda' ? 'Peraturan Daerah' : (reg.jenis_regulasi === 'perbup' ? 'Peraturan Bupati' : reg.jenis_regulasi.toUpperCase());
-                        let itemText = jenis + ' Kabupaten Trenggalek ' + reg.nomor_regulasi + ' tentang ' + reg.judul + ';';
+                        let jenisMap = {
+                            'uu_perppu': 'Undang-Undang / Perppu',
+                            'pp': 'Peraturan Pemerintah',
+                            'perpres': 'Peraturan Presiden',
+                            'permen_lembaga': 'Peraturan Menteri/Lembaga',
+                            'sk_menteri_lembaga': 'Keputusan Menteri/Lembaga',
+                            'perda': 'Peraturan Daerah',
+                            'perkada': 'Peraturan Bupati',
+                            'sk_kepala_daerah': 'Keputusan Bupati',
+                            'surat_edaran': 'Surat Edaran',
+                            'sk_kepala_pd': 'Keputusan Kepala OPD / Inspektur',
+                            'perbup': 'Peraturan Bupati',
+                            'permendagri': 'Permendagri',
+                            'juknis': 'Petunjuk Teknis'
+                        };
+                        let jenis = jenisMap[reg.jenis_regulasi] || reg.jenis_regulasi.toUpperCase();
+                        let daerah = (reg.jenis_regulasi === 'perda' || reg.jenis_regulasi === 'perkada' || reg.jenis_regulasi === 'perbup' || reg.jenis_regulasi === 'sk_kepala_daerah') ? ' Kabupaten Trenggalek ' : ' ';
+                        let itemText = jenis + daerah + reg.nomor_regulasi + ' tentang ' + reg.judul + ';';
                         if (!this.dasarItems.includes(itemText)) {
                             this.dasarItems.push(itemText);
                             this.syncToTextarea();
