@@ -248,6 +248,62 @@ class MasterDataController extends Controller
     }
 
     /**
+     * Master Data: Unit Kerja / Inspektur Pembantu (Irban).
+     */
+    public function irbans(): View
+    {
+        $listIrban = Irban::withCount(['users', 'penugasan'])->orderBy('id')->get();
+        return view('master.irbans', compact('listIrban'));
+    }
+
+    public function storeIrban(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'nama_irban'         => ['required', 'string', 'max:150', 'unique:irbans,nama_irban'],
+            'wilayah_keterangan' => ['nullable', 'string', 'max:255'],
+        ], [
+            'nama_irban.required' => 'Nama Irban / Unit Kerja wajib diisi.',
+            'nama_irban.unique'   => 'Nama Irban ini sudah terdaftar.',
+        ]);
+
+        $irban = Irban::create($validated);
+        ActivityLog::catat('irbans', $irban->id, 'create', null, $irban->toArray());
+
+        return back()->with('status', "Unit Kerja '{$irban->nama_irban}' berhasil ditambahkan.");
+    }
+
+    public function updateIrban(Request $request, Irban $irban): RedirectResponse
+    {
+        $validated = $request->validate([
+            'nama_irban'         => ['required', 'string', 'max:150', 'unique:irbans,nama_irban,' . $irban->id],
+            'wilayah_keterangan' => ['nullable', 'string', 'max:255'],
+        ], [
+            'nama_irban.required' => 'Nama Irban / Unit Kerja wajib diisi.',
+            'nama_irban.unique'   => 'Nama Irban ini sudah terdaftar.',
+        ]);
+
+        $sebelum = $irban->toArray();
+        $irban->update($validated);
+        ActivityLog::catat('irbans', $irban->id, 'update', $sebelum, $irban->toArray());
+
+        return back()->with('status', "Unit Kerja '{$irban->nama_irban}' berhasil diperbarui.");
+    }
+
+    public function destroyIrban(Irban $irban): RedirectResponse
+    {
+        if ($irban->users()->exists() || $irban->penugasan()->exists()) {
+            return back()->with('error', "Unit Kerja '{$irban->nama_irban}' tidak dapat dihapus karena masih digunakan pada data pegawai atau penugasan.");
+        }
+
+        $sebelum = $irban->toArray();
+        $nama = $irban->nama_irban;
+        $irban->delete();
+        ActivityLog::catat('irbans', $sebelum['id'], 'delete', $sebelum, null);
+
+        return back()->with('status', "Unit Kerja '{$nama}' berhasil dihapus.");
+    }
+
+    /**
      * Quick Toggle Status Aktif / Nonaktif Pengguna
      */
     public function toggleUserStatus(User $user): RedirectResponse

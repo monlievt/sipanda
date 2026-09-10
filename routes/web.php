@@ -148,6 +148,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/master/jenis-penugasan', [MasterDataController::class, 'storeJenisPenugasan'])->middleware('can:master.create')->name('master.jenis-penugasan.store');
     Route::put('/master/jenis-penugasan/{jenis}', [MasterDataController::class, 'updateJenisPenugasan'])->middleware('can:master.edit')->name('master.jenis-penugasan.update');
     Route::delete('/master/jenis-penugasan/{jenis}', [MasterDataController::class, 'destroyJenisPenugasan'])->middleware('can:master.delete')->name('master.jenis-penugasan.destroy');
+    Route::get('/master/irbans', [MasterDataController::class, 'irbans'])->middleware('can:master.view')->name('master.irbans.index');
+    Route::post('/master/irbans', [MasterDataController::class, 'storeIrban'])->middleware('can:master.create')->name('master.irbans.store');
+    Route::put('/master/irbans/{irban}', [MasterDataController::class, 'updateIrban'])->middleware('can:master.edit')->name('master.irbans.update');
+    Route::delete('/master/irbans/{irban}', [MasterDataController::class, 'destroyIrban'])->middleware('can:master.delete')->name('master.irbans.destroy');
     Route::get('/audit-log', [MasterDataController::class, 'auditLog'])->middleware('can:audit_log.view')->name('audit-log.index');
 
     // Master Bank Regulasi & Dasar Hukum APIP
