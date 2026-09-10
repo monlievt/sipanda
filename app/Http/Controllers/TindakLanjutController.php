@@ -18,11 +18,18 @@ class TindakLanjutController extends Controller
 {
     public function index(Request $request): View
     {
+        $user   = auth()->user();
         $status = $request->input('status');
         $search = $request->input('search');
         $tahun  = $request->input('tahun');
 
         $query = TindakLanjut::with(['penugasan.irban', 'penugasan.objekPenugasan', 'objekPenugasan', 'buktiTindakLanjut.pengunggah', 'rincianPenyetoran']);
+
+        if (! $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
+            $query->whereHas('penugasan', function ($pq) use ($user) {
+                $pq->accessibleBy($user);
+            });
+        }
 
         if ($status) {
             if ($status === 'proses') {
@@ -93,7 +100,11 @@ class TindakLanjutController extends Controller
             ];
         })->values();
 
-        $penugasanList = Penugasan::with(['irban', 'objekPenugasan'])->select(['id', 'no_spt', 'uraian_penugasan', 'irban_id'])->orderBy('no_spt', 'desc')->get();
+        $penugasanList = Penugasan::accessibleBy($user)
+            ->with(['irban', 'objekPenugasan'])
+            ->select(['id', 'no_spt', 'uraian_penugasan', 'irban_id'])
+            ->orderBy('no_spt', 'desc')
+            ->get();
 
         // Daftar Pilihan Tahun untuk Filter
         $availableYears = range(date('Y') + 1, 2020);
@@ -121,6 +132,12 @@ class TindakLanjutController extends Controller
      */
     public function show(TindakLanjut $tindakLanjut): View
     {
+        $user = auth()->user();
+
+        // Otorisasi akses dokumen LHP
+        if ($tindakLanjut->penugasan && ! $tindakLanjut->penugasan->canAccess($user)) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk membuka Dokumen LHP penugasan ini.');
+        }
         $tindakLanjut->load([
             'penugasan.irban',
             'penugasan.objekPenugasan',
