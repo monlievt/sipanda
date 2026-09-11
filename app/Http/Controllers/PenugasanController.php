@@ -137,12 +137,19 @@ class PenugasanController extends Controller
         $irbans = Irban::all();
         $usersList = User::aktif()->internal()->orderBy('nama')->get();
 
-        $pkpptList = Pkppt::tahun(date('Y'))->orderBy('area_pengawasan')->get();
+        $pkpptQuery = Pkppt::tahun(date('Y'));
+        if (! $user->isPimpinanOrAdmin() && $user->irban_id) {
+            $pkpptQuery->where('irban_id', $user->irban_id);
+        }
+        $pkpptList = $pkpptQuery->orderBy('area_pengawasan')->get();
 
         // Daftar ST Induk yang bisa diperpanjang (dengan relasi lengkap)
-        $parentStList = Penugasan::with(['irbans', 'objekPenugasan', 'tim.user', 'jenisPenugasan', 'sumberPenugasan', 'pkppt'])
-            ->whereNull('penugasan_induk_id')
-            ->orderBy('no_spt', 'desc')
+        $parentStQuery = Penugasan::with(['irbans', 'objekPenugasan', 'tim.user', 'jenisPenugasan', 'sumberPenugasan', 'pkppt'])
+            ->whereNull('penugasan_induk_id');
+        if (! $user->isPimpinanOrAdmin()) {
+            $parentStQuery->accessibleBy($user);
+        }
+        $parentStList = $parentStQuery->orderBy('no_spt', 'desc')
             ->take(100)
             ->get();
 
@@ -403,11 +410,20 @@ class PenugasanController extends Controller
         $sumberList = SumberPenugasan::all();
         $irbans = Irban::all();
         $usersList = User::aktif()->internal()->orderBy('nama')->get();
-        $pkpptList = Pkppt::tahun($penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->format('Y') : date('Y'))->orderBy('area_pengawasan')->get();
-        $parentStList = Penugasan::with(['irbans', 'objekPenugasan', 'tim.user', 'jenisPenugasan', 'sumberPenugasan', 'pkppt'])
+        $user = auth()->user();
+        $pkpptQuery = Pkppt::tahun($penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->format('Y') : date('Y'));
+        if (! $user->isPimpinanOrAdmin() && $user->irban_id) {
+            $pkpptQuery->where('irban_id', $user->irban_id);
+        }
+        $pkpptList = $pkpptQuery->orderBy('area_pengawasan')->get();
+
+        $parentStQuery = Penugasan::with(['irbans', 'objekPenugasan', 'tim.user', 'jenisPenugasan', 'sumberPenugasan', 'pkppt'])
             ->where('id', '!=', $penugasan->id)
-            ->whereNull('penugasan_induk_id')
-            ->orderBy('no_spt', 'desc')
+            ->whereNull('penugasan_induk_id');
+        if (! $user->isPimpinanOrAdmin()) {
+            $parentStQuery->accessibleBy($user);
+        }
+        $parentStList = $parentStQuery->orderBy('no_spt', 'desc')
             ->take(100)
             ->get();
 
