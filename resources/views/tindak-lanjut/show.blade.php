@@ -396,6 +396,10 @@
                                 no_lhp: '{{ addslashes($item->no_lhp ?? '') }}',
                                 judul_lhp: '{{ addslashes($item->judul_lhp ?? '') }}',
                                 tgl_lhp: '{{ $item->tgl_lhp ? $item->tgl_lhp->format('Y-m-d') : '' }}',
+                                kode_atribut_temuan_id: '{{ $item->kode_atribut_temuan_id ?? '' }}',
+                                kode_atribut_rekomendasi_id: '{{ $item->kode_atribut_rekomendasi_id ?? '' }}',
+                                kode_temuan_lengkap: '{{ addslashes($item->kode_temuan_lengkap ?? '') }}',
+                                kode_rekomendasi: '{{ addslashes($item->kode_rekomendasi ?? '') }}',
                                 uraian_temuan: '{{ addslashes($item->uraian_temuan) }}',
                                 rekomendasi: '{{ addslashes($item->rekomendasi) }}',
                                 nilai_diawasi_rp: {{ $item->nilai_diawasi_rp ?? 0 }},
@@ -413,13 +417,37 @@
 
                     <!-- Temuan vs Rekomendasi Grid -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="p-4 bg-amber-50/60 dark:bg-amber-950/30 rounded-2xl border border-amber-200 dark:border-amber-900 space-y-1">
-                            <span class="font-bold text-amber-900 dark:text-amber-200 text-xs block">Uraian Temuan:</span>
+                        <div class="p-4 bg-amber-50/60 dark:bg-amber-950/30 rounded-2xl border border-amber-200 dark:border-amber-900 space-y-1.5">
+                            <div class="flex items-center justify-between flex-wrap gap-1">
+                                <span class="font-bold text-amber-900 dark:text-amber-200 text-xs block">Uraian Temuan:</span>
+                                @if($item->kode_temuan_lengkap)
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-amber-200/80 text-amber-950 dark:bg-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
+                                        📖 Kode: {{ $item->kode_temuan_lengkap }}
+                                    </span>
+                                @endif
+                            </div>
+                            @if($item->kodeAtributTemuan)
+                                <span class="text-[10px] text-amber-800 dark:text-amber-300 font-semibold block">
+                                    {{ $item->kodeAtributTemuan->nama_sub_kelompok }}
+                                </span>
+                            @endif
                             <p class="text-slate-800 dark:text-slate-200 font-medium leading-relaxed whitespace-pre-line">{{ $item->uraian_temuan }}</p>
                         </div>
 
                         <div class="p-4 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-900 space-y-2">
-                            <span class="font-bold text-emerald-900 dark:text-emerald-200 text-xs block">Rekomendasi Wajib:</span>
+                            <div class="flex items-center justify-between flex-wrap gap-1">
+                                <span class="font-bold text-emerald-900 dark:text-emerald-200 text-xs block">Rekomendasi Wajib:</span>
+                                @if($item->kode_rekomendasi)
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-emerald-200/80 text-emerald-950 dark:bg-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700">
+                                        💡 Kode: {{ $item->kode_rekomendasi }}
+                                    </span>
+                                @endif
+                            </div>
+                            @if($item->kodeAtributRekomendasi)
+                                <span class="text-[10px] text-emerald-800 dark:text-emerald-300 font-semibold block">
+                                    {{ $item->kodeAtributRekomendasi->deskripsi }}
+                                </span>
+                            @endif
                             <p class="text-slate-800 dark:text-slate-200 font-medium leading-relaxed whitespace-pre-line">{{ $item->rekomendasi }}</p>
                             <div class="pt-2 border-t border-emerald-200 dark:border-emerald-800 flex justify-between font-mono font-bold text-xs">
                                 <span class="text-slate-600 dark:text-slate-400">Target Rp: <span class="text-emerald-700 dark:text-emerald-400">{{ $item->formatted_nilai_rp }}</span></span>
@@ -690,6 +718,47 @@
                             </select>
                         </div>
                     @endif
+                </div>
+
+                <!-- Klasifikasi Kode Atribut PermenPAN-RB -->
+                <div class="p-3 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 space-y-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-emerald-900 dark:text-emerald-200 text-[11px] mb-1">
+                                📖 Kode Atribut Temuan (PermenPAN-RB 42/2011)
+                            </label>
+                            <select id="editKodeAtributTemuanId" name="kode_atribut_temuan_id" class="w-full rounded-xl border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200">
+                                <option value="">-- Tanpa Kode Temuan Baku --</option>
+                                <optgroup label="1. TEMUAN KETIDAKPATUHAN TERHADAP PERATURAN">
+                                    @foreach($kodeAtributTemuanList->where('kode_kelompok', '1') as $kt)
+                                        <option value="{{ $kt->id }}">{{ $kt->kode_lengkap }} - {{ $kt->deskripsi }}</option>
+                                    @endforeach
+                                </optgroup>
+                                <optgroup label="2. KELEMAHAN SISTEM PENGENDALIAN INTERN (SPI)">
+                                    @foreach($kodeAtributTemuanList->where('kode_kelompok', '2') as $kt)
+                                        <option value="{{ $kt->id }}">{{ $kt->kode_lengkap }} - {{ $kt->deskripsi }}</option>
+                                    @endforeach
+                                </optgroup>
+                                <optgroup label="3. 3E (KETIDAKEFEKTIFAN, KETIDAKEFISIENAN, KETIDAKHEMATAN)">
+                                    @foreach($kodeAtributTemuanList->where('kode_kelompok', '3') as $kt)
+                                        <option value="{{ $kt->id }}">{{ $kt->kode_lengkap }} - {{ $kt->deskripsi }}</option>
+                                    @endforeach
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-emerald-900 dark:text-emerald-200 text-[11px] mb-1">
+                                💡 Kode Rekomendasi (PermenPAN-RB 42/2011)
+                            </label>
+                            <select id="editKodeAtributRekomendasiId" name="kode_atribut_rekomendasi_id" class="w-full rounded-xl border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200">
+                                <option value="">-- Tanpa Kode Rekomendasi Baku --</option>
+                                @foreach($kodeAtributRekomendasiList as $kr)
+                                    <option value="{{ $kr->id }}">{{ $kr->kode }} - {{ $kr->deskripsi }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -995,6 +1064,14 @@
             }
             document.getElementById('editUraianTemuan').value = data.uraian_temuan;
             document.getElementById('editRekomendasi').value = data.rekomendasi;
+            const ktSelect = document.getElementById('editKodeAtributTemuanId');
+            if (ktSelect) {
+                ktSelect.value = data.kode_atribut_temuan_id || '';
+            }
+            const krSelect = document.getElementById('editKodeAtributRekomendasiId');
+            if (krSelect) {
+                krSelect.value = data.kode_atribut_rekomendasi_id || '';
+            }
             if (data.nilai_diawasi_rp) {
                 document.getElementById('editNilaiDiawasiRp').value = new Intl.NumberFormat('id-ID').format(data.nilai_diawasi_rp);
             } else {

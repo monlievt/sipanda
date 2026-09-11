@@ -314,12 +314,25 @@
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-4xl w-full p-6 border border-slate-200 dark:border-slate-800 text-xs space-y-4"
             x-data="{
                 selectedObjekList: [],
+                selectedIsAudit: false,
+                kamusTemuan: {{ Js::from($kodeAtributTemuanList) }},
+                kamusRekomendasi: {{ Js::from($kodeAtributRekomendasiList) }},
                 items: [
                     {
                         objek_penugasan_id: '',
+                        kode_atribut_temuan_id: '',
+                        kode_temuan_lengkap: '',
+                        saran_rekomendasi: [],
                         temuan: '',
                         rekomendasi: [
-                            { uraian: '', nilai_diawasi_rp: '', nilai_rekomendasi_rp: '', tanggal_target: '' }
+                            { 
+                                kode_atribut_rekomendasi_id: '',
+                                kode_rekomendasi: '',
+                                uraian: '', 
+                                nilai_diawasi_rp: '', 
+                                nilai_rekomendasi_rp: '', 
+                                tanggal_target: '' 
+                            }
                         ]
                     }
                 ],
@@ -327,8 +340,18 @@
                     let defaultObj = (this.selectedObjekList && this.selectedObjekList.length === 1) ? this.selectedObjekList[0].id : '';
                     this.items.push({
                         objek_penugasan_id: defaultObj,
+                        kode_atribut_temuan_id: '',
+                        kode_temuan_lengkap: '',
+                        saran_rekomendasi: [],
                         temuan: '',
-                        rekomendasi: [{ uraian: '', nilai_diawasi_rp: '', nilai_rekomendasi_rp: '', tanggal_target: '' }]
+                        rekomendasi: [{ 
+                            kode_atribut_rekomendasi_id: '',
+                            kode_rekomendasi: '',
+                            uraian: '', 
+                            nilai_diawasi_rp: '', 
+                            nilai_rekomendasi_rp: '', 
+                            tanggal_target: '' 
+                        }]
                     });
                 },
                 removeTemuan(tIndex) {
@@ -337,11 +360,62 @@
                     }
                 },
                 addRekomendasi(tIndex) {
-                    this.items[tIndex].rekomendasi.push({ uraian: '', nilai_diawasi_rp: '', nilai_rekomendasi_rp: '', tanggal_target: '' });
+                    this.items[tIndex].rekomendasi.push({ 
+                        kode_atribut_rekomendasi_id: '',
+                        kode_rekomendasi: '',
+                        uraian: '', 
+                        nilai_diawasi_rp: '', 
+                        nilai_rekomendasi_rp: '', 
+                        tanggal_target: '' 
+                    });
                 },
                 removeRekomendasi(tIndex, rIndex) {
                     if (this.items[tIndex].rekomendasi.length > 1) {
                         this.items[tIndex].rekomendasi.splice(rIndex, 1);
+                    }
+                },
+                onPilihTemuanKamus(tIndex, temuanId) {
+                    if (!temuanId) {
+                        this.items[tIndex].kode_atribut_temuan_id = '';
+                        this.items[tIndex].kode_temuan_lengkap = '';
+                        this.items[tIndex].saran_rekomendasi = [];
+                        return;
+                    }
+                    let found = this.kamusTemuan.find(k => k.id == temuanId);
+                    if (found) {
+                        this.items[tIndex].kode_atribut_temuan_id = found.id;
+                        this.items[tIndex].kode_temuan_lengkap = found.kode_lengkap;
+                        if (!this.items[tIndex].temuan || this.items[tIndex].temuan.trim() === '') {
+                            this.items[tIndex].temuan = found.deskripsi;
+                        }
+                        if (found.alternatif_rekomendasi) {
+                            this.items[tIndex].saran_rekomendasi = found.alternatif_rekomendasi.split(',').map(s => s.trim().padStart(2, '0'));
+                        } else {
+                            this.items[tIndex].saran_rekomendasi = [];
+                        }
+                    }
+                },
+                terapkanSaranRekomendasi(tIndex, rIndex, rekKode) {
+                    let found = this.kamusRekomendasi.find(r => r.kode == rekKode);
+                    if (found) {
+                        this.items[tIndex].rekomendasi[rIndex].kode_atribut_rekomendasi_id = found.id;
+                        this.items[tIndex].rekomendasi[rIndex].kode_rekomendasi = found.kode;
+                        if (!this.items[tIndex].rekomendasi[rIndex].uraian || this.items[tIndex].rekomendasi[rIndex].uraian.trim() === '') {
+                            this.items[tIndex].rekomendasi[rIndex].uraian = found.deskripsi;
+                        }
+                    }
+                },
+                onPilihRekomendasiKamus(tIndex, rIndex, rekId) {
+                    let found = this.kamusRekomendasi.find(r => r.id == rekId);
+                    if (found) {
+                        this.items[tIndex].rekomendasi[rIndex].kode_atribut_rekomendasi_id = found.id;
+                        this.items[tIndex].rekomendasi[rIndex].kode_rekomendasi = found.kode;
+                        if (!this.items[tIndex].rekomendasi[rIndex].uraian || this.items[tIndex].rekomendasi[rIndex].uraian.trim() === '') {
+                            this.items[tIndex].rekomendasi[rIndex].uraian = found.deskripsi;
+                        }
+                    } else {
+                        this.items[tIndex].rekomendasi[rIndex].kode_atribut_rekomendasi_id = '';
+                        this.items[tIndex].rekomendasi[rIndex].kode_rekomendasi = '';
                     }
                 }
             }">
@@ -349,7 +423,7 @@
             <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
                     <h3 class="font-bold text-slate-900 dark:text-white text-base">Tambah Catatan Temuan & Rekomendasi (LHP)</h3>
-                    <p class="text-[11px] text-slate-500 mt-0.5">Input LHP, Judul LHP, Temuan 1, Temuan 2, dst. serta pemetaan Objek/OPD sasaran.</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Input LHP, Judul LHP, Temuan & Rekomendasi Baku (PermenPAN-RB No. 42/2011) serta pemetaan Objek/OPD sasaran.</p>
                 </div>
                 <button onclick="document.getElementById('modalTambahTemuanMulti').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
@@ -368,9 +442,13 @@
                             selectedLabel: '-- Pilih Nomor SPT --',
                             options: [
                                 @foreach($penugasanList as $p)
+                                    @php
+                                        $isAudit = ($p->jenisPenugasan && (stripos($p->jenisPenugasan->kategori ?? '', 'audit') !== false || stripos($p->jenisPenugasan->nama ?? '', 'audit') !== false));
+                                    @endphp
                                     { 
                                         id: '{{ $p->id }}', 
                                         label: 'No. SPT: {{ addslashes($p->no_spt) }} — {{ addslashes($p->irban?->nama_irban ?? 'Semua Irban') }} ({{ addslashes(Str::limit($p->uraian_penugasan, 50)) }})',
+                                        isAudit: {{ $isAudit ? 'true' : 'false' }},
                                         objek: [
                                             @foreach($p->objekPenugasan as $obj)
                                                 { id: {{ $obj->id }}, nama: '{{ addslashes($obj->nama) }}' },
@@ -389,6 +467,7 @@
                                 this.open = false;
                                 this.search = '';
                                 selectedObjekList = opt.objek || [];
+                                selectedIsAudit = opt.isAudit || false;
                                 
                                 // Auto set jika hanya ada 1 objek
                                 if (selectedObjekList.length === 1) {
@@ -401,6 +480,7 @@
                                     if (found) {
                                         this.selectedLabel = found.label;
                                         selectedObjekList = found.objek || [];
+                                        selectedIsAudit = found.isAudit || false;
                                         if (selectedObjekList.length === 1) {
                                             items.forEach(it => { it.objek_penugasan_id = selectedObjekList[0].id; });
                                         }
@@ -425,7 +505,10 @@
                                 <div class="max-h-48 overflow-y-auto space-y-1">
                                     <template x-for="opt in filteredOptions" :key="opt.id">
                                         <div @click="select(opt)" class="p-2 hover:bg-emerald-50 dark:hover:bg-slate-700 rounded-lg cursor-pointer font-medium text-slate-700 dark:text-slate-200 transition-colors" :class="{'bg-emerald-100 dark:bg-slate-700 font-bold': selectedId == opt.id}">
-                                            <span x-text="opt.label"></span>
+                                            <div class="flex items-center justify-between">
+                                                <span x-text="opt.label"></span>
+                                                <span x-show="opt.isAudit" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">AUDIT</span>
+                                            </div>
                                         </div>
                                     </template>
                                 </div>
@@ -469,6 +552,7 @@
                                 <span class="font-black text-emerald-700 dark:text-emerald-400 text-xs flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                                     <span x-text="'TEMUAN ' + (tIndex + 1) + ' / CATATAN ' + (tIndex + 1)"></span>
+                                    <span x-show="tItem.kode_temuan_lengkap" class="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800" x-text="'Kode: ' + tItem.kode_temuan_lengkap"></span>
                                 </span>
                                 <button type="button" @click="removeTemuan(tIndex)" x-show="items.length > 1" class="text-rose-600 hover:text-rose-800 text-xs font-semibold flex items-center gap-1">
                                     &times; Hapus Temuan / Catatan ini
@@ -500,6 +584,47 @@
                                 <input type="hidden" :name="'items[' + tIndex + '][objek_penugasan_id]'" :value="selectedObjekList[0] ? selectedObjekList[0].id : ''">
                             </div>
 
+                            <!-- 📖 Fitur Kamus Temuan PermenPAN-RB (Dropdown & Quick Select) -->
+                            <div class="p-3 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800/60 space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <label class="block font-bold text-emerald-900 dark:text-emerald-200 text-[11px] flex items-center gap-1.5">
+                                        <span>📖</span>
+                                        <span>Klasifikasi Kode Atribut Temuan (PermenPAN-RB No. 42/2011):</span>
+                                    </label>
+                                    <span class="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold">Kamus Baku 89 Jenis Temuan</span>
+                                </div>
+                                <select @change="onPilihTemuanKamus(tIndex, $event.target.value)" class="w-full rounded-xl border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200 focus:ring-emerald-500">
+                                    <option value="">-- Pilih Jenis Temuan Baku PermenPAN-RB (Opsional) --</option>
+                                    <optgroup label="KELOMPOK 1: TEMUAN KETIDAKPATUHAN TERHADAP PERATURAN">
+                                        @foreach($kodeAtributTemuanList->where('kode_kelompok', '1') as $kt)
+                                            <option value="{{ $kt->id }}">{{ $kt->kode_lengkap }} - {{ $kt->deskripsi }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                    <optgroup label="KELOMPOK 2: KELEMAHAN SISTEM PENGENDALIAN INTERN (SPI)">
+                                        @foreach($kodeAtributTemuanList->where('kode_kelompok', '2') as $kt)
+                                            <option value="{{ $kt->id }}">{{ $kt->kode_lengkap }} - {{ $kt->deskripsi }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                    <optgroup label="KELOMPOK 3: 3E (KETIDAKEFEKTIFAN, KETIDAKEFISIENAN, KETIDAKHEMATAN)">
+                                        @foreach($kodeAtributTemuanList->where('kode_kelompok', '3') as $kt)
+                                            <option value="{{ $kt->id }}">{{ $kt->kode_lengkap }} - {{ $kt->deskripsi }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                </select>
+                                <input type="hidden" :name="'items[' + tIndex + '][kode_atribut_temuan_id]'" :value="tItem.kode_atribut_temuan_id">
+                                <input type="hidden" :name="'items[' + tIndex + '][kode_temuan_lengkap]'" :value="tItem.kode_temuan_lengkap">
+
+                                <!-- Quick Badge Saran Rekomendasi PermenPAN-RB -->
+                                <div x-show="tItem.saran_rekomendasi && tItem.saran_rekomendasi.length > 0" class="pt-1.5 flex items-center gap-1.5 flex-wrap">
+                                    <span class="text-[10px] font-bold text-slate-600 dark:text-slate-300">💡 Alternatif Rekomendasi Disarankan:</span>
+                                    <template x-for="rekKode in tItem.saran_rekomendasi" :key="rekKode">
+                                        <button type="button" @click="terapkanSaranRekomendasi(tIndex, 0, rekKode)" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 dark:bg-amber-950 dark:text-amber-200 border border-amber-300 dark:border-amber-700 transition" :title="'Klik untuk terapkan ke Rekomendasi 1'">
+                                            + Kode <span x-text="rekKode"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
                             <div>
                                 <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300" x-text="'Uraian Temuan ' + (tIndex + 1) + ' / Catatan ' + (tIndex + 1) + ' *'"></label>
                                 <textarea :name="'items[' + tIndex + '][temuan]'" x-model="tItem.temuan" required rows="2" placeholder="Tuliskan uraian temuan / catatan hasil pemeriksaan di sini..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500"></textarea>
@@ -511,13 +636,29 @@
                                 <template x-for="(rItem, rIndex) in tItem.rekomendasi" :key="rIndex">
                                     <div class="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                                         <div class="flex items-center justify-between">
-                                            <span class="font-semibold text-slate-600 dark:text-slate-300 text-[10px]" x-text="'Rekomendasi / Saran ' + (rIndex + 1)"></span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-semibold text-slate-600 dark:text-slate-300 text-[10px]" x-text="'Rekomendasi / Saran ' + (rIndex + 1)"></span>
+                                                <span x-show="rItem.kode_rekomendasi" class="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300" x-text="'Kode: ' + rItem.kode_rekomendasi"></span>
+                                            </div>
                                             <button type="button" @click="removeRekomendasi(tIndex, rIndex)" x-show="tItem.rekomendasi.length > 1" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold">
                                                 &times; Hapus Rekomendasi / Saran
                                             </button>
                                         </div>
 
+                                        <!-- Pilihan Kode Rekomendasi PermenPAN-RB -->
                                         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                                            <div class="sm:col-span-12">
+                                                <label class="block text-[10px] text-slate-500 mb-0.5">Klasifikasi Kode Rekomendasi Baku PermenPAN-RB (Opsional)</label>
+                                                <select :value="rItem.kode_atribut_rekomendasi_id" @change="onPilihRekomendasiKamus(tIndex, rIndex, $event.target.value)" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                                                    <option value="">-- Pilih Kode Rekomendasi PermenPAN-RB (01 s/d 14) --</option>
+                                                    @foreach($kodeAtributRekomendasiList as $kr)
+                                                        <option value="{{ $kr->id }}">{{ $kr->kode }} - {{ $kr->deskripsi }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <input type="hidden" :name="'items[' + tIndex + '][rekomendasi][' + rIndex + '][kode_atribut_rekomendasi_id]'" :value="rItem.kode_atribut_rekomendasi_id">
+                                                <input type="hidden" :name="'items[' + tIndex + '][rekomendasi][' + rIndex + '][kode_rekomendasi]'" :value="rItem.kode_rekomendasi">
+                                            </div>
+
                                             <div class="sm:col-span-6">
                                                 <label class="block text-[10px] text-slate-500 mb-0.5">Uraian Rekomendasi / Saran <span class="text-rose-500">*</span></label>
                                                 <input type="text" :name="'items[' + tIndex + '][rekomendasi][' + rIndex + '][uraian]'" x-model="rItem.uraian" required placeholder="Uraian rekomendasi / saran wajib..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">

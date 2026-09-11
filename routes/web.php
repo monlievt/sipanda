@@ -178,6 +178,10 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/master/faq/{faq}', [\App\Http\Controllers\FaqArtikelController::class, 'update'])->middleware('can:master.edit')->name('master.faq.update');
     Route::delete('/master/faq/{faq}', [\App\Http\Controllers\FaqArtikelController::class, 'destroy'])->middleware('can:master.delete')->name('master.faq.destroy');
 
+    // Master Kamus Kode Atribut Temuan & Rekomendasi Audit (PermenPAN-RB No. 42/2011)
+    Route::get('/master/kamus-atribut', [\App\Http\Controllers\KodeAtributAuditController::class, 'index'])->name('kamus-atribut.index');
+    Route::get('/api/kamus-atribut/options', [\App\Http\Controllers\KodeAtributAuditController::class, 'apiOptions'])->name('kamus-atribut.api_options');
+
     // Kotak Masukan, Saran & Bug Report UAT
     Route::get('/master/feedback', [\App\Http\Controllers\UatFeedbackController::class, 'index'])->middleware('role:admin|sekretariat|inspektur')->name('master.feedback.index');
     Route::patch('/master/feedback/{feedback}/status', [\App\Http\Controllers\UatFeedbackController::class, 'updateStatus'])->middleware('role:admin|sekretariat')->name('master.feedback.update_status');

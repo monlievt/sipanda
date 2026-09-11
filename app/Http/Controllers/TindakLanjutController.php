@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\ArsipDigital;
 use App\Models\BuktiTindakLanjut;
+use App\Models\KodeAtributRekomendasi;
+use App\Models\KodeAtributTemuan;
 use App\Models\Notifikasi;
 use App\Models\ObjekPenugasan;
 use App\Models\Penugasan;
@@ -104,10 +106,17 @@ class TindakLanjutController extends Controller
         })->values();
 
         $penugasanList = Penugasan::accessibleBy($user)
-            ->with(['irban', 'objekPenugasan'])
-            ->select(['id', 'no_spt', 'uraian_penugasan', 'irban_id'])
+            ->with(['irban', 'objekPenugasan', 'jenisPenugasan'])
+            ->select(['id', 'no_spt', 'uraian_penugasan', 'irban_id', 'jenis_penugasan_id'])
             ->orderBy('no_spt', 'desc')
             ->get();
+
+        $kodeAtributTemuanList = KodeAtributTemuan::orderBy('kode_kelompok')
+            ->orderBy('kode_sub_kelompok')
+            ->orderBy('kode_jenis')
+            ->get();
+
+        $kodeAtributRekomendasiList = KodeAtributRekomendasi::orderBy('kode')->get();
 
         // Daftar Pilihan Tahun untuk Filter
         $availableYears = range(date('Y') + 1, 2020);
@@ -126,7 +135,7 @@ class TindakLanjutController extends Controller
         });
 
         return view('tindak-lanjut.index', array_merge($metrics, compact(
-            'groupedLhp', 'penugasanList', 'status', 'search', 'tahun', 'availableYears'
+            'groupedLhp', 'penugasanList', 'kodeAtributTemuanList', 'kodeAtributRekomendasiList', 'status', 'search', 'tahun', 'availableYears'
         )));
     }
 
@@ -144,6 +153,8 @@ class TindakLanjutController extends Controller
         $tindakLanjut->load([
             'penugasan.irban',
             'penugasan.objekPenugasan',
+            'kodeAtributTemuan',
+            'kodeAtributRekomendasi',
             'stPemantauan',
             'penelaah',
             'irbanPenyetuju',
@@ -158,6 +169,8 @@ class TindakLanjutController extends Controller
         $lhpItems = TindakLanjut::with([
             'penugasan.irban',
             'penugasan.objekPenugasan',
+            'kodeAtributTemuan',
+            'kodeAtributRekomendasi',
             'stPemantauan',
             'penelaah',
             'irbanPenyetuju',
@@ -192,10 +205,18 @@ class TindakLanjutController extends Controller
 
         $objekList = ObjekPenugasan::aktif()->orderBy('nama')->get();
 
+        $kodeAtributTemuanList = KodeAtributTemuan::orderBy('kode_kelompok')
+            ->orderBy('kode_sub_kelompok')
+            ->orderBy('kode_jenis')
+            ->get();
+
+        $kodeAtributRekomendasiList = KodeAtributRekomendasi::orderBy('kode')->get();
+
         return view('tindak-lanjut.show', compact(
             'tindakLanjut', 'lhpItems',
             'countSesuai', 'countBelumSesuai', 'countBelum', 'countTdt',
-            'totalNilaiTarget', 'totalSetorRp', 'stPemantauanList', 'objekList'
+            'totalNilaiTarget', 'totalSetorRp', 'stPemantauanList', 'objekList',
+            'kodeAtributTemuanList', 'kodeAtributRekomendasiList'
         ));
     }
 
@@ -357,6 +378,12 @@ class TindakLanjutController extends Controller
         if ($request->has('items') && is_array($request->items)) {
             foreach ($request->items as $tIndex => $tData) {
                 $uraianTemuan = "Temuan " . ($tIndex + 1) . ": " . trim($tData['temuan']);
+                $kodeAtributTemuanId = !empty($tData['kode_atribut_temuan_id']) ? (int) $tData['kode_atribut_temuan_id'] : null;
+                $kodeTemuanLengkap = !empty($tData['kode_temuan_lengkap']) ? trim($tData['kode_temuan_lengkap']) : null;
+                if ($kodeAtributTemuanId && empty($kodeTemuanLengkap)) {
+                    $at = KodeAtributTemuan::find($kodeAtributTemuanId);
+                    $kodeTemuanLengkap = $at?->kode_lengkap;
+                }
 
                 // Tentukan Objek/OPD sasaran untuk Temuan ini
                 $objekSasaranId = !empty($tData['objek_penugasan_id']) 
@@ -367,21 +394,31 @@ class TindakLanjutController extends Controller
                     foreach ($tData['rekomendasi'] as $rIndex => $rData) {
                         $uraianRekomendasi = "Rekomendasi " . ($rIndex + 1) . ": " . trim($rData['uraian']);
                         $nilaiRp           = $this->parseNominalRp($rData['nilai_rekomendasi_rp'] ?? 0);
+                        $kodeAtributRekomendasiId = !empty($rData['kode_atribut_rekomendasi_id']) ? (int) $rData['kode_atribut_rekomendasi_id'] : null;
+                        $kodeRekomendasi = !empty($rData['kode_rekomendasi']) ? trim($rData['kode_rekomendasi']) : null;
+                        if ($kodeAtributRekomendasiId && empty($kodeRekomendasi)) {
+                            $ar = KodeAtributRekomendasi::find($kodeAtributRekomendasiId);
+                            $kodeRekomendasi = $ar?->kode;
+                        }
 
                         $tl = TindakLanjut::create([
-                            'penugasan_id'         => $penugasan->id,
-                            'objek_penugasan_id'   => $objekSasaranId,
-                            'no_lhp'               => $noLhp,
-                            'judul_lhp'            => $judulLhp,
-                            'tgl_lhp'              => $tglLhp,
-                            'uraian_temuan'        => $uraianTemuan,
-                            'rekomendasi'          => $uraianRekomendasi,
-                            'nilai_diawasi_rp'     => $nilaiDiawasiLhp,
-                            'nilai_rekomendasi_rp' => $nilaiRp,
-                            'berkas_dasar_lhp'     => $filePath,
-                            'status_tindak_lanjut' => 'belum',
-                            'tanggal_target'       => $rData['tanggal_target'] ?? null,
-                            'dibuat_oleh'          => $userId,
+                            'penugasan_id'                => $penugasan->id,
+                            'objek_penugasan_id'          => $objekSasaranId,
+                            'no_lhp'                      => $noLhp,
+                            'judul_lhp'                   => $judulLhp,
+                            'tgl_lhp'                     => $tglLhp,
+                            'kode_atribut_temuan_id'      => $kodeAtributTemuanId,
+                            'kode_atribut_rekomendasi_id' => $kodeAtributRekomendasiId,
+                            'kode_temuan_lengkap'         => $kodeTemuanLengkap,
+                            'kode_rekomendasi'            => $kodeRekomendasi,
+                            'uraian_temuan'               => $uraianTemuan,
+                            'rekomendasi'                 => $uraianRekomendasi,
+                            'nilai_diawasi_rp'            => $nilaiDiawasiLhp,
+                            'nilai_rekomendasi_rp'        => $nilaiRp,
+                            'berkas_dasar_lhp'            => $filePath,
+                            'status_tindak_lanjut'        => 'belum',
+                            'tanggal_target'              => $rData['tanggal_target'] ?? null,
+                            'dibuat_oleh'                 => $userId,
                         ]);
 
                         ActivityLog::catat('tindak_lanjut', $tl->id, 'create', null, $tl->toArray());
@@ -391,19 +428,28 @@ class TindakLanjutController extends Controller
             }
         } else {
             $singleObjekId = $request->filled('objek_penugasan_id') ? (int) $request->input('objek_penugasan_id') : $defaultObjekId;
+            $kodeAtributTemuanId = $request->filled('kode_atribut_temuan_id') ? (int) $request->input('kode_atribut_temuan_id') : null;
+            $kodeAtributRekomendasiId = $request->filled('kode_atribut_rekomendasi_id') ? (int) $request->input('kode_atribut_rekomendasi_id') : null;
+            $kodeTemuanLengkap = $request->input('kode_temuan_lengkap');
+            $kodeRekomendasi = $request->input('kode_rekomendasi');
+
             $tl = TindakLanjut::create([
-                'penugasan_id'         => $penugasan->id,
-                'objek_penugasan_id'   => $singleObjekId,
-                'no_lhp'               => $noLhp,
-                'judul_lhp'            => $judulLhp,
-                'tgl_lhp'              => $tglLhp,
-                'uraian_temuan'        => $request->input('uraian_temuan', 'Temuan Hasil Pengawasan'),
-                'rekomendasi'          => $request->input('rekomendasi', 'Rekomendasi Perbaikan'),
-                'nilai_rekomendasi_rp' => $this->parseNominalRp($request->input('nilai_rekomendasi_rp', 0)),
-                'berkas_dasar_lhp'     => $filePath,
-                'status_tindak_lanjut' => 'belum',
-                'tanggal_target'       => $request->input('tanggal_target'),
-                'dibuat_oleh'          => $userId,
+                'penugasan_id'                => $penugasan->id,
+                'objek_penugasan_id'          => $singleObjekId,
+                'no_lhp'                      => $noLhp,
+                'judul_lhp'                   => $judulLhp,
+                'tgl_lhp'                     => $tglLhp,
+                'kode_atribut_temuan_id'      => $kodeAtributTemuanId,
+                'kode_atribut_rekomendasi_id' => $kodeAtributRekomendasiId,
+                'kode_temuan_lengkap'         => $kodeTemuanLengkap,
+                'kode_rekomendasi'            => $kodeRekomendasi,
+                'uraian_temuan'               => $request->input('uraian_temuan', 'Temuan Hasil Pengawasan'),
+                'rekomendasi'                 => $request->input('rekomendasi', 'Rekomendasi Perbaikan'),
+                'nilai_rekomendasi_rp'        => $this->parseNominalRp($request->input('nilai_rekomendasi_rp', 0)),
+                'berkas_dasar_lhp'            => $filePath,
+                'status_tindak_lanjut'        => 'belum',
+                'tanggal_target'              => $request->input('tanggal_target'),
+                'dibuat_oleh'                 => $userId,
             ]);
 
             ActivityLog::catat('tindak_lanjut', $tl->id, 'create', null, $tl->toArray());
@@ -472,17 +518,21 @@ class TindakLanjutController extends Controller
     public function update(Request $request, TindakLanjut $tindakLanjut): RedirectResponse
     {
         $validated = $request->validate([
-            'objek_penugasan_id'   => ['nullable', 'exists:objek_penugasan,id'],
-            'no_lhp'               => ['nullable', 'string', 'max:100'],
-            'judul_lhp'            => ['nullable', 'string', 'max:255'],
-            'tgl_lhp'              => ['nullable', 'date'],
-            'uraian_temuan'        => ['required', 'string'],
-            'rekomendasi'          => ['required', 'string'],
-            'nilai_diawasi_rp'     => ['nullable'],
-            'nilai_rekomendasi_rp' => ['nullable'],
-            'tanggal_target'       => ['nullable', 'date'],
-            'status_tindak_lanjut' => ['required', 'in:belum,proses,menunggu_verifikasi,selesai,tdt'],
-            'berkas_dasar_lhp'     => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
+            'objek_penugasan_id'          => ['nullable', 'exists:objek_penugasan,id'],
+            'no_lhp'                      => ['nullable', 'string', 'max:100'],
+            'judul_lhp'                   => ['nullable', 'string', 'max:255'],
+            'tgl_lhp'                     => ['nullable', 'date'],
+            'kode_atribut_temuan_id'      => ['nullable', 'exists:kode_atribut_temuan,id'],
+            'kode_atribut_rekomendasi_id' => ['nullable', 'exists:kode_atribut_rekomendasi,id'],
+            'kode_temuan_lengkap'         => ['nullable', 'string', 'max:30'],
+            'kode_rekomendasi'            => ['nullable', 'string', 'max:10'],
+            'uraian_temuan'               => ['required', 'string'],
+            'rekomendasi'                 => ['required', 'string'],
+            'nilai_diawasi_rp'            => ['nullable'],
+            'nilai_rekomendasi_rp'        => ['nullable'],
+            'tanggal_target'              => ['nullable', 'date'],
+            'status_tindak_lanjut'        => ['required', 'in:belum,proses,menunggu_verifikasi,selesai,tdt'],
+            'berkas_dasar_lhp'            => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
         ]);
 
         $sebelum = $tindakLanjut->toArray();
@@ -496,6 +546,16 @@ class TindakLanjutController extends Controller
 
         $validated['nilai_diawasi_rp']     = $this->parseNominalRp($request->input('nilai_diawasi_rp'));
         $validated['nilai_rekomendasi_rp'] = $this->parseNominalRp($request->input('nilai_rekomendasi_rp'));
+
+        if (!empty($validated['kode_atribut_temuan_id']) && empty($validated['kode_temuan_lengkap'])) {
+            $at = KodeAtributTemuan::find($validated['kode_atribut_temuan_id']);
+            $validated['kode_temuan_lengkap'] = $at?->kode_lengkap;
+        }
+
+        if (!empty($validated['kode_atribut_rekomendasi_id']) && empty($validated['kode_rekomendasi'])) {
+            $ar = KodeAtributRekomendasi::find($validated['kode_atribut_rekomendasi_id']);
+            $validated['kode_rekomendasi'] = $ar?->kode;
+        }
 
         if ($validated['status_tindak_lanjut'] === 'selesai' && ! $tindakLanjut->tanggal_selesai_aktual) {
             $validated['tanggal_selesai_aktual'] = now()->toDateString();
