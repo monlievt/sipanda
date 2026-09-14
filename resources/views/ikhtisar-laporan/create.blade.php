@@ -186,7 +186,7 @@
                         BAB IV HASIL PENANGANAN PENGADUAN MASYARAKAT (DUMAS / WBS / APH)
                     </h4>
                     <p class="text-xs text-slate-600 dark:text-slate-300">
-                        Tercatat sebanyak <strong>{{ count($compiledData['sptDumas']) }} penugasan khusus / klarifikasi pengaduan masyarakat</strong> yang ditangani selama periode {{ $this->getPeriodeTitle($periode) }} Tahun {{ $tahun }}.
+                        Tercatat sebanyak <strong>{{ count($compiledData['sptDumas']) }} penugasan khusus / klarifikasi pengaduan masyarakat</strong> yang ditangani selama periode {{ $periodeTitle }} Tahun {{ $tahun }}.
                     </p>
                 </div>
             </div>
@@ -204,7 +204,7 @@
                 <div class="space-y-4 text-xs">
                     <div>
                         <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">A. Simpulan Eksekutif</label>
-                        <textarea name="simpulan" rows="3" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500" placeholder="Jelaskan simpulan umum capaian pengawasan, efektivitas belanja APBD, dan kualitas tata kelola OPD pada periode ini...">{{ old('simpulan', "Secara umum pelaksanaan program pengawasan dan pembinaan pada {$this->getPeriodeTitle($periode)} Tahun {$tahun} telah berjalan sesuai target PKPT Berbasis Risiko. Kepatuhan perangkat daerah dalam menindaklanjuti rekomendasi menunjukkan tren positif dengan tingkat penyelesaian mencapai {$compiledData['tlPersenSelesai']}%.") }}</textarea>
+                        <textarea name="simpulan" rows="3" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500" placeholder="Jelaskan simpulan umum capaian pengawasan, efektivitas belanja APBD, dan kualitas tata kelola OPD pada periode ini...">{{ old('simpulan', "Secara umum pelaksanaan program pengawasan dan pembinaan pada {$periodeTitle} Tahun {$tahun} telah berjalan sesuai target PKPT Berbasis Risiko. Kepatuhan perangkat daerah dalam menindaklanjuti rekomendasi menunjukkan tren positif dengan tingkat penyelesaian mencapai {$compiledData['tlPersenSelesai']}%.") }}</textarea>
                     </div>
 
                     <div>

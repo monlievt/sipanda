@@ -11,6 +11,7 @@
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Generator otomatis laporan eksekutif Triwulanan, Semesteran, dan Tahunan untuk Bupati Trenggalek.</p>
             </div>
 
+            @hasanyrole('admin|sekretariat|superadmin')
             <div class="flex items-center gap-2">
                 <a href="{{ route('ikhtisar-laporan.create', ['tahun' => $tahun]) }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/20 transition-all">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,6 +20,7 @@
                     <span>Generate Ikhtisar Baru</span>
                 </a>
             </div>
+            @endhasanyrole
         </div>
 
         @if (session('status'))
@@ -122,9 +124,11 @@
                                     <a href="{{ route('ikhtisar-laporan.cetak', $lap) }}" target="_blank" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold shadow-xs">
                                         🖨️ Cetak / PDF
                                     </a>
+                                    @hasanyrole('admin|sekretariat|superadmin')
                                     <a href="{{ route('ikhtisar-laporan.edit', $lap) }}" class="px-2 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold">
                                         Edit
                                     </a>
+                                    @endhasanyrole
                                 </td>
                             </tr>
                         @empty

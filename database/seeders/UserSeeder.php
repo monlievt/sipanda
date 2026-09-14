@@ -16,20 +16,23 @@ class UserSeeder extends Seeder
 
         // Pemetaan kolom BIDANG di CSV ke irban_id
         // Nilai dari CSV: "INSPEKTUR PEMBANTU I", "IRBAN I", "SEKRETARIAT", dll.
+        $irbanKhususId = $irbanMap['Inspektur Pembantu Khusus'] ?? $irbanMap['Inspektur Pembantu IV'] ?? null;
         $bidangToIrban = [
-            'INSPEKTUR PEMBANTU I'   => $irbanMap['Inspektur Pembantu I']  ?? null,
-            'INSPEKTUR PEMBANTU II'  => $irbanMap['Inspektur Pembantu II'] ?? null,
-            'INSPEKTUR PEMBANTU III' => $irbanMap['Inspektur Pembantu III']?? null,
-            'INSPEKTUR PEMBANTU IV'  => $irbanMap['Inspektur Pembantu IV'] ?? null,
-            'IRBAN I'                => $irbanMap['Inspektur Pembantu I']  ?? null,
-            'IRBAN II'               => $irbanMap['Inspektur Pembantu II'] ?? null,
-            'IRBAN III'              => $irbanMap['Inspektur Pembantu III']?? null,
-            'IRBAN IV'               => $irbanMap['Inspektur Pembantu IV'] ?? null,
-            'plt IRBAN IV / INSPEKTUR PEMBANTU IV' => $irbanMap['Inspektur Pembantu IV'] ?? null,
+            'INSPEKTUR PEMBANTU I'                 => $irbanMap['Inspektur Pembantu I']   ?? null,
+            'INSPEKTUR PEMBANTU II'                => $irbanMap['Inspektur Pembantu II']  ?? null,
+            'INSPEKTUR PEMBANTU III'               => $irbanMap['Inspektur Pembantu III'] ?? null,
+            'INSPEKTUR PEMBANTU IV'                => $irbanKhususId,
+            'INSPEKTUR PEMBANTU KHUSUS'            => $irbanKhususId,
+            'IRBAN I'                              => $irbanMap['Inspektur Pembantu I']   ?? null,
+            'IRBAN II'                             => $irbanMap['Inspektur Pembantu II']  ?? null,
+            'IRBAN III'                            => $irbanMap['Inspektur Pembantu III'] ?? null,
+            'IRBAN IV'                             => $irbanKhususId,
+            'IRBAN KHUSUS'                         => $irbanKhususId,
+            'plt IRBAN IV / INSPEKTUR PEMBANTU IV' => $irbanKhususId,
             'plt IRBAN I / INSPEKTUR PEMBANTU III' => $irbanMap['Inspektur Pembantu I']  ?? null,
-            'SEKRETARIAT'            => $irbanMap['Sekretariat']           ?? null,
-            'KEPALA SUB BAGIAN UMUM DAN KEPEGAWAIAN' => $irbanMap['Sekretariat'] ?? null,
-            'SEKRETARIS'             => $irbanMap['Sekretariat']           ?? null,
+            'SEKRETARIAT'                          => $irbanMap['Sekretariat']            ?? null,
+            'KEPALA SUB BAGIAN UMUM DAN KEPEGAWAIAN' => $irbanMap['Sekretariat']         ?? null,
+            'SEKRETARIS'                           => $irbanMap['Sekretariat']            ?? null,
         ];
 
         // Pemetaan JABATAN ke role sistem

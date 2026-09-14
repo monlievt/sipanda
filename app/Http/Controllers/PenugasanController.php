@@ -125,6 +125,27 @@ class PenugasanController extends Controller
     }
 
     /**
+     * Unduh Surat Perintah Tugas dalam format Word (.docx) berbasis template dinas resmi.
+     */
+    public function exportDocx(Penugasan $penugasan, \App\Services\SuratTugasDocxService $docxService)
+    {
+        $this->authorizePenugasanAccess($penugasan);
+
+        $penugasan->load([
+            'irban', 'irbans', 'jenisPenugasan', 'sumberPenugasan',
+            'objekPenugasan', 'tim.user', 'penugasanInduk'
+        ]);
+
+        $filePath = $docxService->generate($penugasan);
+        $cleanNoSpt = preg_replace('/[^A-Za-z0-9_\-]/', '_', $penugasan->no_spt ?: 'SPT_' . $penugasan->id);
+        $filename = "Surat_Tugas_{$cleanNoSpt}.docx";
+
+        return response()->download($filePath, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
      * Tampilkan form Input Penugasan baru.
      */
     public function create(): View

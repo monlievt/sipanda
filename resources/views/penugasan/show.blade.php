@@ -26,15 +26,19 @@
 
         <div class="flex items-center gap-2">
             @if($penugasan->status_persetujuan === 'disetujui' || auth()->user()->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban']))
-            <a href="{{ route('penugasan.cetak', $penugasan->id) }}" target="_blank" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all">
+            <a href="{{ route('penugasan.export-docx', $penugasan->id) }}" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Unduh Word (.docx)</span>
+            </a>
+            <a href="{{ route('penugasan.cetak', $penugasan->id) }}" target="_blank" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
-                <span>Cetak Surat Tugas (SPT)</span>
+                <span>Cetak Web / PDF</span>
             </a>
             @else
             <button disabled class="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-400 font-bold rounded-xl text-xs flex items-center gap-1.5 cursor-not-allowed opacity-70" title="SPT belum disetujui oleh Irban">
-                <span>🔒 Cetak SPT (Terkunci)</span>
+                <span>🔒 Dokumen SPT (Terkunci)</span>
             </button>
             @endif
 

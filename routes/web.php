@@ -72,6 +72,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/penugasan', [PenugasanController::class, 'store'])->middleware('can:penugasan.create')->name('penugasan.store');
     Route::get('/penugasan/{penugasan}', [PenugasanController::class, 'show'])->name('penugasan.show');
     Route::get('/penugasan/{penugasan}/cetak', [PenugasanController::class, 'cetak'])->name('penugasan.cetak');
+    Route::get('/penugasan/{penugasan}/export-docx', [PenugasanController::class, 'exportDocx'])->name('penugasan.export-docx');
     Route::patch('/penugasan/{penugasan}/verifikasi', [PenugasanController::class, 'verifikasiSpt'])->name('penugasan.verifikasi');
     Route::get('/penugasan/{penugasan}/edit', [PenugasanController::class, 'edit'])->middleware('can:penugasan.edit')->name('penugasan.edit');
     Route::put('/penugasan/{penugasan}', [PenugasanController::class, 'update'])->middleware('can:penugasan.edit')->name('penugasan.update');

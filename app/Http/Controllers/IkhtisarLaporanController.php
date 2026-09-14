@@ -42,20 +42,34 @@ class IkhtisarLaporanController extends Controller
     }
 
     /**
+     * Pastikan hanya Sekretariat / Tim Pelaporan dan Admin yang dapat menyusun / mengedit ILHP.
+     */
+    protected function authorizePenyusun(): void
+    {
+        $user = auth()->user();
+        if (!$user || !$user->hasAnyRole(['admin', 'sekretariat', 'superadmin'])) {
+            abort(403, 'Akses Terbatas: Penyusunan, pengeditan, dan penghapusan Ikhtisar Laporan Hasil Pengawasan (ILHP) hanya dapat dilakukan oleh Tim Evaluasi dan Pelaporan (Sekretariat).');
+        }
+    }
+
+    /**
      * Form Generator / Pembuatan Ikhtisar Baru (Dengan Kompilasi Data Otomatis).
      */
     public function create(Request $request): View
     {
+        $this->authorizePenyusun();
+
         $tahun = (int) $request->input('tahun', date('Y'));
         $periode = $request->input('periode', 'triwulan_1');
 
         $range = $this->calculateDateRange($tahun, $periode);
         $compiledData = $this->compileIlhpData($tahun, $periode, $range['start'], $range['end']);
 
-        $defaultJudul = "Ikhtisar Laporan Hasil Pengawasan " . $this->getPeriodeTitle($periode) . " Tahun Anggaran " . $tahun;
+        $periodeTitle = $this->getPeriodeTitle($periode);
+        $defaultJudul = "Ikhtisar Laporan Hasil Pengawasan " . $periodeTitle . " Tahun Anggaran " . $tahun;
         $tahunList = range(date('Y') + 1, 2022);
 
-        return view('ikhtisar-laporan.create', compact('tahun', 'periode', 'range', 'compiledData', 'defaultJudul', 'tahunList'));
+        return view('ikhtisar-laporan.create', compact('tahun', 'periode', 'periodeTitle', 'range', 'compiledData', 'defaultJudul', 'tahunList'));
     }
 
     /**
@@ -63,6 +77,7 @@ class IkhtisarLaporanController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $this->authorizePenyusun();
         $validated = $request->validate([
             'tahun'           => ['required', 'integer', 'min:2020', 'max:2035'],
             'periode'         => ['required', 'string', 'in:triwulan_1,triwulan_2,triwulan_3,triwulan_4,semester_1,semester_2,tahunan'],
@@ -139,6 +154,8 @@ class IkhtisarLaporanController extends Controller
      */
     public function edit(IkhtisarLaporan $ikhtisarLaporan): View
     {
+        $this->authorizePenyusun();
+
         return view('ikhtisar-laporan.edit', compact('ikhtisarLaporan'));
     }
 
@@ -147,6 +164,8 @@ class IkhtisarLaporanController extends Controller
      */
     public function update(Request $request, IkhtisarLaporan $ikhtisarLaporan): RedirectResponse
     {
+        $this->authorizePenyusun();
+
         $validated = $request->validate([
             'judul'           => ['required', 'string', 'max:255'],
             'nomor_surat'     => ['nullable', 'string', 'max:100'],
@@ -172,6 +191,8 @@ class IkhtisarLaporanController extends Controller
      */
     public function destroy(IkhtisarLaporan $ikhtisarLaporan): RedirectResponse
     {
+        $this->authorizePenyusun();
+
         $sebelum = $ikhtisarLaporan->toArray();
         $ikhtisarLaporan->delete();
 
@@ -228,8 +249,13 @@ class IkhtisarLaporanController extends Controller
 
         $irbans = Irban::with(['users' => fn($q) => $q->aktif()])->get();
         $totalPersonilAktif = User::aktif()->internal()->count();
-        $totalAuditor = User::aktif()->role('auditor')->count();
-        $totalPpupd   = User::aktif()->role('ppupd')->count();
+        $totalAuditor = User::aktif()->where('jabatan', 'like', '%auditor%')->count();
+        $totalPpupd   = User::aktif()->where('jabatan', 'like', '%ppupd%')->count();
+        
+        // Fallback jika jabatan belum diisi spesifik
+        if ($totalAuditor === 0 && $totalPpupd === 0) {
+            $totalAuditor = User::aktif()->role('auditor')->count();
+        }
         $totalStaf    = max(0, $totalPersonilAktif - $totalAuditor - $totalPpupd);
 
         // Capaian Program PKPPT dalam periode

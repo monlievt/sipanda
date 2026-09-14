@@ -29,6 +29,10 @@
         </a>
 
         <div class="flex items-center gap-2">
+            <a href="{{ route('penugasan.export-docx', $penugasan->id) }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/30 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Unduh Format Word (.docx)
+            </a>
             <button onclick="window.print()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition-all cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 Cetak / Simpan PDF Resmi
@@ -151,44 +155,50 @@
             <div class="flex items-start gap-4">
                 <span class="font-bold w-20 shrink-0">Untuk</span>
                 <span class="w-3 shrink-0">:</span>
-                <div class="flex-1 space-y-2">
+                <div class="flex-1 space-y-2 leading-relaxed">
                     <p>
-                        1. Melaksanakan <strong>{{ $penugasan->jenisPenugasan->nama ?? 'Pengawasan' }}</strong> perihal <em>"{{ $penugasan->uraian_penugasan }}"</em> pada:
-                    </p>
-                    <div class="pl-4 font-semibold text-slate-900">
-                        Sasaran: 
-                        {{ $penugasan->objekPenugasan->pluck('nama')->implode(', ') ?: ($penugasan->irban->nama_irban ?? 'Inspektorat') }}
-                    </div>
-                    <p>
-                        2. Waktu pelaksanaan penugasan selama 
-                        <strong>
-                            {{ \Carbon\Carbon::parse($penugasan->tanggal_mulai)->diffInDays(\Carbon\Carbon::parse($penugasan->tanggal_selesai)) + 1 }} 
-                            ({{ \Carbon\Carbon::parse($penugasan->tanggal_mulai)->diffInDays(\Carbon\Carbon::parse($penugasan->tanggal_selesai)) + 1 }}) hari kerja
-                        </strong>, 
-                        terhitung mulai tanggal 
-                        <strong>{{ $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->translatedFormat('d F Y') : '-' }}</strong> 
-                        sampai dengan tanggal 
-                        <strong>{{ $penugasan->tanggal_selesai ? $penugasan->tanggal_selesai->translatedFormat('d F Y') : '-' }}</strong>.
-                    </p>
-                    <p>
-                        3. Melaporkan hasil pelaksanaan tugas kepada Inspektur Daerah Kabupaten Trenggalek melalui Laporan Hasil Pengawasan (LHP).
-                    </p>
-                    <p>
-                        4. Melaksanakan tugas dengan penuh tanggung jawab dan mematuhi Kode Etik APIP serta Standar Audit Intern Pemerintah Indonesia (SAIPI).
+                        <strong>{{ $penugasan->uraian_penugasan }}</strong> pada <strong>{{ $penugasan->objekPenugasan->pluck('nama')->implode(', ') ?: ($penugasan->irban->nama_irban ?? 'Inspektorat Daerah Kabupaten Trenggalek') }}</strong>.
                     </p>
                 </div>
             </div>
         </div>
 
+        <!-- Waktu -->
+        <div class="my-6 space-y-2 text-justify text-xs sm:text-sm">
+            <div class="flex items-start gap-4">
+                <span class="font-bold w-20 shrink-0">Waktu</span>
+                <span class="w-3 shrink-0">:</span>
+                <div class="flex-1 space-y-2 leading-relaxed">
+                    <p>
+                        <strong>{{ $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->translatedFormat('d F Y') : '-' }}</strong> s.d. <strong>{{ $penugasan->tanggal_selesai ? $penugasan->tanggal_selesai->translatedFormat('d F Y') : '-' }}</strong>
+                        @if($penugasan->tanggal_mulai && $penugasan->tanggal_selesai)
+                            <span class="text-slate-600">({{ \Carbon\Carbon::parse($penugasan->tanggal_mulai)->diffInDays(\Carbon\Carbon::parse($penugasan->tanggal_selesai)) + 1 }} hari kalender)</span>
+                        @endif
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Peringatan Anti-Gratifikasi & APBD Sesuai Format Resmi Dinas -->
+        <div class="my-6 text-xs sm:text-sm">
+            <div class="p-3.5 bg-rose-600 text-white font-semibold rounded-lg print:bg-rose-600 print:text-white print:border print:border-rose-700 leading-relaxed text-justify">
+                <span class="font-black uppercase tracking-wider">Peringatan :</span> Kegiatan ini dibiayai dari APBD Kabupaten Trenggalek Tahun Anggaran {{ $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->format('Y') : date('Y') }}, selanjutnya dalam rangka penegakan Kode Etik APIP dan implementasi pakta integritas maka tidak diperkenankan memberi dan/atau menerima uang, barang dan/atau jasa dalam bentuk apapun sejenis gratifikasi.
+            </div>
+        </div>
+
+        <!-- Kalimat Penutup -->
+        <div class="my-6 text-xs sm:text-sm text-justify">
+            <p>Demikian untuk dilaksanakan sebaik-baiknya dengan penuh tanggung jawab.</p>
+        </div>
+
         <!-- Penutup & Tanda Tangan -->
-        <div class="mt-12 text-xs sm:text-sm">
+        <div class="mt-8 text-xs sm:text-sm">
             <div class="flex justify-end">
                 <div class="w-72 text-left space-y-1">
-                    <p>Ditetapkan di : Trenggalek</p>
-                    <p>Pada tanggal : {{ $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->translatedFormat('d F Y') : date('d F Y') }}</p>
+                    <p>Trenggalek, {{ $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->translatedFormat('d F Y') : date('d F Y') }}</p>
                     
-                    <div class="pt-2 font-bold uppercase">
-                        Plt. INSPEKTUR DAERAH<br>
+                    <div class="pt-2 font-bold uppercase leading-tight">
+                        Plt. INSPEKTUR<br>
                         KABUPATEN TRENGGALEK
                     </div>
 
@@ -198,8 +208,8 @@
                     <div class="font-bold underline uppercase">
                         {{ $inspektur->nama ?? 'Ir. WIJIONO, S.T., M.MKes.' }}
                     </div>
-                    <div class="text-xs">
-                        Pembina Utama Muda (IV/c)<br>
+                    <div class="text-xs text-slate-700">
+                        {{ $inspektur->pangkat ?? ($inspektur->golongan ? 'Pembina Utama Muda (' . $inspektur->golongan . ')' : 'Pembina Utama Muda (IV/c)') }}<br>
                         NIP. {{ $inspektur->nip ?? '197308051997031007' }}
                     </div>
                 </div>
