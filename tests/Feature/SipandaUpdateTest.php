@@ -83,4 +83,98 @@ class SipandaUpdateTest extends TestCase
         $responseAuditor = $this->actingAs($auditorUser)->get(route('ikhtisar-laporan.create', ['tahun' => 2026]));
         $responseAuditor->assertStatus(403);
     }
+
+    public function test_tindak_lanjut_show_with_tujuan_surat_objek(): void
+    {
+        $this->seed([\Database\Seeders\RoleSeeder::class, \Database\Seeders\IrbanSeeder::class, \Database\Seeders\MasterDataSeeder::class]);
+
+        $adminUser = User::create([
+            'nama' => 'Administrator',
+            'email' => 'admin@trenggalekkab.go.id',
+            'password' => bcrypt('password'),
+            'jabatan' => 'PRANATA KOMPUTER',
+            'status_aktif' => 'aktif',
+            'nip' => '198901012015011003',
+        ]);
+        $adminUser->assignRole('admin');
+
+        $penugasan = \App\Models\Penugasan::create([
+            'no_spt' => '800.1.11.1/001/406.050/2026',
+            'uraian_penugasan' => 'Audit Keuangan',
+            'tanggal_mulai' => Carbon::now(),
+            'tanggal_selesai' => Carbon::now()->addDays(5),
+            'irban_id' => 1,
+            'jenis_penugasan_id' => 1,
+            'sumber_penugasan_id' => 1,
+            'status' => 'selesai',
+            'status_persetujuan' => 'disetujui',
+            'dibuat_oleh' => $adminUser->id,
+        ]);
+
+        $tl = \App\Models\TindakLanjut::create([
+            'penugasan_id' => $penugasan->id,
+            'no_lhp' => '700/01/LHP/2026',
+            'judul_lhp' => 'LHP Audit Keuangan',
+            'tgl_lhp' => Carbon::now(),
+            'uraian_temuan' => 'Temuan Uji Coba',
+            'rekomendasi' => 'Rekomendasi Uji Coba',
+            'status_tindak_lanjut' => 'proses',
+            'status_telaah' => 'draft',
+            'dibuat_oleh' => $adminUser->id,
+        ]);
+
+        $response = $this->actingAs($adminUser)->get(route('tindak-lanjut.show', $tl->id));
+        $response->assertStatus(200);
+    }
+
+    public function test_pkppt_revisi_archives_old_version(): void
+    {
+        $this->seed([\Database\Seeders\RoleSeeder::class, \Database\Seeders\IrbanSeeder::class]);
+
+        $inspekturUser = User::create([
+            'nama' => 'Inspektur',
+            'email' => 'inspektur@trenggalekkab.go.id',
+            'password' => bcrypt('password'),
+            'jabatan' => 'INSPEKTUR DAERAH',
+            'status_aktif' => 'aktif',
+            'nip' => '197001011995011001',
+        ]);
+        $inspekturUser->assignRole('inspektur');
+
+        $pkppt = \App\Models\Pkppt::create([
+            'tahun' => 2026,
+            'area_pengawasan' => 'Pengawasan Keuangan',
+            'jenis_pengawasan' => 'Audit Kinerja',
+            'sasaran' => 'Dinas Pendidikan',
+            'rencana_mulai' => Carbon::now(),
+            'rencana_selesai_laporan' => Carbon::now()->addMonth(),
+            'jumlah_laporan_rencana' => 1,
+            'status' => 'ditetapkan',
+            'versi_revisi' => 1,
+            'dibuat_oleh' => $inspekturUser->id,
+        ]);
+
+        $response = $this->actingAs($inspekturUser)->post(route('pkppt.revisi', $pkppt->id), [
+            'catatan_revisi' => 'Penyesuaian jadwal',
+            'area_pengawasan' => 'Pengawasan Keuangan dan Aset',
+            'jenis_pengawasan' => 'Audit Kinerja',
+            'sasaran' => 'Dinas Pendidikan',
+            'rencana_mulai' => Carbon::now()->format('Y-m-d'),
+            'rencana_selesai_laporan' => Carbon::now()->addMonth()->format('Y-m-d'),
+            'jumlah_laporan_rencana' => 1,
+        ]);
+
+        $response->assertRedirect(route('pkppt.index', ['tahun' => 2026]));
+
+        $pkppt->refresh();
+        $this->assertEquals('diarsipkan', $pkppt->status);
+
+        $this->assertDatabaseHas('pkppt', [
+            'tahun' => 2026,
+            'area_pengawasan' => 'Pengawasan Keuangan dan Aset',
+            'status' => 'draft',
+            'versi_revisi' => 2,
+            'pkppt_induk_id' => $pkppt->id,
+        ]);
+    }
 }

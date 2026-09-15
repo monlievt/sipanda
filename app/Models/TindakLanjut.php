@@ -17,7 +17,7 @@ class TindakLanjut extends Model
         'status_tindak_lanjut', 'status_telaah', 'hasil_telaah_tim', 'telaah_oleh', 'telaah_pada',
         'catatan_irban', 'irban_disetujui_oleh', 'irban_disetujui_pada',
         'catatan_inspektur', 'inspektur_disetujui_oleh', 'inspektur_disetujui_pada',
-        'no_surat_pengantar', 'tgl_surat_pengantar', 'tujuan_surat_pengantar',
+        'no_surat_pengantar', 'tgl_surat_pengantar', 'tujuan_surat_pengantar', 'tujuan_surat_objek_id',
         'tanggal_target', 'tanggal_selesai_aktual', 'dibuat_oleh',
     ];
     protected $casts = [
@@ -35,6 +35,7 @@ class TindakLanjut extends Model
     public function penugasan()             { return $this->belongsTo(Penugasan::class); }
     public function stPemantauan()          { return $this->belongsTo(Penugasan::class, 'st_pemantauan_id'); }
     public function objekPenugasan()        { return $this->belongsTo(ObjekPenugasan::class, 'objek_penugasan_id'); }
+    public function tujuanSuratObjek()      { return $this->belongsTo(ObjekPenugasan::class, 'tujuan_surat_objek_id'); }
     public function kodeAtributTemuan()     { return $this->belongsTo(KodeAtributTemuan::class, 'kode_atribut_temuan_id'); }
     public function kodeAtributRekomendasi(){ return $this->belongsTo(KodeAtributRekomendasi::class, 'kode_atribut_rekomendasi_id'); }
     public function pembuatData()           { return $this->belongsTo(User::class, 'dibuat_oleh'); }
