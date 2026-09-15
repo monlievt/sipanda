@@ -7,6 +7,7 @@ use App\Models\ObjekPenugasan;
 use App\Models\Penugasan;
 use App\Models\Pkppt;
 use App\Models\TindakLanjut;
+use App\Models\User;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx as XlsxReader;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -71,6 +72,10 @@ class ExportController extends Controller
         $tindakLanjut->load([
             'penugasan.irban.users',
             'penugasan.objekPenugasan',
+            'tujuanSuratObjek',
+            'objekPenugasan',
+            'kodeAtributTemuan',
+            'kodeAtributRekomendasi',
             'buktiTindakLanjut.arsipDigital',
             'rincianPenyetoran',
         ]);
@@ -78,6 +83,10 @@ class ExportController extends Controller
         $items = TindakLanjut::with([
             'penugasan.irban.users',
             'penugasan.objekPenugasan',
+            'tujuanSuratObjek',
+            'objekPenugasan',
+            'kodeAtributTemuan',
+            'kodeAtributRekomendasi',
             'buktiTindakLanjut',
             'rincianPenyetoran',
         ])->where(function ($q) use ($tindakLanjut) {
@@ -88,61 +97,164 @@ class ExportController extends Controller
             }
         })->orderBy('id', 'asc')->get();
 
-        $templatePath = resource_path('templates/Template_Matriks_Tindak_Lanjut_Inspektorat_Trenggalek.xlsx');
+        $templatePath = base_path('docs/template/Template Matriks Tindak Lanjut Inspektorat Trenggalek per Laporan Hasil Pengawasan.xlsx');
+        if (!file_exists($templatePath)) {
+            $templatePath = resource_path('templates/Template_Matriks_Tindak_Lanjut_Inspektorat_Trenggalek.xlsx');
+        }
 
         if (file_exists($templatePath)) {
             $reader = new XlsxReader();
             $spreadsheet = $reader->load($templatePath);
             $sheet = $spreadsheet->getActiveSheet();
 
-            // Isi Header Dokumen Sesuai Template Baku Trenggalek
-            $sheet->setCellValue('A3', 'ATAS ' . strtoupper($tindakLanjut->judul_lhp ?? 'LAPORAN HASIL PENGAWASAN'));
-            $sheet->setCellValue('C5', ': ' . ($tindakLanjut->no_lhp ?? ('SPT ' . $tindakLanjut->penugasan?->no_spt)));
-            $sheet->setCellValue('C6', ': ' . ($tindakLanjut->tgl_lhp ? $tindakLanjut->tgl_lhp->translatedFormat('d F Y') : '-'));
-            $sheet->setCellValue('C7', ': ' . ($tindakLanjut->penugasan?->objekPenugasan->pluck('nama')->implode(', ') ?: '-'));
+            // 1. Header Dokumen Sesuai Template Baku Trenggalek
+            $judulLhp = strtoupper($tindakLanjut->judul_lhp ?? ($tindakLanjut->penugasan?->uraian_penugasan ?? 'LAPORAN HASIL PENGAWASAN'));
+            $sheet->setCellValue('A8', 'ATAS ' . $judulLhp);
+            $sheet->setCellValue('C10', ': ' . ($tindakLanjut->no_lhp ?? ('SPT ' . $tindakLanjut->penugasan?->no_spt)));
+            $sheet->setCellValue('C11', ': ' . ($tindakLanjut->tgl_lhp ? $tindakLanjut->tgl_lhp->translatedFormat('d F Y') : '-'));
+            
+            $namaObjek = $tindakLanjut->tujuanSuratObjek?->nama 
+                ?? $tindakLanjut->objekPenugasan?->nama 
+                ?? ($tindakLanjut->penugasan?->objekPenugasan->pluck('nama')->implode(', ') ?: '-');
+            $sheet->setCellValue('C12', ': ' . $namaObjek);
 
-            $startRow = 11;
+            // Bersihkan baris template lama dari baris 16 ke bawah
+            $highestRow = $sheet->getHighestRow();
+            if ($highestRow >= 16) {
+                $sheet->removeRow(16, $highestRow - 15);
+            }
+
+            $startRow = 16;
             $currentRow = $startRow;
 
+            $thinBorder = [
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000'],
+                    ],
+                ],
+            ];
+
             foreach ($items as $idx => $item) {
-                if ($idx > 0) {
-                    $sheet->insertNewRowBefore($currentRow, 1);
+                $no = $idx + 1;
+                
+                // Temuan
+                $uraianTemuan = $item->uraian_temuan ?? '-';
+                if ($item->kodeAtributTemuan) {
+                    $uraianTemuan = "[{$item->kodeAtributTemuan->kode}] {$item->kodeAtributTemuan->nama}\n\n" . $uraianTemuan;
                 }
 
+                // Rekomendasi
+                $rekomendasi = $item->rekomendasi ?? '-';
+                if ($item->kodeAtributRekomendasi) {
+                    $rekomendasi = "[{$item->kodeAtributRekomendasi->kode}] {$item->kodeAtributRekomendasi->nama}\n\n" . $rekomendasi;
+                }
+
+                $nilaiRekomendasi = (float) $item->nilai_rekomendasi_rp;
+                $totalSetor = (float) $item->rincianPenyetoran->sum('nilai_setor_rp');
+
                 $catatanOpd = $item->buktiTindakLanjut->pluck('catatan_opd')->filter()->implode("\n");
-                $catatanVerifikasi = $item->buktiTindakLanjut->pluck('catatan_verifikasi')->filter()->implode("\n");
-                $totalSetor = $item->rincianPenyetoran->sum('nilai_setor_rp');
+                if (empty($catatanOpd) && $item->status_tindak_lanjut === 'selesai') {
+                    $catatanOpd = 'Telah ditindaklanjuti sesuai rekomendasi.';
+                }
 
-                $sheet->setCellValue('A' . $currentRow, $idx + 1);
-                $sheet->setCellValue('B' . $currentRow, $item->temuan_uraian ?: $item->uraian_temuan);
-                $sheet->setCellValue('C' . $currentRow, $item->rekomendasi_uraian ?: $item->rekomendasi);
-                
-                $sheet->setCellValue('D' . $currentRow, (float) $item->nilai_rekomendasi_rp);
-                $sheet->getStyle('D' . $currentRow)->getNumberFormat()->setFormatCode('#,##0');
+                $catatanVerifikasi = $item->hasil_telaah_tim 
+                    ?: ($item->buktiTindakLanjut->pluck('catatan_verifikasi')->filter()->implode("\n") 
+                    ?: ($item->status_telaah === 'disetujui_inspektur' ? 'Disetujui Inspektur' : '-'));
 
+                // Status checklist (Sesuai, Belum Sesuai, Belum di TL, Tidak Dapat di TL)
+                $isSesuai      = ($item->status_tindak_lanjut === 'selesai');
+                $isBelumSesuai = in_array($item->status_tindak_lanjut, ['proses', 'menunggu_verifikasi', 'dalam_proses']);
+                $isBelumTl     = in_array($item->status_tindak_lanjut, ['belum', 'belum_ditindaklanjuti']);
+                $isTdt         = in_array($item->status_tindak_lanjut, ['tdt', 'tidak_dapat_ditindaklanjuti']);
+
+                $sheet->setCellValue('A' . $currentRow, $no);
+                $sheet->setCellValue('B' . $currentRow, $uraianTemuan);
+                $sheet->setCellValue('C' . $currentRow, $rekomendasi);
+                $sheet->setCellValue('D' . $currentRow, $nilaiRekomendasi);
                 $sheet->setCellValue('E' . $currentRow, $catatanOpd ?: '-');
+                $sheet->setCellValue('F' . $currentRow, $isSesuai ? 'V' : '');
+                $sheet->setCellValue('G' . $currentRow, $isBelumSesuai ? 'V' : '');
+                $sheet->setCellValue('H' . $currentRow, $isBelumTl ? 'V' : '');
+                $sheet->setCellValue('I' . $currentRow, $isTdt ? 'V' : '');
+                $sheet->setCellValue('J' . $currentRow, $totalSetor);
+                $sheet->setCellValue('K' . $currentRow, $catatanVerifikasi);
 
-                // Tanda centang pada 4 sub-kolom status BPKP
-                $sheet->setCellValue('F' . $currentRow, $item->status_tindak_lanjut === 'selesai' ? '✓' : '');
-                $sheet->setCellValue('G' . $currentRow, $item->status_tindak_lanjut === 'dalam_proses' ? '✓' : '');
-                $sheet->setCellValue('H' . $currentRow, $item->status_tindak_lanjut === 'belum_ditindaklanjuti' ? '✓' : '');
-                $sheet->setCellValue('I' . $currentRow, $item->status_tindak_lanjut === 'tdt' ? '✓' : '');
-
-                $sheet->setCellValue('J' . $currentRow, (float) $totalSetor);
-                $sheet->getStyle('J' . $currentRow)->getNumberFormat()->setFormatCode('#,##0');
-
-                $sheet->setCellValue('K' . $currentRow, $catatanVerifikasi ?: '-');
-
-                // Styling data baris
+                // Styling
+                $sheet->getStyle('A' . $currentRow . ':K' . $currentRow)->applyFromArray($thinBorder);
                 $sheet->getStyle('A' . $currentRow . ':K' . $currentRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
                 $sheet->getStyle('A' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $sheet->getStyle('F' . $currentRow . ':I' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('B' . $currentRow . ':C' . $currentRow)->getAlignment()->setWrapText(true);
+                $sheet->getStyle('F' . $currentRow . ':I' . $currentRow)->getFont()->setBold(true);
+                
+                $sheet->getStyle('D' . $currentRow)->getNumberFormat()->setFormatCode('#,##0');
+                $sheet->getStyle('J' . $currentRow)->getNumberFormat()->setFormatCode('#,##0');
+                
+                $sheet->getStyle('B' . $currentRow)->getAlignment()->setWrapText(true);
+                $sheet->getStyle('C' . $currentRow)->getAlignment()->setWrapText(true);
                 $sheet->getStyle('E' . $currentRow)->getAlignment()->setWrapText(true);
                 $sheet->getStyle('K' . $currentRow)->getAlignment()->setWrapText(true);
 
                 $currentRow++;
             }
+
+            $lastDataRow = $currentRow - 1;
+
+            // 2. Baris TOTAL / REKAPITULASI
+            $sheet->mergeCells('A' . $currentRow . ':C' . $currentRow);
+            $sheet->setCellValue('A' . $currentRow, 'JUMLAH');
+            $sheet->setCellValue('D' . $currentRow, "=SUM(D{$startRow}:D{$lastDataRow})");
+            $sheet->setCellValue('J' . $currentRow, "=SUM(J{$startRow}:J{$lastDataRow})");
+
+            $sheet->getStyle('A' . $currentRow . ':K' . $currentRow)->applyFromArray($thinBorder);
+            $sheet->getStyle('A' . $currentRow . ':K' . $currentRow)->getFont()->setBold(true);
+            $sheet->getStyle('A' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('D' . $currentRow)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle('J' . $currentRow)->getNumberFormat()->setFormatCode('#,##0');
+
+            // 3. TANDA TANGAN (Inspektur & Irban)
+            $signStartRow = $currentRow + 3;
+            
+            try {
+                $inspektur = User::role('inspektur')->first();
+            } catch (\Throwable $e) {
+                $inspektur = null;
+            }
+            if (!$inspektur) {
+                $inspektur = User::where('jabatan', 'like', '%inspektur%')->first();
+            }
+
+            $inspekturNama = $inspektur?->nama ?? 'Ir. WIJIONO, S.T., M.MKes.';
+            $inspekturNip  = $inspektur?->nip ?? '197308051997031007';
+            $inspekturPangkat = $inspektur?->pangkat ?? ($inspektur?->golongan ? 'Pembina Utama Muda (' . $inspektur->golongan . ')' : 'Pembina Utama Muda (IV/c)');
+
+            $irban = $tindakLanjut->penugasan?->irban;
+            $irbanUser = $irban ? $irban->users()->whereHas('roles', fn($q) => $q->where('name', 'irban'))->first() : null;
+            $namaIrban = $irban?->nama_irban ?? 'Inspektur Pembantu';
+            $irbanNama = $irbanUser?->nama ?? '..................................';
+            $irbanNip  = $irbanUser?->nip ?? '......................';
+            $irbanPangkat = $irbanUser?->pangkat ?? ($irbanUser?->golongan ? 'Pembina (' . $irbanUser->golongan . ')' : 'Pembina Tingkat I');
+
+            $tglTtd = $tindakLanjut->tgl_lhp ? $tindakLanjut->tgl_lhp->translatedFormat('d F Y') : now()->translatedFormat('d F Y');
+
+            // Left: Inspektur
+            $sheet->setCellValue('B' . $signStartRow, "Mengetahui,");
+            $sheet->setCellValue('B' . ($signStartRow + 1), "Plt. INSPEKTUR KABUPATEN TRENGGALEK");
+            $sheet->setCellValue('B' . ($signStartRow + 5), $inspekturNama);
+            $sheet->setCellValue('B' . ($signStartRow + 6), $inspekturPangkat);
+            $sheet->setCellValue('B' . ($signStartRow + 7), "NIP. " . $inspekturNip);
+
+            $sheet->getStyle('B' . ($signStartRow + 5))->getFont()->setBold(true)->setUnderline(true);
+
+            // Right: Irban (Columns I / J)
+            $sheet->setCellValue('I' . $signStartRow, "Trenggalek, " . $tglTtd);
+            $sheet->setCellValue('I' . ($signStartRow + 1), $namaIrban);
+            $sheet->setCellValue('I' . ($signStartRow + 5), $irbanNama);
+            $sheet->setCellValue('I' . ($signStartRow + 6), $irbanPangkat);
+            $sheet->setCellValue('I' . ($signStartRow + 7), "NIP. " . $irbanNip);
+
+            $sheet->getStyle('I' . ($signStartRow + 5))->getFont()->setBold(true)->setUnderline(true);
 
             // Atur nama file output
             $noLhpClean = preg_replace('/[^\w\-]/', '_', $tindakLanjut->no_lhp ?? ('SPT_' . $tindakLanjut->penugasan?->no_spt));

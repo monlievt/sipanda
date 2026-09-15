@@ -177,4 +177,50 @@ class SipandaUpdateTest extends TestCase
             'pkppt_induk_id' => $pkppt->id,
         ]);
     }
+
+    public function test_export_lhp_matrix_download(): void
+    {
+        $this->seed([\Database\Seeders\RoleSeeder::class, \Database\Seeders\IrbanSeeder::class, \Database\Seeders\MasterDataSeeder::class]);
+
+        $adminUser = User::create([
+            'nama' => 'Administrator',
+            'email' => 'admin_export@trenggalekkab.go.id',
+            'password' => bcrypt('password'),
+            'jabatan' => 'PRANATA KOMPUTER',
+            'status_aktif' => 'aktif',
+            'nip' => '198901012015011099',
+        ]);
+        $adminUser->assignRole('admin');
+
+        $penugasan = \App\Models\Penugasan::create([
+            'no_spt' => '800.1.11.1/002/406.050/2026',
+            'uraian_penugasan' => 'Audit Keuangan dan Kinerja',
+            'tanggal_mulai' => Carbon::now(),
+            'tanggal_selesai' => Carbon::now()->addDays(5),
+            'irban_id' => 1,
+            'jenis_penugasan_id' => 1,
+            'sumber_penugasan_id' => 1,
+            'status' => 'selesai',
+            'status_persetujuan' => 'disetujui',
+            'dibuat_oleh' => $adminUser->id,
+        ]);
+
+        $tl = \App\Models\TindakLanjut::create([
+            'penugasan_id' => $penugasan->id,
+            'no_lhp' => '700/02/LHP/2026',
+            'judul_lhp' => 'LHP Pemeriksaan Reguler',
+            'tgl_lhp' => Carbon::now(),
+            'uraian_temuan' => 'Temuan Kasus 1',
+            'rekomendasi' => 'Rekomendasi Kasus 1',
+            'nilai_rekomendasi' => 15000000,
+            'nilai_setor' => 5000000,
+            'status_tindak_lanjut' => 'belum_sesuai',
+            'status_telaah' => 'disetujui',
+            'dibuat_oleh' => $adminUser->id,
+        ]);
+
+        $response = $this->actingAs($adminUser)->get(route('tindak-lanjut.export_lhp', $tl->id));
+        $response->assertStatus(200);
+        $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    }
 }
