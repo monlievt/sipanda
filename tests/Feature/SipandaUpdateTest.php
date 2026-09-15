@@ -223,4 +223,55 @@ class SipandaUpdateTest extends TestCase
         $response->assertStatus(200);
         $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     }
+
+    public function test_export_all_rekap_matrix_download(): void
+    {
+        $this->seed([\Database\Seeders\RoleSeeder::class, \Database\Seeders\IrbanSeeder::class, \Database\Seeders\MasterDataSeeder::class]);
+
+        $adminUser = User::create([
+            'nama' => 'Administrator Rekap',
+            'email' => 'admin_rekap@trenggalekkab.go.id',
+            'password' => bcrypt('password'),
+            'jabatan' => 'PRANATA KOMPUTER',
+            'status_aktif' => 'aktif',
+            'nip' => '198901012015011088',
+        ]);
+        $adminUser->assignRole('admin');
+
+        $penugasan = \App\Models\Penugasan::create([
+            'no_spt' => '800.1.11.1/003/406.050/2026',
+            'uraian_penugasan' => 'Audit Keuangan dan Kinerja Rekap',
+            'tanggal_mulai' => Carbon::now(),
+            'tanggal_selesai' => Carbon::now()->addDays(5),
+            'irban_id' => 1,
+            'jenis_penugasan_id' => 1,
+            'sumber_penugasan_id' => 1,
+            'status' => 'selesai',
+            'status_persetujuan' => 'disetujui',
+            'dibuat_oleh' => $adminUser->id,
+        ]);
+
+        \App\Models\TindakLanjut::create([
+            'penugasan_id' => $penugasan->id,
+            'no_lhp' => '700/03/LHP/2026',
+            'judul_lhp' => 'LHP Pemeriksaan 2026',
+            'tgl_lhp' => Carbon::now(),
+            'uraian_temuan' => 'Temuan Kasus Rekap',
+            'rekomendasi' => 'Rekomendasi Kasus Rekap',
+            'nilai_diawasi_rp' => 90000000,
+            'nilai_rekomendasi_rp' => 25000000,
+            'nilai_setor' => 10000000,
+            'status_tindak_lanjut' => 'selesai',
+            'status_telaah' => 'disetujui',
+            'dibuat_oleh' => $adminUser->id,
+        ]);
+
+        $response = $this->actingAs($adminUser)->get(route('tindak-lanjut.export_all', ['tahun' => 2026]));
+        $response->assertStatus(200);
+        $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+        $responseAll = $this->actingAs($adminUser)->get(route('tindak-lanjut.export_all'));
+        $responseAll->assertStatus(200);
+        $responseAll->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    }
 }
