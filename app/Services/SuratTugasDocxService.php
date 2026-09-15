@@ -180,8 +180,8 @@ class SuratTugasDocxService
             'nip'          => $inspekturNip,
         ];
 
-        // Replace split macro runs using targeted regex
-        $pattern = '/(<w:r\b(?:(?!<w:r\b).)*?<w:t[^>]*>&lt;&lt;<\/w:t>.*?<\/w:r>)(.*?)(<w:r\b(?:(?!<w:r\b).)*?<w:t[^>]*>&gt;&gt;<\/w:t>.*?<\/w:r>)/s';
+        // Replace split macro runs using targeted non-crossing regex
+        $pattern = '/(<w:r\b(?:(?!<w:r\b).)*?<w:t[^>]*>&lt;&lt;<\/w:t>.*?<\/w:r>)((?:(?!&lt;&lt;|&gt;&gt;).)*?)(<w:r\b(?:(?!<w:r\b).)*?<w:t[^>]*>&gt;&gt;<\/w:t>.*?<\/w:r>)/s';
         $xml = preg_replace_callback($pattern, function ($m) use ($map) {
             $rawInside = strtolower(strip_tags($m[2]));
             $rawInside = trim(html_entity_decode($rawInside));
