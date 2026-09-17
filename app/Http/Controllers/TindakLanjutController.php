@@ -597,6 +597,34 @@ class TindakLanjutController extends Controller
     }
 
     /**
+     * Mengaitkan Surat Perintah Tugas (SPT) Pemantauan TL ke seluruh rekomendasi dalam LHP ini.
+     */
+    public function kaitkanStPemantauan(Request $request, TindakLanjut $tindakLanjut): RedirectResponse
+    {
+        $validated = $request->validate([
+            'st_pemantauan_id' => ['nullable', 'exists:penugasan,id'],
+        ]);
+
+        $sebelum = $tindakLanjut->toArray();
+
+        $lhpQuery = TindakLanjut::where(function ($q) use ($tindakLanjut) {
+            if ($tindakLanjut->no_lhp) {
+                $q->where('no_lhp', $tindakLanjut->no_lhp);
+            } else {
+                $q->where('penugasan_id', $tindakLanjut->penugasan_id);
+            }
+        });
+
+        $lhpQuery->update([
+            'st_pemantauan_id' => $validated['st_pemantauan_id'] ?: null,
+        ]);
+
+        ActivityLog::catat('tindak_lanjut', $tindakLanjut->id, 'kaitkan_st_pemantauan', $sebelum, $validated);
+
+        return back()->with('status', 'Surat Tugas (SPT) Pemantauan berhasil dikaitkan ke Matriks LHP ini.');
+    }
+
+    /**
      * Tim Pemantauan TL mengajukan hasil telaah atas TL yang diinput OPD.
      */
     public function ajukanTelaah(Request $request, TindakLanjut $tindakLanjut): RedirectResponse

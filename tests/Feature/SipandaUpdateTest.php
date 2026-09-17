@@ -274,4 +274,68 @@ class SipandaUpdateTest extends TestCase
         $responseAll->assertStatus(200);
         $responseAll->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     }
+
+    public function test_kaitkan_st_pemantauan_to_matriks_lhp(): void
+    {
+        $this->seed([\Database\Seeders\RoleSeeder::class, \Database\Seeders\IrbanSeeder::class, \Database\Seeders\MasterDataSeeder::class]);
+
+        $adminUser = User::create([
+            'nama' => 'Administrator Pemantau',
+            'email' => 'admin_pemantau@trenggalekkab.go.id',
+            'password' => bcrypt('password'),
+            'jabatan' => 'PRANATA KOMPUTER',
+            'status_aktif' => 'aktif',
+            'nip' => '198901012015011077',
+        ]);
+        $adminUser->assignRole('admin');
+
+        $penugasanAudit = \App\Models\Penugasan::create([
+            'no_spt' => '800.1.11.1/010/406.050/2026',
+            'uraian_penugasan' => 'Audit Keuangan BPKAD',
+            'tanggal_mulai' => Carbon::now(),
+            'tanggal_selesai' => Carbon::now()->addDays(5),
+            'irban_id' => 1,
+            'jenis_penugasan_id' => 1,
+            'sumber_penugasan_id' => 1,
+            'status' => 'selesai',
+            'status_persetujuan' => 'disetujui',
+            'dibuat_oleh' => $adminUser->id,
+        ]);
+
+        $penugasanPemantauan = \App\Models\Penugasan::create([
+            'no_spt' => '800.1.11.1/020/406.050/2026',
+            'uraian_penugasan' => 'Pemantauan Tindak Lanjut Hasil Pemeriksaan',
+            'tanggal_mulai' => Carbon::now(),
+            'tanggal_selesai' => Carbon::now()->addDays(5),
+            'irban_id' => 1,
+            'jenis_penugasan_id' => 2,
+            'sumber_penugasan_id' => 1,
+            'status' => 'dalam_proses',
+            'status_persetujuan' => 'disetujui',
+            'dibuat_oleh' => $adminUser->id,
+        ]);
+
+        $tl = \App\Models\TindakLanjut::create([
+            'penugasan_id' => $penugasanAudit->id,
+            'no_lhp' => '700/10/LHP/2026',
+            'judul_lhp' => 'LHP Audit BPKAD',
+            'tgl_lhp' => Carbon::now(),
+            'uraian_temuan' => 'Temuan Aset',
+            'rekomendasi' => 'Rekomendasi Aset',
+            'nilai_diawasi_rp' => 50000000,
+            'nilai_rekomendasi_rp' => 10000000,
+            'nilai_setor' => 0,
+            'status_tindak_lanjut' => 'proses',
+            'status_telaah' => 'draft',
+            'dibuat_oleh' => $adminUser->id,
+        ]);
+
+        $response = $this->actingAs($adminUser)->post(route('tindak-lanjut.kaitkan_st_pemantauan', $tl->id), [
+            'st_pemantauan_id' => $penugasanPemantauan->id,
+        ]);
+
+        $response->assertRedirect();
+        $tl->refresh();
+        $this->assertEquals($penugasanPemantauan->id, $tl->st_pemantauan_id);
+    }
 }

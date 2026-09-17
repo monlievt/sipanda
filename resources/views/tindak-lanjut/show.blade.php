@@ -88,6 +88,12 @@
                     @else
                         <span class="inline-block text-slate-400 italic text-[10px]">Belum dikaitkan ST Pemantauan</span>
                     @endif
+
+                    <div class="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <button type="button" onclick="document.getElementById('modalKaitkanStPemantauan').classList.remove('hidden')" class="w-full py-1.5 px-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-[10px] font-bold shadow-2xs flex items-center justify-center gap-1">
+                            <span>🔗 {{ $tindakLanjut->st_pemantauan_id ? 'Ubah ST Pemantauan' : 'Kaitkan ST Pemantauan' }}</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Tahap 2: Telaah Tim Pemantauan -->
@@ -806,6 +812,50 @@
                 <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800">
                     <button type="button" onclick="document.getElementById('modalEditTindakLanjut').classList.add('hidden')" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-xl">Batal</button>
                     <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 0. Modal Pengaitan ST Pemantauan TL -->
+    <div id="modalKaitkanStPemantauan" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-w-lg w-full space-y-4 animate-in fade-in zoom-in duration-150">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2 text-emerald-600">
+                    <span class="text-lg">🔗</span>
+                    <h3 class="font-black text-slate-900 dark:text-white text-sm">Kaitkan ST Pemantauan Tindak Lanjut</h3>
+                </div>
+                <button type="button" onclick="document.getElementById('modalKaitkanStPemantauan').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">
+                    &times;
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('tindak-lanjut.kaitkan_st_pemantauan', $tindakLanjut->id) }}" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Pilih Surat Perintah Tugas (SPT) Pemantauan Terkait <span class="text-rose-500">*</span>
+                    </label>
+                    <select name="st_pemantauan_id" class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white font-semibold">
+                        <option value="">-- Lepas / Kosongkan ST Pemantauan --</option>
+                        @foreach($stPemantauanList as $stP)
+                            <option value="{{ $stP->id }}" {{ $tindakLanjut->st_pemantauan_id == $stP->id ? 'selected' : '' }}>
+                                {{ $stP->no_spt }} — {{ Str::limit($stP->uraian_penugasan, 55) }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                        Surat Tugas ini akan menjadi payung hukum dan dasar penugasan tim dalam pemantauan & penyusunan berita acara atas rekomendasi LHP ini.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('modalKaitkanStPemantauan').classList.add('hidden')" class="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md">
+                        Simpan & Kaitkan
+                    </button>
                 </div>
             </form>
         </div>

@@ -100,6 +100,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/bukti-tindak-lanjut/{bukti}/verifikasi', [VerifikasiBuktiController::class, 'verifikasi'])->whereNumber('bukti')->name('tindak-lanjut.bukti.verifikasi');
 
     // Workflow Persetujuan & Output Naskah TLHP (ST Pemantauan, Telaah Tim, Verifikasi Irban, Approval Inspektur, Generate PDF)
+    Route::post('/tindak-lanjut/{tindakLanjut}/kaitkan-st-pemantauan', [TindakLanjutController::class, 'kaitkanStPemantauan'])->whereNumber('tindakLanjut')->name('tindak-lanjut.kaitkan_st_pemantauan');
     Route::post('/tindak-lanjut/{tindakLanjut}/ajukan-telaah', [TindakLanjutController::class, 'ajukanTelaah'])->whereNumber('tindakLanjut')->name('tindak-lanjut.ajukan_telaah');
     Route::post('/tindak-lanjut/{tindakLanjut}/verifikasi-irban', [TindakLanjutController::class, 'verifikasiTelaahIrban'])->whereNumber('tindakLanjut')->name('tindak-lanjut.verifikasi_irban');
     Route::post('/tindak-lanjut/{tindakLanjut}/persetujuan-inspektur', [TindakLanjutController::class, 'persetujuanTelaahInspektur'])->whereNumber('tindakLanjut')->name('tindak-lanjut.persetujuan_inspektur');
