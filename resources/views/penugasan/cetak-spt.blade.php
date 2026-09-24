@@ -233,8 +233,16 @@
                 <div class="w-72 text-left space-y-1">
                     <p>Trenggalek, {{ $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->translatedFormat('d F Y') : date('d F Y') }}</p>
                     
+                    @php
+                        $prefixInspektur = match(strtolower($inspektur?->status_jabatan ?? 'plt')) {
+                            'plt' => 'Plt. ',
+                            'plh' => 'Plh. ',
+                            'pj'  => 'Pj. ',
+                            default => '',
+                        };
+                    @endphp
                     <div class="pt-2 font-bold uppercase leading-tight">
-                        Plt. INSPEKTUR<br>
+                        {{ $prefixInspektur }}INSPEKTUR<br>
                         KABUPATEN TRENGGALEK
                     </div>
 

@@ -238,9 +238,16 @@ class ExportController extends Controller
 
             $tglTtd = $tindakLanjut->tgl_lhp ? $tindakLanjut->tgl_lhp->translatedFormat('d F Y') : now()->translatedFormat('d F Y');
 
+            $prefixInspektur = match(strtolower($inspektur?->status_jabatan ?? 'plt')) {
+                'plt' => 'Plt. ',
+                'plh' => 'Plh. ',
+                'pj'  => 'Pj. ',
+                default => '',
+            };
+
             // Left: Inspektur
             $sheet->setCellValue('B' . $signStartRow, "Mengetahui,");
-            $sheet->setCellValue('B' . ($signStartRow + 1), "Plt. INSPEKTUR KABUPATEN TRENGGALEK");
+            $sheet->setCellValue('B' . ($signStartRow + 1), $prefixInspektur . "INSPEKTUR KABUPATEN TRENGGALEK");
             $sheet->setCellValue('B' . ($signStartRow + 5), $inspekturNama);
             $sheet->setCellValue('B' . ($signStartRow + 6), $inspekturPangkat);
             $sheet->setCellValue('B' . ($signStartRow + 7), "NIP. " . $inspekturNip);
@@ -459,7 +466,13 @@ class ExportController extends Controller
             // Signatures Inspektur
             $inspektur = User::role('inspektur')->first() ?? User::where('jabatan', 'like', '%inspektur%')->first();
             $inspekturNama = $inspektur?->nama ?? 'Ir. WIJIONO, S.T., M.Mkes.';
-            $inspekturJabatan = $inspektur?->jabatan ?? 'Plt. Inspektur Daerah';
+            $prefixInspektur = match(strtolower($inspektur?->status_jabatan ?? 'plt')) {
+                'plt' => 'Plt. ',
+                'plh' => 'Plh. ',
+                'pj'  => 'Pj. ',
+                default => '',
+            };
+            $inspekturJabatan = $prefixInspektur . 'Inspektur Daerah';
             $inspekturNip = $inspektur?->nip ?? '197001011995011001';
 
             $signStart = $currentRow + 2;

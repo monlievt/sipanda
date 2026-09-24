@@ -93,7 +93,14 @@
                             </td>
                             <td class="py-3 px-4 font-mono text-slate-700 dark:text-slate-300">{{ $u->nip ?? '-' }}</td>
                             <td class="py-3 px-4">
-                                <span class="block font-semibold text-slate-800 dark:text-slate-200">{{ $u->jabatan ?? '-' }}</span>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="font-semibold text-slate-800 dark:text-slate-200">{{ $u->jabatan ?? '-' }}</span>
+                                    @if($u->status_jabatan && $u->status_jabatan !== 'definitif')
+                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                                            {{ $u->status_jabatan_badge }}
+                                        </span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-400">{{ $u->pangkat ?? '-' }} {{ $u->golongan ? "({$u->golongan})" : '' }}</span>
                             </td>
                             <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">
@@ -190,19 +197,28 @@
                         <span class="text-[10px] text-slate-400">Untuk pengiriman notifikasi penugasan via WA.</span>
                     </div>
                     <div>
-                        <label class="block font-semibold mb-1">Jabatan Fungsional/Struktural</label>
-                        <input type="text" name="jabatan" placeholder="Contoh: AUDITOR AHLI MUDA" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        <label class="block font-semibold mb-1">Status Penugasan Jabatan <span class="text-rose-500">*</span></label>
+                        <select name="status_jabatan" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                            <option value="definitif">Definitif (Pejabat Tetap)</option>
+                            <option value="plt">Plt. (Pelaksana Tugas)</option>
+                            <option value="plh">Plh. (Pelaksana Harian)</option>
+                            <option value="pj">Pj. (Penjabat)</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Nama Jabatan</label>
+                        <input type="text" name="jabatan" placeholder="Contoh: Sekretaris / Auditor" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                    </div>
                     <div>
                         <label class="block font-semibold mb-1">Pangkat</label>
-                        <input type="text" name="pangkat" placeholder="Contoh: Penata Tingkat I" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        <input type="text" name="pangkat" placeholder="Contoh: Pembina" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
                     </div>
                     <div>
                         <label class="block font-semibold mb-1">Golongan Ruang</label>
-                        <input type="text" name="golongan" placeholder="Contoh: III/d" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        <input type="text" name="golongan" placeholder="Contoh: IV/a" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
                     </div>
                 </div>
 
@@ -276,15 +292,26 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block font-semibold mb-1">No. WhatsApp / HP</label>
-                    <input type="text" id="editNoHp" name="no_hp" placeholder="081234567890" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                    <span class="text-[10px] text-slate-400">Untuk pengiriman notifikasi penugasan via WA.</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">No. WhatsApp / HP</label>
+                        <input type="text" id="editNoHp" name="no_hp" placeholder="081234567890" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        <span class="text-[10px] text-slate-400">Untuk pengiriman notifikasi penugasan via WA.</span>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Status Penugasan Jabatan <span class="text-rose-500">*</span></label>
+                        <select id="editStatusJabatan" name="status_jabatan" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                            <option value="definitif">Definitif (Pejabat Tetap)</option>
+                            <option value="plt">Plt. (Pelaksana Tugas)</option>
+                            <option value="plh">Plh. (Pelaksana Harian)</option>
+                            <option value="pj">Pj. (Penjabat)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                        <label class="block font-semibold mb-1">Jabatan</label>
+                        <label class="block font-semibold mb-1">Nama Jabatan</label>
                         <input type="text" id="editJabatan" name="jabatan" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
                     </div>
                     <div>
@@ -349,6 +376,7 @@
             document.getElementById('editNip').value = user.nip || '';
             document.getElementById('editEmail').value = user.email || '';
             document.getElementById('editNoHp').value = user.no_hp || '';
+            document.getElementById('editStatusJabatan').value = user.status_jabatan || 'definitif';
             document.getElementById('editJabatan').value = user.jabatan || '';
             document.getElementById('editPangkat').value = user.pangkat || '';
             document.getElementById('editGolongan').value = user.golongan || '';

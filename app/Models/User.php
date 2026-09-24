@@ -13,7 +13,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'nama', 'nama_tanpa_gelar', 'nip', 'email', 'no_hp',
-        'password', 'google_id', 'jabatan', 'pangkat', 'golongan',
+        'password', 'google_id', 'jabatan', 'status_jabatan', 'pangkat', 'golongan',
         'irban_id', 'is_active', 'tipe_akun', 'objek_penugasan_id',
         'status_undangan', 'token_undangan', 'token_kedaluwarsa',
     ];
@@ -102,9 +102,24 @@ class User extends Authenticatable
         return $this->nama ?? ($this->nama_tanpa_gelar ?? '');
     }
 
-    public function getTokenMasihBerlakuAttribute(): bool
+    public function getPrefixStatusJabatanAttribute(): string
     {
-        return $this->token_kedaluwarsa && $this->token_kedaluwarsa->isFuture();
+        return match (strtolower($this->status_jabatan ?? 'definitif')) {
+            'plt' => 'Plt. ',
+            'plh' => 'Plh. ',
+            'pj'  => 'Pj. ',
+            default => '',
+        };
+    }
+
+    public function getStatusJabatanBadgeAttribute(): string
+    {
+        return match (strtolower($this->status_jabatan ?? 'definitif')) {
+            'plt' => 'Plt.',
+            'plh' => 'Plh.',
+            'pj'  => 'Pj.',
+            default => 'Definitif',
+        };
     }
 
     public function routeNotificationForWhatsApp(): ?string

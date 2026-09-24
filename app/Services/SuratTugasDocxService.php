@@ -210,6 +210,16 @@ class SuratTugasDocxService
         // Ganti tanggal penetapan "(tanggal) (bulan) (tahun)"
         $xml = str_replace('(tanggal) (bulan) (tahun)', htmlspecialchars($tglPenetapan, ENT_XML1), $xml);
 
+        // Sesuaikan gelar penandatangan (Definitif / Plt. / Plh. / Pj.)
+        $statusJabatan = strtolower($inspektur?->status_jabatan ?? 'plt');
+        if ($statusJabatan === 'definitif') {
+            $xml = preg_replace('/<w:t>Plt\.<\/w:t><\/w:r>.*?<w:tab\/><\/w:r>/s', '', $xml);
+        } elseif ($statusJabatan === 'plh') {
+            $xml = str_replace('<w:t>Plt.</w:t>', '<w:t>Plh.</w:t>', $xml);
+        } elseif ($statusJabatan === 'pj') {
+            $xml = str_replace('<w:t>Plt.</w:t>', '<w:t>Pj.</w:t>', $xml);
+        }
+
         // Simpan kembali document.xml ke zip
         $zip->deleteName('word/document.xml');
         $zip->addFromString('word/document.xml', $xml);
