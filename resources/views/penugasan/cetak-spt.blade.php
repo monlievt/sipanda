@@ -8,19 +8,49 @@
     <style>
         @media print {
             .no-print { display: none !important; }
-            body { background: white !important; color: black !important; font-size: 11pt; }
-            .page-sheet { box-shadow: none !important; border: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+            body { 
+                background: white !important; 
+                color: black !important; 
+                font-size: 11pt !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .page-sheet { 
+                box-shadow: none !important; 
+                border: none !important; 
+                padding: 0 !important; 
+                margin: 0 !important;
+                width: 100% !important; 
+                max-width: 100% !important; 
+            }
             @page {
                 size: A4 portrait;
-                margin: 20mm 20mm 20mm 20mm;
+                margin: 15mm 20mm 15mm 20mm;
+            }
+
+            /* Hindari pemotongan di tengah baris tabel */
+            table tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Blok penutup dan tanda tangan TIDAK BOLEH terpisah / terpotong halaman */
+            .closing-signature-group,
+            .signature-block {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
         }
         body {
             font-family: Arial, sans-serif;
         }
+        .closing-signature-group {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
     </style>
 </head>
-<body class="bg-slate-200 text-slate-900 min-h-screen py-8 print:py-0 print:bg-white text-[12pt] leading-normal">
+<body class="bg-slate-200 text-slate-900 min-h-screen py-8 print:py-0 print:bg-white text-[11pt] sm:text-[12pt] leading-normal">
 
     <!-- Action Toolbar (No Print) -->
     <div class="no-print max-w-4xl mx-auto mb-6 px-4 flex items-center justify-between">
@@ -41,28 +71,30 @@
     </div>
 
     <!-- Official Document Sheet (A4) -->
-    <div class="page-sheet max-w-4xl mx-auto bg-white p-12 sm:p-16 shadow-2xl rounded-2xl print:rounded-none border border-slate-300 print:border-none">
+    <div class="page-sheet max-w-4xl mx-auto bg-white p-10 sm:p-16 shadow-2xl rounded-2xl print:rounded-none border border-slate-300 print:border-none">
         
-        <!-- Kop Surat Resmi Template -->
+        <!-- Kop Surat Resmi Template (Tabel Kokoh agar Logo tidak terpotong) -->
         @php
             $logoPath = public_path('images/logo-trenggalek.png');
             $logoSrc = file_exists($logoPath) 
                 ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) 
                 : asset('images/logo-trenggalek.png');
         @endphp
-        <div class="relative border-b-4 border-double border-slate-900 pb-3 mb-6">
-            <div class="absolute left-0 top-0 bottom-3 flex items-center">
-                <img src="{{ $logoSrc }}" alt="Logo Kabupaten Trenggalek" class="h-20 sm:h-24 w-auto object-contain">
-            </div>
-            <div class="text-center px-16 sm:px-20">
-                <h3 class="text-sm font-bold uppercase tracking-wider leading-tight text-slate-900">PEMERINTAH KABUPATEN TRENGGALEK</h3>
-                <h2 class="text-lg font-bold uppercase tracking-wide leading-tight text-slate-900 mt-0.5">INSPEKTORAT</h2>
-                <p class="text-xs text-slate-700 leading-tight mt-1">
-                    Jalan KH. Wakhid Hasyim No. 5 Telp. 0355-791472 Kode Pos 66311<br>
-                    https://inspektorat.trenggalekkab.go.id
-                </p>
-            </div>
-        </div>
+        <table class="kop-table w-full border-b-4 border-double border-slate-900 pb-2 mb-6" style="border-collapse: collapse; border-bottom: 3.5px double #000; width: 100%;">
+            <tr>
+                <td style="width: 85px; vertical-align: middle; text-align: center; padding-bottom: 8px;">
+                    <img src="{{ $logoSrc }}" alt="Logo Kabupaten Trenggalek" style="height: 85px; max-height: 90px; width: auto; max-width: 85px; object-fit: contain; display: block; margin: 0 auto;">
+                </td>
+                <td style="vertical-align: middle; text-align: center; padding-bottom: 8px; padding-left: 10px; padding-right: 20px;">
+                    <h3 class="font-bold uppercase tracking-wider leading-tight text-slate-900" style="margin: 0; font-size: 13pt; font-family: Arial, sans-serif;">PEMERINTAH KABUPATEN TRENGGALEK</h3>
+                    <h2 class="font-bold uppercase tracking-wide leading-tight text-slate-900" style="margin: 2px 0 0 0; font-size: 16pt; font-family: Arial, sans-serif;">INSPEKTORAT</h2>
+                    <p class="text-slate-700 leading-tight" style="margin: 4px 0 0 0; font-size: 9pt; font-family: Arial, sans-serif;">
+                        Jalan KH. Wakhid Hasyim No. 5 Telp. 0355-791472 Kode Pos 66311<br>
+                        https://inspektorat.trenggalekkab.go.id
+                    </p>
+                </td>
+            </tr>
+        </table>
 
         <!-- Judul & Nomor Surat Tugas -->
         <div class="text-center my-6 space-y-1">
@@ -215,46 +247,49 @@
             </div>
         </div>
 
-        <!-- Peringatan -->
-        <div class="my-5 text-justify text-sm">
-            <p class="leading-relaxed">
-                <strong>Peringatan :</strong> Kegiatan ini dibiayai dari APBD Kabupaten Trenggalek Tahun Anggaran {{ $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->format('Y') : date('Y') }}, selanjutnya dalam rangka penegakan Kode Etik APIP dan implementasi pakta integritas maka tidak diperkenankan memberi dan/atau menerima uang, barang dan/atau jasa dalam bentuk apapun sejenis gratifikasi.
-            </p>
-        </div>
+        <!-- Blok Penutup & Tanda Tangan (Wajib menyatu dalam 1 halaman / Tidak boleh terpisah) -->
+        <div class="closing-signature-group">
+            <!-- Peringatan -->
+            <div class="my-4 text-justify text-sm">
+                <p class="leading-relaxed">
+                    <strong>Peringatan :</strong> Kegiatan ini dibiayai dari APBD Kabupaten Trenggalek Tahun Anggaran {{ $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->format('Y') : date('Y') }}, selanjutnya dalam rangka penegakan Kode Etik APIP dan implementasi pakta integritas maka tidak diperkenankan memberi dan/atau menerima uang, barang dan/atau jasa dalam bentuk apapun sejenis gratifikasi.
+                </p>
+            </div>
 
-        <!-- Kalimat Penutup -->
-        <div class="my-5 text-justify text-sm">
-            <p>Demikian untuk dilaksanakan sebaik-baiknya dengan penuh tanggung jawab.</p>
-        </div>
+            <!-- Kalimat Penutup -->
+            <div class="my-4 text-justify text-sm">
+                <p>Demikian untuk dilaksanakan sebaik-baiknya dengan penuh tanggung jawab.</p>
+            </div>
 
-        <!-- Penutup & Tanda Tangan -->
-        <div class="mt-8 text-sm">
-            <div class="flex justify-end">
-                <div class="w-72 text-left space-y-1">
-                    <p>Trenggalek, {{ $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->translatedFormat('d F Y') : date('d F Y') }}</p>
-                    
-                    @php
-                        $prefixInspektur = match(strtolower($inspektur?->status_jabatan ?? 'plt')) {
-                            'plt' => 'Plt. ',
-                            'plh' => 'Plh. ',
-                            'pj'  => 'Pj. ',
-                            default => '',
-                        };
-                    @endphp
-                    <div class="pt-2 font-bold uppercase leading-tight">
-                        {{ $prefixInspektur }}INSPEKTUR<br>
-                        KABUPATEN TRENGGALEK
-                    </div>
+            <!-- Penutup & Tanda Tangan -->
+            <div class="mt-6 text-sm signature-block">
+                <div class="flex justify-end">
+                    <div class="w-72 text-left space-y-1">
+                        <p>Trenggalek, {{ $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->translatedFormat('d F Y') : date('d F Y') }}</p>
+                        
+                        @php
+                            $prefixInspektur = match(strtolower($inspektur?->status_jabatan ?? 'plt')) {
+                                'plt' => 'Plt. ',
+                                'plh' => 'Plh. ',
+                                'pj'  => 'Pj. ',
+                                default => '',
+                            };
+                        @endphp
+                        <div class="pt-2 font-bold uppercase leading-tight">
+                            {{ $prefixInspektur }}INSPEKTUR<br>
+                            KABUPATEN TRENGGALEK
+                        </div>
 
-                    <!-- Ruang tanda tangan -->
-                    <div class="h-20"></div>
+                        <!-- Ruang tanda tangan -->
+                        <div class="h-20"></div>
 
-                    <div class="font-bold underline">
-                        {{ $inspekturNama }}
-                    </div>
-                    <div class="text-xs text-slate-800">
-                        {{ $inspekturPangkat }}<br>
-                        NIP. {{ $inspekturNip }}
+                        <div class="font-bold underline">
+                            {{ $inspekturNama }}
+                        </div>
+                        <div class="text-xs text-slate-800">
+                            {{ $inspekturPangkat }}<br>
+                            NIP. {{ $inspekturNip }}
+                        </div>
                     </div>
                 </div>
             </div>

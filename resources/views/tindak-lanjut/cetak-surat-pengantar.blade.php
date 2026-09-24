@@ -8,15 +8,38 @@
     <style>
         @media print {
             .no-print { display: none !important; }
-            body { background: white !important; color: black !important; font-size: 11pt; }
-            .page-sheet { box-shadow: none !important; border: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+            body { 
+                background: white !important; 
+                color: black !important; 
+                font-size: 11pt !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .page-sheet { 
+                box-shadow: none !important; 
+                border: none !important; 
+                padding: 0 !important; 
+                margin: 0 !important;
+                width: 100% !important; 
+                max-width: 100% !important; 
+            }
             @page {
                 size: A4 portrait;
-                margin: 20mm 20mm 20mm 20mm;
+                margin: 15mm 20mm 15mm 20mm;
+            }
+
+            .closing-signature-group,
+            .signature-block {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
         }
         body {
             font-family: "Times New Roman", Times, serif;
+        }
+        .closing-signature-group {
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
     </style>
 </head>
@@ -37,29 +60,31 @@
     </div>
 
     <!-- Official Document Sheet (A4 Portrait) -->
-    <div class="page-sheet max-w-4xl mx-auto bg-white p-12 sm:p-16 shadow-2xl rounded-2xl print:rounded-none border border-slate-300 print:border-none leading-relaxed text-sm">
+    <div class="page-sheet max-w-4xl mx-auto bg-white p-10 sm:p-16 shadow-2xl rounded-2xl print:rounded-none border border-slate-300 print:border-none leading-relaxed text-sm">
         
-        <!-- Kop Surat Resmi Inspektorat Trenggalek -->
+        <!-- Kop Surat Resmi Template (Tabel Kokoh) -->
         @php
             $logoPath = public_path('images/logo-trenggalek.png');
             $logoSrc = file_exists($logoPath) 
                 ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) 
                 : asset('images/logo-trenggalek.png');
         @endphp
-        <div class="relative border-b-4 border-double border-slate-900 pb-4 mb-6">
-            <div class="absolute left-0 top-0 bottom-4 flex items-center">
-                <img src="{{ $logoSrc }}" alt="Logo Kabupaten Trenggalek" class="h-20 sm:h-24 w-auto object-contain">
-            </div>
-            <div class="text-center px-16 sm:px-20">
-                <h3 class="text-base font-bold uppercase tracking-wider leading-tight text-slate-900">PEMERINTAH KABUPATEN TRENGGALEK</h3>
-                <h2 class="text-xl font-extrabold uppercase tracking-wide leading-tight text-slate-900 mt-0.5">INSPEKTORAT DAERAH</h2>
-                <p class="text-xs text-slate-700 leading-tight mt-1">
-                    Jalan Brigjen Soetran Nomor 9, Telepon (0355) 791407, Fax (0355) 791407<br>
-                    Website: https://inspektorat.trenggalekkab.go.id &bull; Pos-el: inspektorat@trenggalekkab.go.id<br>
-                    <strong>TRENGGALEK &mdash; 66311</strong>
-                </p>
-            </div>
-        </div>
+        <table class="kop-table w-full border-b-4 border-double border-slate-900 pb-2 mb-6" style="border-collapse: collapse; border-bottom: 3.5px double #000; width: 100%;">
+            <tr>
+                <td style="width: 85px; vertical-align: middle; text-align: center; padding-bottom: 8px;">
+                    <img src="{{ $logoSrc }}" alt="Logo Kabupaten Trenggalek" style="height: 85px; max-height: 90px; width: auto; max-width: 85px; object-fit: contain; display: block; margin: 0 auto;">
+                </td>
+                <td style="vertical-align: middle; text-align: center; padding-bottom: 8px; padding-left: 10px; padding-right: 20px;">
+                    <h3 class="font-bold uppercase tracking-wider leading-tight text-slate-900" style="margin: 0; font-size: 13pt; font-family: 'Times New Roman', Times, serif;">PEMERINTAH KABUPATEN TRENGGALEK</h3>
+                    <h2 class="font-bold uppercase tracking-wide leading-tight text-slate-900" style="margin: 2px 0 0 0; font-size: 16pt; font-family: 'Times New Roman', Times, serif;">INSPEKTORAT DAERAH</h2>
+                    <p class="text-slate-700 leading-tight" style="margin: 4px 0 0 0; font-size: 9pt; font-family: 'Times New Roman', Times, serif;">
+                        Jalan Brigjen Soetran Nomor 9, Telepon (0355) 791407, Fax (0355) 791407<br>
+                        Website: https://inspektorat.trenggalekkab.go.id &bull; Pos-el: inspektorat@trenggalekkab.go.id<br>
+                        <strong>TRENGGALEK &mdash; 66311</strong>
+                    </p>
+                </td>
+            </tr>
+        </table>
 
         <!-- Tanggal Surat di Pojok Kanan Atas -->
         <div class="flex justify-end mb-4">
@@ -136,38 +161,39 @@
                 Adapun terhadap rekomendasi yang statusnya masih dinyatakan <em>Belum Sesuai (Dalam Proses)</em> atau <em>Belum Ditindaklanjuti</em> sebagaimana tercantum dalam lampiran matriks, diminta kepada Saudara untuk segera menyelesaikan dan mengunggah bukti perbaikan/penyetoran kas daerah melalui aplikasi SIPANDA sebelum batas waktu yang telah ditentukan.
             </p>
 
-            <p class="indent-8">
+        <div class="closing-signature-group">
+            <p class="indent-8 my-4">
                 Demikian untuk menjadi maklum dan atas perhatian serta kerja samanya disampaikan terima kasih.
             </p>
-        </div>
 
-        <!-- Tanda Tangan Inspektur Daerah -->
-        <div class="mt-10 flex justify-end text-center">
-            <div class="w-72">
-                <p class="font-bold">
-                    INSPEKTUR DAERAH<br>
-                    KABUPATEN TRENGGALEK
-                </p>
-                <div class="h-24"></div>
-                <p class="font-bold underline">
-                    {{ $tindakLanjut->inspekturPenyetuju?->nama ?? ($inspektur?->nama ?? 'Drs. AGUS SETIYONO, M.Si.') }}
-                </p>
-                <p class="text-xs text-slate-700 font-mono">
-                    Pembina Utama Muda<br>
-                    NIP. {{ $tindakLanjut->inspekturPenyetuju?->nip ?? ($inspektur?->nip ?? '19680815 199303 1 007') }}
-                </p>
+            <!-- Tanda Tangan Inspektur Daerah -->
+            <div class="mt-8 flex justify-end text-center signature-block">
+                <div class="w-72">
+                    <p class="font-bold">
+                        INSPEKTUR DAERAH<br>
+                        KABUPATEN TRENGGALEK
+                    </p>
+                    <div class="h-20"></div>
+                    <p class="font-bold underline">
+                        {{ $tindakLanjut->inspekturPenyetuju?->nama ?? ($inspektur?->nama ?? 'Drs. AGUS SETIYONO, M.Si.') }}
+                    </p>
+                    <p class="text-xs text-slate-700 font-mono">
+                        Pembina Utama Muda<br>
+                        NIP. {{ $tindakLanjut->inspekturPenyetuju?->nip ?? ($inspektur?->nip ?? '19680815 199303 1 007') }}
+                    </p>
+                </div>
             </div>
-        </div>
 
-        <!-- Tembusan Naskah Dinas -->
-        <div class="mt-8 pt-4 border-t border-slate-300 text-xs">
-            <p class="font-bold"><u>Tembusan disampaikan kepada Yth.:</u></p>
-            <ol class="list-decimal list-inside pl-1 space-y-0.5 mt-1 text-slate-700">
-                <li>Bupati Trenggalek (sebagai laporan);</li>
-                <li>Wakil Bupati Trenggalek;</li>
-                <li>Sekretaris Daerah Kabupaten Trenggalek;</li>
-                <li>Arsip / Pertinggal.</li>
-            </ol>
+            <!-- Tembusan Naskah Dinas -->
+            <div class="mt-6 pt-4 border-t border-slate-300 text-xs">
+                <p class="font-bold"><u>Tembusan disampaikan kepada Yth.:</u></p>
+                <ol class="list-decimal list-inside pl-1 space-y-0.5 mt-1 text-slate-700">
+                    <li>Bupati Trenggalek (sebagai laporan);</li>
+                    <li>Wakil Bupati Trenggalek;</li>
+                    <li>Sekretaris Daerah Kabupaten Trenggalek;</li>
+                    <li>Arsip / Pertinggal.</li>
+                </ol>
+            </div>
         </div>
 
     </div>
