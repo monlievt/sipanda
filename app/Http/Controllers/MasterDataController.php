@@ -50,6 +50,87 @@ class MasterDataController extends Controller
         return view('master.users', compact('listUsers', 'roles', 'irbans', 'search', 'roleFilter', 'irbanFilter'));
     }
 
+    /**
+     * Master Data Pangkat & Golongan Ruang ASN (Baku Nasional BKN)
+     */
+    public static function getDaftarPangkatGolongan(): array
+    {
+        return [
+            'IV/e' => 'Pembina Utama',
+            'IV/d' => 'Pembina Utama Madya',
+            'IV/c' => 'Pembina Utama Muda',
+            'IV/b' => 'Pembina Tingkat I',
+            'IV/a' => 'Pembina',
+            'III/d' => 'Penata Tingkat I',
+            'III/c' => 'Penata',
+            'III/b' => 'Penata Muda Tingkat I',
+            'III/a' => 'Penata Muda',
+            'II/d'  => 'Pengatur Tingkat I',
+            'II/c'  => 'Pengatur',
+            'II/b'  => 'Pengatur Muda Tingkat I',
+            'II/a'  => 'Pengatur Muda',
+        ];
+    }
+
+    /**
+     * Master Data Nomenklatur Jabatan Baku di Lingkungan Inspektorat Daerah
+     */
+    public static function getDaftarJabatanBaku(): array
+    {
+        return [
+            'Struktural & Pimpinan' => [
+                'Inspektur Daerah',
+                'Sekretaris',
+                'Inspektur Pembantu Wilayah I',
+                'Inspektur Pembantu Wilayah II',
+                'Inspektur Pembantu Wilayah III',
+                'Inspektur Pembantu Wilayah IV',
+                'Inspektur Pembantu Khusus',
+                'Kepala Sub Bagian Umum dan Kepegawaian',
+                'Kepala Sub Bagian Perencanaan dan Evaluasi',
+                'Kepala Sub Bagian Keuangan',
+            ],
+            'Jabatan Fungsional Auditor (JFA)' => [
+                'Auditor Ahli Utama',
+                'Auditor Ahli Madya',
+                'Auditor Ahli Muda',
+                'Auditor Ahli Pertama',
+                'Auditor Penyelia',
+                'Auditor Mahir',
+                'Auditor Terampil',
+            ],
+            'Jabatan Fungsional PPUPD' => [
+                'PPUPD Ahli Utama',
+                'PPUPD Ahli Madya',
+                'PPUPD Ahli Muda',
+                'PPUPD Ahli Pertama',
+            ],
+            'Fungsional Umum & Pelaksana' => [
+                'Pranata Komputer Ahli Muda',
+                'Pranata Komputer Ahli Pertama',
+                'Pranata Komputer Terampil',
+                'Analis Keuangan Pusat dan Daerah',
+                'Pengelola Pengadaan Barang/Jasa',
+                'Pengadministrasi Umum',
+                'Pengelola Keuangan',
+                'Pengolah Data Informasi',
+            ],
+        ];
+    }
+
+    /**
+     * Halaman Tambah Pegawai Internal Baru (Dedicated Full-Page).
+     */
+    public function createUser(): View
+    {
+        $roles = Role::where('guard_name', 'web')->get();
+        $irbans = Irban::all();
+        $pangkatGolongan = self::getDaftarPangkatGolongan();
+        $jabatanBaku = self::getDaftarJabatanBaku();
+
+        return view('master.users-create', compact('roles', 'irbans', 'pangkatGolongan', 'jabatanBaku'));
+    }
+
     /** Tambah Pegawai Internal Baru */
     public function storeUser(Request $request): RedirectResponse
     {
@@ -59,20 +140,21 @@ class MasterDataController extends Controller
             'nip'              => ['required', 'string', 'max:30', 'unique:users,nip'],
             'email'            => ['required', 'email', 'max:150', 'unique:users,email'],
             'no_hp'            => ['nullable', 'string', 'max:25'],
-            'jabatan'          => ['nullable', 'string', 'max:150'],
-            'status_jabatan'   => ['nullable', 'string', 'in:definitif,plt,plh,pj'],
+            'jabatan'          => ['required', 'string', 'max:150'],
+            'status_jabatan'   => ['required', 'string', 'in:definitif,plt,plh,pj'],
             'pangkat'          => ['nullable', 'string', 'max:100'],
             'golongan'         => ['nullable', 'string', 'max:50'],
             'irban_id'         => ['nullable', 'exists:irbans,id'],
             'role'             => ['required', 'exists:roles,name'],
             'password'         => ['nullable', 'string', 'min:6'],
         ], [
-            'nama.required'  => 'Nama pegawai wajib diisi.',
-            'nip.required'   => 'NIP wajib diisi.',
-            'nip.unique'     => 'NIP tersebut sudah terdaftar.',
-            'email.required' => 'Email wajib diisi.',
-            'email.unique'   => 'Email tersebut sudah terdaftar.',
-            'role.required'  => 'Role akses wajib dipilih.',
+            'nama.required'     => 'Nama pegawai lengkap beserta gelar wajib diisi.',
+            'nip.required'      => 'NIP wajib diisi.',
+            'nip.unique'        => 'NIP tersebut sudah terdaftar di sistem.',
+            'email.required'    => 'Email wajib diisi.',
+            'email.unique'      => 'Email tersebut sudah terdaftar di sistem.',
+            'jabatan.required'  => 'Nama jabatan definitif ASN wajib diisi/dipilih.',
+            'role.required'     => 'Role hak akses sistem wajib dipilih.',
         ]);
 
         $defaultPassword = $validated['password'] ?: ($validated['nip'] ?: 'password123');
@@ -97,7 +179,22 @@ class MasterDataController extends Controller
 
         ActivityLog::catat('users', $user->id, 'create', null, $user->toArray());
 
-        return back()->with('status', "✓ Pegawai baru '{$user->nama}' berhasil ditambahkan ke database!");
+        return redirect()->route('master.users.index')
+            ->with('status', "✓ Pegawai baru '{$user->nama}' berhasil ditambahkan ke database!");
+    }
+
+    /**
+     * Halaman Edit Lengkap Pegawai Internal & Role (Dedicated Full-Page).
+     */
+    public function editUser(User $user): View
+    {
+        $roles = Role::where('guard_name', 'web')->get();
+        $irbans = Irban::all();
+        $pangkatGolongan = self::getDaftarPangkatGolongan();
+        $jabatanBaku = self::getDaftarJabatanBaku();
+        $currentRole = $user->roles->first()?->name;
+
+        return view('master.users-edit', compact('user', 'roles', 'irbans', 'pangkatGolongan', 'jabatanBaku', 'currentRole'));
     }
 
     /** Update Lengkap Data Pegawai & Role */
@@ -109,14 +206,22 @@ class MasterDataController extends Controller
             'nip'               => ['required', 'string', 'max:30', 'unique:users,nip,' . $user->id],
             'email'             => ['required', 'email', 'max:150', 'unique:users,email,' . $user->id],
             'no_hp'             => ['nullable', 'string', 'max:25'],
-            'jabatan'           => ['nullable', 'string', 'max:150'],
-            'status_jabatan'    => ['nullable', 'string', 'in:definitif,plt,plh,pj'],
+            'jabatan'           => ['required', 'string', 'max:150'],
+            'status_jabatan'    => ['required', 'string', 'in:definitif,plt,plh,pj'],
             'pangkat'           => ['nullable', 'string', 'max:100'],
             'golongan'          => ['nullable', 'string', 'max:50'],
             'role'              => ['required', 'exists:roles,name'],
             'irban_id'          => ['nullable', 'exists:irbans,id'],
             'is_active'         => ['required', 'boolean'],
             'password'          => ['nullable', 'string', 'min:6'],
+        ], [
+            'nama.required'     => 'Nama pegawai lengkap beserta gelar wajib diisi.',
+            'nip.required'      => 'NIP wajib diisi.',
+            'nip.unique'        => 'NIP tersebut sudah digunakan pegawai lain.',
+            'email.required'    => 'Email wajib diisi.',
+            'email.unique'      => 'Email tersebut sudah digunakan pegawai lain.',
+            'jabatan.required'  => 'Nama jabatan definitif ASN wajib diisi/dipilih.',
+            'role.required'     => 'Role hak akses sistem wajib dipilih.',
         ]);
 
         $sebelum = $user->toArray();
@@ -148,7 +253,27 @@ class MasterDataController extends Controller
 
         ActivityLog::catat('users', $user->id, 'update', $sebelum, $user->toArray());
 
-        return back()->with('status', "Data pegawai '{$user->nama}' berhasil diperbarui.");
+        return redirect()->route('master.users.index')
+            ->with('status', "✓ Data pegawai '{$user->nama}' berhasil diperbarui.");
+    }
+
+    /**
+     * Hapus Pegawai Internal (dengan proteksi integritas relasi penugasan).
+     */
+    public function destroyUser(User $user): RedirectResponse
+    {
+        if ($user->penugasanSebagaiTim()->exists() || $user->penugasanDibuat()->exists()) {
+            return back()->with('error', "Pegawai '{$user->nama}' tidak dapat dihapus karena memiliki riwayat penugasan di sistem. Anda dapat menonaktifkan status akunnya.");
+        }
+
+        $sebelum = $user->toArray();
+        $nama = $user->nama;
+        $user->delete();
+
+        ActivityLog::catat('users', $sebelum['id'], 'delete', $sebelum, null);
+
+        return redirect()->route('master.users.index')
+            ->with('status', "Pegawai '{$nama}' berhasil dihapus dari database.");
     }
 
     /**

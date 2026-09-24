@@ -141,11 +141,14 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/ikhtisar-laporan/{ikhtisarLaporan}', [\App\Http\Controllers\IkhtisarLaporanController::class, 'update'])->name('ikhtisar-laporan.update');
     Route::delete('/ikhtisar-laporan/{ikhtisarLaporan}', [\App\Http\Controllers\IkhtisarLaporanController::class, 'destroy'])->name('ikhtisar-laporan.destroy');
 
-    // Master Data
+    // Master Data: Kelola Pegawai Internal APIP
     Route::get('/master/users', [MasterDataController::class, 'users'])->middleware('can:users.view')->name('master.users.index');
+    Route::get('/master/users/create', [MasterDataController::class, 'createUser'])->middleware('can:users.create')->name('master.users.create');
     Route::post('/master/users', [MasterDataController::class, 'storeUser'])->middleware('can:users.create')->name('master.users.store');
+    Route::get('/master/users/{user}/edit', [MasterDataController::class, 'editUser'])->middleware('can:users.edit')->name('master.users.edit');
     Route::patch('/master/users/{user}', [MasterDataController::class, 'updateUserRole'])->middleware('can:users.edit')->name('master.users.update');
     Route::patch('/master/users/{user}/toggle-status', [MasterDataController::class, 'toggleUserStatus'])->middleware('can:users.edit')->name('master.users.toggle_status');
+    Route::delete('/master/users/{user}', [MasterDataController::class, 'destroyUser'])->middleware('can:users.delete')->name('master.users.destroy');
     Route::get('/master/opd-users', [OpdUserManagementController::class, 'index'])->middleware('can:opd_users.manage')->name('master.opd-users.index');
     Route::post('/master/opd-users', [OpdUserManagementController::class, 'store'])->middleware('can:opd_users.manage')->name('master.opd-users.store');
     Route::put('/master/opd-users/{user}', [OpdUserManagementController::class, 'update'])->middleware('can:opd_users.manage')->name('master.opd-users.update');
