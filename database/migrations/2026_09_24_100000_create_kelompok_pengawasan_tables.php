@@ -26,13 +26,13 @@ return new class extends Migration
 
         if (Schema::hasTable('pkppt') && !Schema::hasColumn('pkppt', 'kelompok_pengawasan_id')) {
             Schema::table('pkppt', function (Blueprint $table) {
-                $table->foreignId('kelompok_pengawasan_id')->nullable()->after('jenis_pengawasan_id')->constrained('kelompok_pengawasan')->nullOnDelete();
+                $table->foreignId('kelompok_pengawasan_id')->nullable()->constrained('kelompok_pengawasan')->nullOnDelete();
             });
         }
 
         if (Schema::hasTable('penugasan') && !Schema::hasColumn('penugasan', 'kelompok_pengawasan_id')) {
             Schema::table('penugasan', function (Blueprint $table) {
-                $table->foreignId('kelompok_pengawasan_id')->nullable()->after('jenis_penugasan_id')->constrained('kelompok_pengawasan')->nullOnDelete();
+                $table->foreignId('kelompok_pengawasan_id')->nullable()->constrained('kelompok_pengawasan')->nullOnDelete();
             });
         }
     }
