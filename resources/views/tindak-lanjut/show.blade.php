@@ -819,7 +819,25 @@
 
     <!-- 0. Modal Pengaitan ST Pemantauan TL -->
     <div id="modalKaitkanStPemantauan" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 hidden">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-w-lg w-full space-y-4 animate-in fade-in zoom-in duration-150">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-w-lg w-full space-y-4 animate-in fade-in zoom-in duration-150"
+            x-data="{
+                search: '',
+                selectedId: '{{ $tindakLanjut->st_pemantauan_id ?? '' }}',
+                options: {{ Js::from($stPemantauanOptions ?? []) }},
+                get filtered() {
+                    if (!this.search.trim()) return this.options;
+                    const q = this.search.toLowerCase().trim();
+                    return this.options.filter(o => 
+                        o.no_spt.toLowerCase().includes(q) || 
+                        o.uraian.toLowerCase().includes(q) || 
+                        o.objek.toLowerCase().includes(q) || 
+                        o.irban.toLowerCase().includes(q)
+                    );
+                },
+                select(id) {
+                    this.selectedId = id;
+                }
+            }">
             <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
                 <div class="flex items-center gap-2 text-emerald-600">
                     <span class="text-lg">🔗</span>
@@ -832,19 +850,59 @@
 
             <form method="POST" action="{{ route('tindak-lanjut.kaitkan_st_pemantauan', $tindakLanjut->id) }}" class="space-y-4">
                 @csrf
+                <input type="hidden" name="st_pemantauan_id" :value="selectedId">
+
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        Pilih Surat Perintah Tugas (SPT) Pemantauan Terkait <span class="text-rose-500">*</span>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        Cari & Pilih Surat Perintah Tugas (SPT) Pemantauan Terkait
                     </label>
-                    <select name="st_pemantauan_id" class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white font-semibold">
-                        <option value="">-- Lepas / Kosongkan ST Pemantauan --</option>
-                        @foreach($stPemantauanList as $stP)
-                            <option value="{{ $stP->id }}" {{ $tindakLanjut->st_pemantauan_id == $stP->id ? 'selected' : '' }}>
-                                {{ $stP->no_spt }} — {{ Str::limit($stP->uraian_penugasan, 55) }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+
+                    <!-- Search Input -->
+                    <div class="relative mb-2">
+                        <input type="text" x-model="search" placeholder="🔍 Ketik No. SPT, Uraian, atau Objek Sasaran..." 
+                            class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 px-3.5 py-2.5 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500">
+                        <button type="button" x-show="search.length > 0" @click="search = ''" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs font-bold">
+                            &times;
+                        </button>
+                    </div>
+
+                    <!-- Opsi Lepas / Kosongkan ST -->
+                    <div class="mb-2">
+                        <div @click="select('')" 
+                            class="p-2.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between text-xs"
+                            :class="!selectedId ? 'border-amber-400 bg-amber-50/80 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 font-bold' : 'border-dashed border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm">❌</span>
+                                <span>-- Jangan Kaitkan / Lepaskan ST Pemantauan --</span>
+                            </div>
+                            <span x-show="!selectedId" class="text-emerald-600 font-black text-xs">✓ Dipilih</span>
+                        </div>
+                    </div>
+
+                    <!-- Scrollable Filtered List -->
+                    <div class="max-h-56 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-2xl p-1.5 bg-white dark:bg-slate-900">
+                        <template x-for="opt in filtered" :key="opt.id">
+                            <div @click="select(opt.id)" 
+                                class="p-2.5 rounded-xl cursor-pointer transition-all text-xs space-y-1"
+                                :class="selectedId == opt.id ? 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-400 dark:border-emerald-700 text-emerald-950 dark:text-emerald-200 shadow-xs' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 border border-transparent text-slate-700 dark:text-slate-300'">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="font-bold text-slate-900 dark:text-white" x-text="opt.no_spt"></span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-md font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 shrink-0" x-text="opt.irban"></span>
+                                </div>
+                                <p class="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-2" x-text="opt.uraian"></p>
+                                <div class="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+                                    <span>🏢 <span x-text="opt.objek"></span></span>
+                                    <span>📅 <span x-text="opt.tanggal"></span></span>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div x-show="filtered.length === 0" class="p-4 text-center text-slate-400 text-xs">
+                            Tidak ditemukan SPT dengan kata kunci "<span x-text="search"></span>"
+                        </div>
+                    </div>
+
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                         Surat Tugas ini akan menjadi payung hukum dan dasar penugasan tim dalam pemantauan & penyusunan berita acara atas rekomendasi LHP ini.
                     </p>
                 </div>
@@ -863,7 +921,25 @@
 
     <!-- 1. Modal Telaah Tim Pemantauan TL -->
     <div id="modalTelaahTim" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 hidden">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-w-xl w-full space-y-4 animate-in fade-in zoom-in duration-150">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-w-xl w-full space-y-4 animate-in fade-in zoom-in duration-150"
+            x-data="{
+                search: '',
+                selectedId: '{{ $tindakLanjut->st_pemantauan_id ?? '' }}',
+                options: {{ Js::from($stPemantauanOptions ?? []) }},
+                get filtered() {
+                    if (!this.search.trim()) return this.options;
+                    const q = this.search.toLowerCase().trim();
+                    return this.options.filter(o => 
+                        o.no_spt.toLowerCase().includes(q) || 
+                        o.uraian.toLowerCase().includes(q) || 
+                        o.objek.toLowerCase().includes(q) || 
+                        o.irban.toLowerCase().includes(q)
+                    );
+                },
+                select(id) {
+                    this.selectedId = id;
+                }
+            }">
             <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
                 <div class="flex items-center gap-2 text-blue-600">
                     <span class="text-lg">✍️</span>
@@ -876,18 +952,42 @@
 
             <form method="POST" action="{{ route('tindak-lanjut.ajukan_telaah', $tindakLanjut->id) }}" class="space-y-4">
                 @csrf
+                <input type="hidden" name="st_pemantauan_id" :value="selectedId">
+
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                         Surat Perintah Tugas (SPT) Pemantauan Terkait
                     </label>
-                    <select name="st_pemantauan_id" class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white font-semibold">
-                        <option value="">-- Pilih Surat Tugas Pemantauan TL (Jika Ada) --</option>
-                        @foreach($stPemantauanList as $stP)
-                            <option value="{{ $stP->id }}" {{ $tindakLanjut->st_pemantauan_id == $stP->id ? 'selected' : '' }}>
-                                {{ $stP->no_spt }} — {{ Str::limit($stP->uraian_penugasan, 55) }}
-                            </option>
-                        @endforeach
-                    </select>
+                    
+                    <!-- Search Input -->
+                    <div class="relative mb-2">
+                        <input type="text" x-model="search" placeholder="🔍 Ketik No. SPT, Uraian, atau Objek Sasaran..." 
+                            class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 px-3.5 py-2 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500">
+                        <button type="button" x-show="search.length > 0" @click="search = ''" class="absolute right-3 top-2 text-slate-400 hover:text-slate-600 text-xs font-bold">
+                            &times;
+                        </button>
+                    </div>
+
+                    <!-- Scrollable Filtered List -->
+                    <div class="max-h-40 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-2xl p-1.5 bg-white dark:bg-slate-900">
+                        <div @click="select('')" 
+                            class="p-2 rounded-xl cursor-pointer transition-all flex items-center justify-between text-xs"
+                            :class="!selectedId ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 font-bold border border-amber-300' : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500'">
+                            <span>-- Tanpa SPT Pemantauan (Belum Ada) --</span>
+                            <span x-show="!selectedId" class="text-blue-600 text-[10px] font-bold">✓</span>
+                        </div>
+                        <template x-for="opt in filtered" :key="opt.id">
+                            <div @click="select(opt.id)" 
+                                class="p-2 rounded-xl cursor-pointer transition-all text-xs space-y-0.5"
+                                :class="selectedId == opt.id ? 'bg-blue-50 dark:bg-blue-950/60 border border-blue-400 dark:border-blue-700 text-blue-950 dark:text-blue-200 shadow-xs' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="font-bold text-slate-900 dark:text-white" x-text="opt.no_spt"></span>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400" x-text="opt.irban"></span>
+                                </div>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate" x-text="opt.uraian"></p>
+                            </div>
+                        </template>
+                    </div>
                 </div>
 
                 <div>

@@ -198,10 +198,23 @@ class TindakLanjutController extends Controller
             return $tl->rincianPenyetoran->sum('nilai_setor_rp');
         });
 
-        $stPemantauanList = Penugasan::where('status_persetujuan', 'disetujui')
-            ->orderBy('no_spt', 'desc')
-            ->take(100)
+        $stPemantauanList = Penugasan::with(['irban', 'objekPenugasan'])
+            ->where('status_persetujuan', 'disetujui')
+            ->orderBy('tanggal_mulai', 'desc')
+            ->take(300)
             ->get();
+
+        $stPemantauanOptions = $stPemantauanList->map(function ($s) {
+            $objek = $s->objekPenugasan->pluck('nama')->implode(', ') ?: ($s->irban->nama_irban ?? '-');
+            return [
+                'id'      => (string) $s->id,
+                'no_spt'  => $s->no_spt ?? '-',
+                'uraian'  => $s->uraian_penugasan ?? '-',
+                'objek'   => $objek,
+                'irban'   => $s->irban->nama_irban ?? '-',
+                'tanggal' => $s->tanggal_mulai ? $s->tanggal_mulai->translatedFormat('d M Y') : '-',
+            ];
+        })->values()->toArray();
 
         $objekList = ObjekPenugasan::aktif()->orderBy('nama')->get();
 
@@ -215,7 +228,7 @@ class TindakLanjutController extends Controller
         return view('tindak-lanjut.show', compact(
             'tindakLanjut', 'lhpItems',
             'countSesuai', 'countBelumSesuai', 'countBelum', 'countTdt',
-            'totalNilaiTarget', 'totalSetorRp', 'stPemantauanList', 'objekList',
+            'totalNilaiTarget', 'totalSetorRp', 'stPemantauanList', 'stPemantauanOptions', 'objekList',
             'kodeAtributTemuanList', 'kodeAtributRekomendasiList'
         ));
     }
