@@ -39,7 +39,7 @@ class VerifikasiBuktiController extends Controller
     }
 
     /**
-     * Proses Verifikasi (Terima = Selesai/Sesuai, Tolak = Belum Sesuai dengan Catatan Revisi).
+     * Proses Evaluasi Bukti Tindak Lanjut (Menyimpan telaah & catatan evaluasi tim pemeriksa).
      */
     public function verifikasi(Request $request, BuktiTindakLanjut $bukti): RedirectResponse
     {
@@ -53,41 +53,33 @@ class VerifikasiBuktiController extends Controller
         $bukti->update([
             'status_verifikasi'  => $validated['status_verifikasi'],
             'catatan_verifikasi' => $validated['catatan_verifikasi'],
-            'diverifikasi_oleh' => auth()->id() ?? 1,
-            'diverifikasi_pada' => now(),
+            'diverifikasi_oleh'  => auth()->id() ?? 1,
+            'diverifikasi_pada'  => now(),
         ]);
 
         $tl = $bukti->tindakLanjut;
 
-        if ($validated['status_verifikasi'] === 'diterima') {
-            $tl->update([
-                'status_tindak_lanjut'   => 'selesai',
-                'tanggal_selesai_aktual' => now()->toDateString(),
-            ]);
-            $pesan = 'Hasil evaluasi: DITERIMA. Status rekomendasi kini SESUAI.';
-        } elseif ($validated['status_verifikasi'] === 'tdt') {
-            $tl->update([
-                'status_tindak_lanjut' => 'tdt',
-            ]);
-            $pesan = 'Hasil evaluasi: TIDAK DAPAT DITINDAKLANJUTI (TDT). Status diatur ke TDT.';
-        } else {
-            $tl->update([
-                'status_tindak_lanjut' => 'proses',
-            ]);
-            $pesan = 'Hasil evaluasi: MEMERLUKAN REVISI. Status diatur ke BELUM SESUAI agar OPD dapat melakukan perbaikan & penambahan tindak lanjut.';
-        }
+        // Catat usulan status telaah tim tanpa langsung meresmikan ke OPD sebelum persetujuan Inspektur
+        $usulanStatus = match($validated['status_verifikasi']) {
+            'diterima' => 'selesai',
+            'tdt'      => 'tdt',
+            default    => 'proses',
+        };
+
+        $tl->update([
+            'status_rekomendasi_usulan' => $usulanStatus,
+            'hasil_telaah_tim'          => $validated['catatan_verifikasi'] ?: $tl->hasil_telaah_tim,
+            'telaah_oleh'               => auth()->id(),
+            'telaah_pada'               => now(),
+        ]);
 
         ActivityLog::catat('bukti_tindak_lanjut', $bukti->id, 'update', $sebelum, $bukti->toArray());
 
-        // Kirim notifikasi email ke OPD yang mengunggah bukti
-        $pengunggah = $bukti->pengunggah;
-        if ($pengunggah && $pengunggah->email) {
-            try {
-                $pengunggah->notify(new BuktiVerifikasiNotification($bukti, $validated['status_verifikasi']));
-            } catch (\Throwable $e) {
-                Log::warning("[SIPANDA Verifikasi] Gagal kirim email notifikasi ke OPD {$pengunggah->email}: " . $e->getMessage());
-            }
-        }
+        $pesan = match($validated['status_verifikasi']) {
+            'diterima' => '✓ Evaluasi bukti: DITERIMA (Usulan: SESUAI). Hasil tersimpan sebagai bahan telaah tim untuk diajukan ke Irban & Inspektur.',
+            'tdt'      => '✓ Evaluasi bukti: TIDAK DAPAT DITINDAKLANJUTI (TDT). Hasil tersimpan sebagai usulan telaah tim.',
+            default    => '✓ Evaluasi bukti: MEMERLUKAN PERBAIKAN OPD. Catatan evaluasi tersimpan sebagai usulan telaah tim.',
+        };
 
         return back()->with('status', $pesan);
     }

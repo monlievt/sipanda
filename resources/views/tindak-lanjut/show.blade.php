@@ -104,8 +104,13 @@
                     </div>
                     <p class="text-[11px] text-slate-600 dark:text-slate-300 mb-2">Pemeriksaan bukti respon tindak lanjut oleh tim.</p>
                     @if($tindakLanjut->ditelaah_oleh)
-                        <div class="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold">
-                            ✓ Ditelaah: {{ $tindakLanjut->penelaah?->nama }}
+                        <div class="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold space-y-0.5">
+                            <div>✓ Ditelaah: {{ $tindakLanjut->penelaah?->nama }}</div>
+                            @if($tindakLanjut->status_rekomendasi_usulan)
+                                <div class="text-[10px] font-bold text-blue-700 dark:text-blue-300">
+                                    Usulan: {{ strtoupper($tindakLanjut->status_rekomendasi_usulan) }}
+                                </div>
+                            @endif
                             <span class="block text-[9px] font-normal text-slate-400">{{ $tindakLanjut->ditelaah_pada?->format('d/m/Y H:i') }}</span>
                         </div>
                     @else
@@ -120,7 +125,7 @@
                 </div>
 
                 <!-- Tahap 3: Verifikasi Irban -->
-                <div class="p-4 rounded-2xl border relative transition-all {{ in_array($tindakLanjut->status_telaah, ['diajukan_inspektur', 'disetujui_inspektur']) ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800' : ($tindakLanjut->status_telaah === 'ditolak_irban' ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-300' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700') }}">
+                <div class="p-4 rounded-2xl border relative transition-all {{ in_array($tindakLanjut->status_telaah, ['diajukan_inspektur', 'disetujui_inspektur']) ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800' : (in_array($tindakLanjut->status_telaah, ['revisi_irban', 'ditolak_irban']) ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-300' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700') }}">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="w-6 h-6 rounded-lg {{ in_array($tindakLanjut->status_telaah, ['diajukan_inspektur', 'disetujui_inspektur']) ? 'bg-emerald-600' : 'bg-slate-400' }} text-white font-black text-xs flex items-center justify-center">3</span>
                         <h5 class="font-bold text-slate-900 dark:text-white">Verifikasi Irban</h5>
@@ -131,10 +136,10 @@
                             ✓ Diverifikasi: {{ $tindakLanjut->irbanPenyetuju?->nama }}
                             <span class="block text-[9px] font-normal text-slate-400">{{ $tindakLanjut->diverifikasi_irban_pada?->format('d/m/Y H:i') }}</span>
                         </div>
-                    @elseif($tindakLanjut->status_telaah === 'ditolak_irban')
-                        <span class="text-[10px] font-bold text-rose-600 block">✕ Ditolak Irban (Revisi)</span>
+                    @elseif(in_array($tindakLanjut->status_telaah, ['revisi_irban', 'ditolak_irban']))
+                        <span class="text-[10px] font-bold text-rose-600 block">✕ Dikembalikan Irban (Perlu Revisi)</span>
                     @else
-                        <span class="inline-block text-slate-400 italic text-[10px]">Menunggu verifikasi</span>
+                        <span class="inline-block text-slate-400 italic text-[10px]">Menunggu verifikasi Irban</span>
                     @endif
 
                     @if(auth()->user()->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban', 'admin_irban']))
@@ -147,21 +152,22 @@
                 </div>
 
                 <!-- Tahap 4: Persetujuan Akhir Inspektur -->
-                <div class="p-4 rounded-2xl border relative transition-all {{ $tindakLanjut->status_telaah === 'disetujui_inspektur' ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800' : ($tindakLanjut->status_telaah === 'ditolak_inspektur' ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-300' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700') }}">
+                <div class="p-4 rounded-2xl border relative transition-all {{ $tindakLanjut->status_telaah === 'disetujui_inspektur' ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800' : (in_array($tindakLanjut->status_telaah, ['revisi_inspektur', 'ditolak_inspektur']) ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-300' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700') }}">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="w-6 h-6 rounded-lg {{ $tindakLanjut->status_telaah === 'disetujui_inspektur' ? 'bg-emerald-600' : 'bg-slate-400' }} text-white font-black text-xs flex items-center justify-center">4</span>
                         <h5 class="font-bold text-slate-900 dark:text-white">Persetujuan Inspektur</h5>
                     </div>
-                    <p class="text-[11px] text-slate-600 dark:text-slate-300 mb-2">Persetujuan final penerbitan Matriks & Surat Pengantar.</p>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-300 mb-2">Persetujuan final & publikasi status resmi ke Portal OPD.</p>
                     @if($tindakLanjut->status_telaah === 'disetujui_inspektur')
                         <div class="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold">
-                            ✓ Disetujui: {{ $tindakLanjut->inspekturPenyetuju?->nama ?? 'Inspektur' }}
-                            <span class="block text-[9px] font-normal text-slate-400">{{ $tindakLanjut->disetujui_inspektur_pada?->format('d/m/Y H:i') }}</span>
+                            ✓ Disetujui Final: {{ $tindakLanjut->inspekturPenyetuju?->nama ?? 'Inspektur' }}
+                            <span class="block text-[9px] font-normal text-emerald-600 font-bold">Status Resmi Aktif di Portal OPD</span>
+                            <span class="block text-[9px] font-normal text-slate-400">{{ $tindakLanjut->inspektur_disetujui_pada?->format('d/m/Y H:i') }}</span>
                         </div>
-                    @elseif($tindakLanjut->status_telaah === 'ditolak_inspektur')
-                        <span class="text-[10px] font-bold text-rose-600 block">✕ Ditolak Inspektur</span>
+                    @elseif(in_array($tindakLanjut->status_telaah, ['revisi_inspektur', 'ditolak_inspektur']))
+                        <span class="text-[10px] font-bold text-rose-600 block">✕ Dikembalikan Inspektur (Revisi)</span>
                     @else
-                        <span class="inline-block text-slate-400 italic text-[10px]">Menunggu persetujuan</span>
+                        <span class="inline-block text-slate-400 italic text-[10px]">Menunggu persetujuan final</span>
                     @endif
 
                     @if(auth()->user()->hasRole(['admin', 'administrator', 'inspektur']))
@@ -394,6 +400,12 @@
                                 {{ $item->status_tindak_lanjut === 'tdt' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200' : '' }}">
                                 Status: {{ $item->status_label }}
                             </span>
+
+                            @if($item->status_telaah !== 'disetujui_inspektur' && $item->status_rekomendasi_usulan)
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300">
+                                    ⏳ {{ $item->status_telaah_label }} (Usulan: {{ strtoupper($item->status_rekomendasi_usulan) }})
+                                </span>
+                            @endif
 
                             <!-- ✏️ Tombol Edit Item Rekomendasi -->
                             <button type="button" onclick="openModalEditTl({
@@ -992,13 +1004,14 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        Kesimpulan Status Rekomendasi Setelah Ditelaah
+                        Usulan Kesimpulan Status Rekomendasi <span class="text-rose-500">*</span>
                     </label>
-                    <select name="status_rekomendasi" class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white font-bold">
-                        <option value="selesai" {{ $tindakLanjut->status_tindak_lanjut === 'selesai' ? 'selected' : '' }}>SESUAI (SELESAI)</option>
-                        <option value="proses" {{ in_array($tindakLanjut->status_tindak_lanjut, ['proses', 'menunggu_verifikasi']) ? 'selected' : '' }}>BELUM SESUAI (PROSES)</option>
-                        <option value="belum" {{ $tindakLanjut->status_tindak_lanjut === 'belum' ? 'selected' : '' }}>BELUM DITINDAKLANJUTI</option>
-                        <option value="tdt" {{ $tindakLanjut->status_tindak_lanjut === 'tdt' ? 'selected' : '' }}>TIDAK DAPAT DITINDAKLANJUTI (TDT)</option>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-1.5">Pilih status usulan tim. Status resmi akan diaktifkan setelah melalui Verifikasi Irban dan Persetujuan Final Inspektur.</p>
+                    <select name="status_rekomendasi" required class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 text-slate-900 dark:text-white font-bold">
+                        <option value="selesai" {{ ($tindakLanjut->status_rekomendasi_usulan ?? $tindakLanjut->status_tindak_lanjut) === 'selesai' ? 'selected' : '' }}>SESUAI (SELESAI)</option>
+                        <option value="proses" {{ in_array(($tindakLanjut->status_rekomendasi_usulan ?? $tindakLanjut->status_tindak_lanjut), ['proses', 'menunggu_verifikasi']) ? 'selected' : '' }}>BELUM SESUAI (PROSES / REVISI OPD)</option>
+                        <option value="belum" {{ ($tindakLanjut->status_rekomendasi_usulan ?? $tindakLanjut->status_tindak_lanjut) === 'belum' ? 'selected' : '' }}>BELUM DITINDAKLANJUTI</option>
+                        <option value="tdt" {{ ($tindakLanjut->status_rekomendasi_usulan ?? $tindakLanjut->status_tindak_lanjut) === 'tdt' ? 'selected' : '' }}>TIDAK DAPAT DITINDAKLANJUTI (TDT)</option>
                     </select>
                 </div>
 
@@ -1006,7 +1019,7 @@
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                         Catatan & Pertimbangan Hasil Telaah Tim <span class="text-rose-500">*</span>
                     </label>
-                    <textarea name="catatan_telaah_tim" rows="4" required placeholder="Tuliskan analisis kelayakan bukti, kesesuaian dokumen, dan kesimpulan telaah tim..." class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500">{{ $tindakLanjut->catatan_telaah_tim }}</textarea>
+                    <textarea name="catatan_telaah_tim" rows="4" required placeholder="Tuliskan analisis kelayakan bukti, kesesuaian dokumen, dan kesimpulan telaah tim..." class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500">{{ $tindakLanjut->hasil_telaah_tim ?? $tindakLanjut->catatan_telaah_tim }}</textarea>
                 </div>
 
                 <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">

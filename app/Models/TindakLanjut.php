@@ -14,7 +14,7 @@ class TindakLanjut extends Model
         'penugasan_id', 'st_pemantauan_id', 'objek_penugasan_id', 'no_lhp', 'judul_lhp', 'tgl_lhp',
         'kode_atribut_temuan_id', 'kode_atribut_rekomendasi_id', 'kode_temuan_lengkap', 'kode_rekomendasi',
         'uraian_temuan', 'rekomendasi', 'nilai_diawasi_rp', 'nilai_rekomendasi_rp', 'berkas_dasar_lhp',
-        'status_tindak_lanjut', 'status_telaah', 'hasil_telaah_tim', 'telaah_oleh', 'telaah_pada',
+        'status_tindak_lanjut', 'status_telaah', 'hasil_telaah_tim', 'status_rekomendasi_usulan', 'telaah_oleh', 'telaah_pada',
         'catatan_irban', 'irban_disetujui_oleh', 'irban_disetujui_pada',
         'catatan_inspektur', 'inspektur_disetujui_oleh', 'inspektur_disetujui_pada',
         'no_surat_pengantar', 'tgl_surat_pengantar', 'tujuan_surat_pengantar', 'tujuan_surat_objek_id',
@@ -91,20 +91,36 @@ class TindakLanjut extends Model
         };
     }
 
+    public function getStatusUsulanLabelAttribute(): string
+    {
+        return match($this->status_rekomendasi_usulan) {
+            'selesai'             => 'Sesuai (Usulan Tim)',
+            'proses'              => 'Belum Sesuai (Usulan Tim)',
+            'belum'               => 'Belum Ditindaklanjuti (Usulan Tim)',
+            'tdt'                 => 'Tidak Dapat Ditindaklanjuti (Usulan Tim)',
+            default               => '-',
+        };
+    }
+
     public function getStatusTelaahLabelAttribute(): string
     {
         return match($this->status_telaah) {
             'draft'               => 'Draft Telaah Tim',
             'diajukan_irban'      => 'Diajukan ke Irban',
-            'revisi_irban'        => 'Revisi dari Irban',
+            'revisi_irban', 'ditolak_irban' => 'Revisi dari Irban',
             'diajukan_inspektur'  => 'Diusulkan ke Inspektur',
-            'revisi_inspektur'    => 'Revisi dari Inspektur',
+            'revisi_inspektur', 'ditolak_inspektur' => 'Revisi dari Inspektur',
             'disetujui_inspektur' => 'Disetujui Inspektur (Final)',
             default               => 'Draft Telaah',
         };
     }
 
     public function isSiapGenerateDokumen(): bool
+    {
+        return $this->status_telaah === 'disetujui_inspektur';
+    }
+
+    public function isDisetujuiInspektur(): bool
     {
         return $this->status_telaah === 'disetujui_inspektur';
     }
