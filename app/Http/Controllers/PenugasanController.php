@@ -220,7 +220,7 @@ class PenugasanController extends Controller
                 'no_spt.required'               => 'Nomor SPT perpanjangan wajib diisi.',
                 'no_spt.unique'                 => 'Nomor SPT ini sudah terdaftar. Mohon gunakan nomor yang lain.',
                 'penugasan_induk_id.required'   => 'Anda wajib memilih Surat Tugas Indikator (ST Induk) yang diperpanjang.',
-                'uraian_penugasan.required'     => 'Uraian / alasan perpanjangan wajib diisi.',
+                'uraian_penugasan.required'     => 'Uraian penugasan wajib diisi.',
                 'tanggal_mulai.required'        => 'Tanggal mulai perpanjangan wajib diisi.',
                 'tanggal_selesai.required'      => 'Tanggal selesai perpanjangan wajib diisi.',
                 'tanggal_selesai.after_or_equal' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.',
@@ -504,7 +504,7 @@ class PenugasanController extends Controller
             ], [
                 'no_spt.required'               => 'Nomor SPT perpanjangan wajib diisi.',
                 'penugasan_induk_id.required'   => 'Anda wajib memilih Surat Tugas Indikator (ST Induk) yang diperpanjang.',
-                'uraian_penugasan.required'     => 'Uraian / alasan perpanjangan wajib diisi.',
+                'uraian_penugasan.required'     => 'Uraian penugasan wajib diisi.',
                 'tanggal_mulai.required'        => 'Tanggal mulai perpanjangan wajib diisi.',
                 'tanggal_selesai.required'      => 'Tanggal selesai perpanjangan wajib diisi.',
                 'tanggal_selesai.after_or_equal' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.',

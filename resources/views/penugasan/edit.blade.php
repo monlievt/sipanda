@@ -127,7 +127,7 @@
                 </div>
 
                 <div>
-                    <label class="block font-semibold mb-1">Uraian / Alasan Penugasan <span class="text-rose-500">*</span></label>
+                    <label class="block font-semibold mb-1">Uraian Penugasan <span class="text-rose-500">*</span></label>
                     <textarea name="uraian_penugasan" rows="3" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">{{ old('uraian_penugasan', $penugasan->uraian_penugasan) }}</textarea>
                 </div>
 
