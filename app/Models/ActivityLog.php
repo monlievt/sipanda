@@ -20,18 +20,22 @@ class ActivityLog extends Model {
      */
     public static function catat(string $tabel, int $recordId, string $aksi, ?array $sebelum = null, ?array $sesudah = null): void
     {
-        // Coba ambil user dari guard web (internal), fallback ke guard opd
-        $userId = auth()->id() ?? auth()->guard('opd')->id() ?? null;
+        try {
+            // Coba ambil user dari guard web (internal), fallback ke guard opd
+            $userId = auth()->id() ?? auth()->guard('opd')->id() ?? null;
 
-        static::create([
-            'user_id'      => $userId,
-            'tabel'        => $tabel,
-            'record_id'    => $recordId,
-            'aksi'         => $aksi,
-            'data_sebelum' => $sebelum,
-            'data_sesudah' => $sesudah,
-            'ip_address'   => request()?->ip(),
-            'created_at'   => now(),
-        ]);
+            static::create([
+                'user_id'      => $userId,
+                'tabel'        => substr($tabel, 0, 60),
+                'record_id'    => $recordId,
+                'aksi'         => substr($aksi, 0, 60),
+                'data_sebelum' => $sebelum,
+                'data_sesudah' => $sesudah,
+                'ip_address'   => request()?->ip(),
+                'created_at'   => now(),
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Gagal mencatat activity_log [{$tabel}:{$recordId}:{$aksi}]: " . $e->getMessage());
+        }
     }
 }
