@@ -22,10 +22,13 @@
         color: inherit;
     }
 
-    /* Standardize form controls font-size, padding, and height globally */
+    /* Standardize form controls borders, background contrast, and focus ring globally */
     input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]),
     select,
     textarea {
+        border: 1.5px solid #cbd5e1 !important; /* solid slate-300 border */
+        background-color: #f8fafc !important; /* light subtle contrast background */
+        border-radius: 0.75rem !important; /* rounded-xl */
         font-size: 0.875rem !important; /* 14px text-sm font size */
         padding-top: 0.625rem !important; /* 10px top padding */
         padding-bottom: 0.625rem !important; /* 10px bottom padding */
@@ -33,6 +36,33 @@
         padding-right: 0.875rem !important; /* 14px right padding */
         line-height: 1.25rem !important;
         min-height: 2.625rem !important; /* 42px comfortable target height */
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, background-color 0.15s ease-in-out !important;
+    }
+
+    input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]):focus,
+    select:focus,
+    textarea:focus {
+        background-color: #ffffff !important;
+        border-color: #059669 !important; /* emerald-600 */
+        outline: none !important;
+        box-shadow: 0 0 0 3.5px rgba(16, 185, 129, 0.2) !important;
+    }
+
+    .dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]),
+    .dark select,
+    .dark textarea {
+        border: 1.5px solid #334155 !important; /* slate-700 */
+        background-color: #1e293b !important; /* slate-800 */
+        color: #f8fafc !important;
+    }
+
+    .dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]):focus,
+    .dark select:focus,
+    .dark textarea:focus {
+        background-color: #0f172a !important;
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 3.5px rgba(16, 185, 129, 0.25) !important;
     }
 }
 

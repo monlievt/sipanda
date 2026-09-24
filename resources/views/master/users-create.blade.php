@@ -45,13 +45,13 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap (dg Gelar) <span class="text-rose-500">*</span></label>
-                            <input type="text" name="nama" id="inputNama" value="{{ old('nama') }}" required placeholder="Contoh: Ir. WIJIONO, S.T., M.MKes." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <input type="text" name="nama" id="inputNama" value="{{ old('nama') }}" required placeholder="Contoh: Ir. WIJIONO, S.T., M.MKes." class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                             <p class="text-[10px] text-slate-400 mt-1">Gelar depan/belakang dicantumkan untuk format dokumen resmi.</p>
                         </div>
 
                         <div>
                             <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Nama Panggilan / Sapaan</label>
-                            <input type="text" name="nama_tanpa_gelar" id="inputNamaTanpaGelar" value="{{ old('nama_tanpa_gelar') }}" placeholder="Contoh: Pak Wijiono" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <input type="text" name="nama_tanpa_gelar" id="inputNamaTanpaGelar" value="{{ old('nama_tanpa_gelar') }}" placeholder="Contoh: Pak Wijiono" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                             <p class="text-[10px] text-slate-400 mt-1">Digunakan untuk sapaan notifikasi & dasbor.</p>
                         </div>
                     </div>
@@ -59,17 +59,17 @@
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
                         <div>
                             <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">NIP Pegawai (18 Digit) <span class="text-rose-500">*</span></label>
-                            <input type="text" name="nip" id="inputNip" value="{{ old('nip') }}" required placeholder="197308051997031007" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-mono px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <input type="text" name="nip" id="inputNip" value="{{ old('nip') }}" required placeholder="197308051997031007" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs font-mono px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                         </div>
 
                         <div>
                             <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Email Dinas / Akun <span class="text-rose-500">*</span></label>
-                            <input type="email" name="email" id="inputEmail" value="{{ old('email') }}" required placeholder="nama@trenggalek.go.id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <input type="email" name="email" id="inputEmail" value="{{ old('email') }}" required placeholder="nama@trenggalek.go.id" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                         </div>
 
                         <div>
                             <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">No. WhatsApp / HP</label>
-                            <input type="text" name="no_hp" id="inputNoHp" value="{{ old('no_hp') }}" placeholder="081234567890" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <input type="text" name="no_hp" id="inputNoHp" value="{{ old('no_hp') }}" placeholder="081234567890" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                         </div>
                     </div>
                 </div>
@@ -96,7 +96,7 @@
 
                         <!-- Dropdown Pilihan Baku -->
                         <div id="containerSelectJabatan">
-                            <select id="selectJabatanBaku" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-3.5 py-2.5 font-semibold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500">
+                            <select id="selectJabatanBaku" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 font-semibold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500">
                                 <option value="">-- Pilih Jabatan Baku di Lingkungan Inspektorat --</option>
                                 @foreach($jabatanBaku as $kategori => $items)
                                     <optgroup label="{{ $kategori }}">
@@ -110,7 +110,7 @@
 
                         <!-- Input Text Jabatan (Aktual yang dikirim ke form) -->
                         <div id="containerTextJabatan" class="{{ old('jabatan') ? '' : 'hidden' }}">
-                            <input type="text" name="jabatan" id="inputJabatan" value="{{ old('jabatan') }}" required placeholder="Ketik nama jabatan definitif pegawai..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-900 dark:text-white px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <input type="text" name="jabatan" id="inputJabatan" value="{{ old('jabatan') }}" required placeholder="Ketik nama jabatan definitif pegawai..." class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-900 dark:text-white px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                         </div>
                     </div>
 
@@ -118,7 +118,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                         <div>
                             <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Golongan Ruang ASN</label>
-                            <select name="golongan" id="selectGolongan" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-3.5 py-2.5 font-bold focus:ring-2 focus:ring-emerald-500">
+                            <select name="golongan" id="selectGolongan" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 font-bold focus:ring-2 focus:ring-emerald-500">
                                 <option value="">-- Pilih Golongan Ruang --</option>
                                 @foreach($pangkatGolongan as $gol => $pkt)
                                     <option value="{{ $gol }}" data-pangkat="{{ $pkt }}" {{ old('golongan') === $gol ? 'selected' : '' }}>
@@ -131,7 +131,7 @@
 
                         <div>
                             <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Pangkat ASN</label>
-                            <input type="text" name="pangkat" id="inputPangkat" value="{{ old('pangkat') }}" placeholder="Contoh: Pembina Utama Muda" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <input type="text" name="pangkat" id="inputPangkat" value="{{ old('pangkat') }}" placeholder="Contoh: Pembina Utama Muda" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs font-semibold px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                         </div>
                     </div>
                 </div>
@@ -149,7 +149,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Role / Peran di Sistem <span class="text-rose-500">*</span></label>
-                            <select name="role" id="selectRole" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-purple-700 dark:text-purple-400 px-3.5 py-2.5 focus:ring-2 focus:ring-purple-500">
+                            <select name="role" id="selectRole" required class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs font-bold text-purple-700 dark:text-purple-400 px-3.5 py-2.5 focus:ring-2 focus:ring-purple-500">
                                 @foreach($roles as $r)
                                     <option value="{{ $r->name }}" {{ (old('role') === $r->name || (!old('role') && $r->name === 'auditor')) ? 'selected' : '' }}>{{ ucfirst($r->name) }}</option>
                                 @endforeach
@@ -158,7 +158,7 @@
 
                         <div>
                             <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Unit Penempatan / Irban</label>
-                            <select name="irban_id" id="selectIrban" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <select name="irban_id" id="selectIrban" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs font-semibold px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                                 <option value="">-- Sekretariat / Umum --</option>
                                 @foreach($irbans as $irban)
                                     <option value="{{ $irban->id }}" {{ old('irban_id') == $irban->id ? 'selected' : '' }}>{{ $irban->nama_irban }}</option>
@@ -168,7 +168,7 @@
 
                         <div>
                             <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Status Penugasan Pimpinan <span class="text-rose-500">*</span></label>
-                            <select name="status_jabatan" id="selectStatusJabatan" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-amber-700 dark:text-amber-400 px-3.5 py-2.5 focus:ring-2 focus:ring-amber-500">
+                            <select name="status_jabatan" id="selectStatusJabatan" required class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs font-bold text-amber-700 dark:text-amber-400 px-3.5 py-2.5 focus:ring-2 focus:ring-amber-500">
                                 <option value="definitif" {{ old('status_jabatan') === 'definitif' ? 'selected' : '' }}>Definitif (Pejabat Tetap)</option>
                                 <option value="plt" {{ old('status_jabatan') === 'plt' ? 'selected' : '' }}>Plt. (Pelaksana Tugas)</option>
                                 <option value="plh" {{ old('status_jabatan') === 'plh' ? 'selected' : '' }}>Plh. (Pelaksana Harian)</option>
@@ -190,7 +190,7 @@
 
                     <div>
                         <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Password Awal Akun (Opsional)</label>
-                        <input type="text" name="password" placeholder="Default: Sesuai NIP Pegawai" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                        <input type="text" name="password" placeholder="Default: Sesuai NIP Pegawai" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                         <p class="text-[10px] text-slate-400 mt-1">Jika dikosongkan, password awal otomatis diset sama dengan NIP pegawai.</p>
                     </div>
                 </div>
