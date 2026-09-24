@@ -19,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Pastikan direktori storage framework selalu tersedia dengan permission yang sesuai
+        // Pastikan direktori storage framework selalu tersedia dengan permission yang sesuai (0777)
         $storagePaths = [
             storage_path('framework/views'),
             storage_path('framework/cache'),
@@ -27,13 +27,16 @@ class AppServiceProvider extends ServiceProvider
             storage_path('framework/sessions'),
             storage_path('framework/testing'),
             storage_path('app/public'),
+            storage_path('app/temp'),
             storage_path('logs'),
+            base_path('bootstrap/cache'),
         ];
 
         foreach ($storagePaths as $dir) {
             if (!is_dir($dir)) {
-                @mkdir($dir, 0775, true);
+                @mkdir($dir, 0777, true);
             }
+            @chmod($dir, 0777);
         }
     }
 }
