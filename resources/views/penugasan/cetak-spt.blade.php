@@ -249,7 +249,7 @@
                     <!-- Ruang tanda tangan -->
                     <div class="h-20"></div>
 
-                    <div class="font-bold underline uppercase">
+                    <div class="font-bold underline">
                         {{ $inspekturNama }}
                     </div>
                     <div class="text-xs text-slate-800">

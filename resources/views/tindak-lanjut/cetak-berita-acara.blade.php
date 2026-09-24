@@ -218,7 +218,7 @@
                 <p class="font-bold">PIHAK PERTAMA,</p>
                 <p class="font-semibold text-slate-700">Tim Evaluator / Irban Pengampu<br>Inspektorat Daerah Kab. Trenggalek</p>
                 <div class="h-20"></div>
-                <p class="font-bold underline uppercase tracking-wide">
+                <p class="font-bold underline tracking-wide">
                     {{ $irban->penanggungJawab?->nama ?? 'INSPEKTUR PEMBANTU' }}
                 </p>
                 <p class="text-[10px] font-mono text-slate-600">

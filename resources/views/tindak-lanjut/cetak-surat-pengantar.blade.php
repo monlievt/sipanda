@@ -149,7 +149,7 @@
                     KABUPATEN TRENGGALEK
                 </p>
                 <div class="h-24"></div>
-                <p class="font-bold underline uppercase">
+                <p class="font-bold underline">
                     {{ $tindakLanjut->inspekturPenyetuju?->nama ?? ($inspektur?->nama ?? 'Drs. AGUS SETIYONO, M.Si.') }}
                 </p>
                 <p class="text-xs text-slate-700 font-mono">
