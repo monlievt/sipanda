@@ -54,14 +54,25 @@
     <div class="page-sheet max-w-4xl mx-auto bg-white p-12 sm:p-16 shadow-2xl rounded-2xl print:rounded-none border border-slate-300 print:border-none leading-relaxed text-justify text-xs sm:text-sm">
         
         <!-- Kop Surat Resmi Inspektorat Trenggalek -->
-        <div class="border-b-4 border-double border-slate-900 pb-3 mb-6 text-center relative">
-            <h3 class="text-sm font-bold uppercase tracking-wider leading-tight">PEMERINTAH KABUPATEN TRENGGALEK</h3>
-            <h2 class="text-lg font-black uppercase tracking-wide leading-tight mt-0.5">INSPEKTORAT DAERAH</h2>
-            <p class="text-[11px] text-slate-700 leading-tight mt-1">
-                Jalan Brigjen Soetran Nomor 9, Telepon (0355) 791407, Fax (0355) 791407<br>
-                Website: https://inspektorat.trenggalekkab.go.id &bull; Pos-el: inspektorat@trenggalekkab.go.id<br>
-                <strong>TRENGGALEK &mdash; 66311</strong>
-            </p>
+        @php
+            $logoPath = public_path('images/logo-trenggalek.png');
+            $logoSrc = file_exists($logoPath) 
+                ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) 
+                : asset('images/logo-trenggalek.png');
+        @endphp
+        <div class="relative border-b-4 border-double border-slate-900 pb-3 mb-6">
+            <div class="absolute left-0 top-0 bottom-3 flex items-center">
+                <img src="{{ $logoSrc }}" alt="Logo Kabupaten Trenggalek" class="h-16 sm:h-20 w-auto object-contain">
+            </div>
+            <div class="text-center px-16 sm:px-20">
+                <h3 class="text-sm font-bold uppercase tracking-wider leading-tight text-slate-900">PEMERINTAH KABUPATEN TRENGGALEK</h3>
+                <h2 class="text-lg font-black uppercase tracking-wide leading-tight text-slate-900 mt-0.5">INSPEKTORAT DAERAH</h2>
+                <p class="text-[11px] text-slate-700 leading-tight mt-1">
+                    Jalan Brigjen Soetran Nomor 9, Telepon (0355) 791407, Fax (0355) 791407<br>
+                    Website: https://inspektorat.trenggalekkab.go.id &bull; Pos-el: inspektorat@trenggalekkab.go.id<br>
+                    <strong>TRENGGALEK &mdash; 66311</strong>
+                </p>
+            </div>
         </div>
 
         <!-- Judul Laporan Resmi -->

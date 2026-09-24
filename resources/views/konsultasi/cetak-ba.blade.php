@@ -91,10 +91,22 @@
     </div>
 
     <!-- Kop Surat Inspektorat Trenggalek -->
-    <div class="header">
-        <h3>PEMERINTAH KABUPATEN TRENGGALEK</h3>
-        <h2>INSPEKTORAT DAERAH</h2>
-        <p>Jl. Gajah Mada No. 1 Trenggalek, Jawa Timur | Telp. (0355) 791407</p>
+    @php
+        $logoPath = public_path('images/logo-trenggalek.png');
+        $logoSrc = file_exists($logoPath) 
+            ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) 
+            : asset('images/logo-trenggalek.png');
+    @endphp
+    <div class="header" style="position: relative;">
+        <div style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);">
+            <img src="{{ $logoSrc }}" alt="Logo Kabupaten Trenggalek" style="height: 75px; width: auto; object-fit: contain;">
+        </div>
+        <div style="padding: 0 80px;">
+            <h3>PEMERINTAH KABUPATEN TRENGGALEK</h3>
+            <h2>INSPEKTORAT DAERAH</h2>
+            <p>Jl. Brigjen Soetran Nomor 9, Telepon (0355) 791407, Fax (0355) 791407</p>
+            <p>Website: https://inspektorat.trenggalekkab.go.id • Pos-el: inspektorat@trenggalekkab.go.id</p>
+        </div>
     </div>
 
     <div class="title">BERITA ACARA HASIL KONSULTASI APIP</div>
