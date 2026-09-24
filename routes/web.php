@@ -164,6 +164,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/master/irbans', [MasterDataController::class, 'storeIrban'])->middleware('can:master.create')->name('master.irbans.store');
     Route::put('/master/irbans/{irban}', [MasterDataController::class, 'updateIrban'])->middleware('can:master.edit')->name('master.irbans.update');
     Route::delete('/master/irbans/{irban}', [MasterDataController::class, 'destroyIrban'])->middleware('can:master.delete')->name('master.irbans.destroy');
+    
+    // Master Kelompok / Kluster Pengawasan (ILHP & PKPPT)
+    Route::get('/master/kelompok-pengawasan', [MasterDataController::class, 'kelompokPengawasan'])->middleware('can:master.view')->name('master.kelompok-pengawasan.index');
+    Route::post('/master/kelompok-pengawasan', [MasterDataController::class, 'storeKelompokPengawasan'])->middleware('can:master.create')->name('master.kelompok-pengawasan.store');
+    Route::put('/master/kelompok-pengawasan/{kelompok}', [MasterDataController::class, 'updateKelompokPengawasan'])->middleware('can:master.edit')->name('master.kelompok-pengawasan.update');
+    Route::delete('/master/kelompok-pengawasan/{kelompok}', [MasterDataController::class, 'destroyKelompokPengawasan'])->middleware('can:master.delete')->name('master.kelompok-pengawasan.destroy');
+
     Route::get('/audit-log', [MasterDataController::class, 'auditLog'])->middleware('can:audit_log.view')->name('audit-log.index');
 
     // Master Bank Regulasi & Dasar Hukum APIP

@@ -13,7 +13,7 @@ class Penugasan extends Model
 
     protected $fillable = [
         'no_spt', 'pkppt_id', 'penugasan_induk_id', 'is_sesuai_pkppt', 'uraian_penugasan', 'dasar_penugasan',
-        'sumber_penugasan_id', 'jenis_penugasan_id', 'jenis_pengawasan_spt', 'tanggal_mulai',
+        'sumber_penugasan_id', 'jenis_penugasan_id', 'kelompok_pengawasan_id', 'jenis_pengawasan_spt', 'tanggal_mulai',
         'tanggal_selesai', 'status', 'status_persetujuan', 'catatan_revisi_spt', 'diverifikasi_oleh',
         'diverifikasi_pada', 'progres_persen', 'keterangan_hasil',
         'irban_id', 'dibuat_oleh', 'diperbarui_oleh',
@@ -28,6 +28,11 @@ class Penugasan extends Model
     ];
 
     // ─── Relasi ───────────────────────────────────────────
+
+    public function kelompokPengawasan()
+    {
+        return $this->belongsTo(KelompokPengawasan::class, 'kelompok_pengawasan_id');
+    }
 
     public function pkppt()
     {

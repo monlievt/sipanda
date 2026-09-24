@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\IkhtisarLaporan;
 use App\Models\Irban;
 use App\Models\JenisPenugasan;
+use App\Models\KelompokPengawasan;
 use App\Models\ObjekPenugasan;
 use App\Models\Penugasan;
 use App\Models\Pkppt;
@@ -367,36 +368,74 @@ class IkhtisarLaporanController extends Controller
                 || str_contains($jenisNama, 'investigasi') || str_contains($jenisNama, 'khusus');
         })->values();
 
+        // ── REKAPITULASI 6 KLUSTER / KELOMPOK PENGAWASAN RESMI (Bahan ILHP) ──
+        $kelompoks = KelompokPengawasan::where('is_active', true)->orderBy('urutan')->get();
+        $rekapKlusterPengawasan = [];
+
+        foreach ($kelompoks as $kel) {
+            $pkpptKel = $pkpptList->filter(fn($p) => $p->kelompok_pengawasan_id === $kel->id);
+            $targetLaporan = $pkpptKel->sum('jumlah_laporan_rencana');
+            $targetPkppt = $pkpptKel->count();
+
+            $sptKel = $allPenugasanPeriode->filter(function ($s) use ($kel) {
+                if ($s->kelompok_pengawasan_id) {
+                    return $s->kelompok_pengawasan_id === $kel->id;
+                }
+                return $s->pkppt?->kelompok_pengawasan_id === $kel->id;
+            });
+
+            $sptCount = $sptKel->count();
+            $sptSelesai = $sptKel->where('status', 'selesai')->count();
+            $sptBerjalan = $sptKel->where('status', 'berjalan')->count();
+            $persen = $targetPkppt > 0 ? round(($sptCount / $targetPkppt) * 100, 1) : ($sptCount > 0 ? 100 : 0);
+
+            $rekapKlusterPengawasan[] = (object) [
+                'id'                => $kel->id,
+                'nama_kelompok'     => $kel->nama_kelompok,
+                'kode_kelompok'     => $kel->kode_kelompok,
+                'deskripsi_singkat' => $kel->deskripsi_singkat,
+                'bentuk_pengawasan' => $kel->bentuk_pengawasan,
+                'target_pkppt'      => $targetPkppt,
+                'target_laporan'    => $targetLaporan,
+                'spt_total'         => $sptCount,
+                'spt_selesai'       => $sptSelesai,
+                'spt_berjalan'      => $sptBerjalan,
+                'persen'            => $persen,
+                'spt_items'         => $sptKel->values(),
+            ];
+        }
+
         return [
-            'dasarHukum'           => $dasarHukum,
-            'irbans'               => $irbans,
-            'totalPersonilAktif'   => $totalPersonilAktif,
-            'totalAuditor'         => $totalAuditor,
-            'totalPpupd'           => $totalPpupd,
-            'totalStaf'            => $totalStaf,
-            'totalTargetPkppt'     => $totalTargetPkppt,
-            'totalTargetLaporan'   => $totalTargetLaporan,
-            'totalSptTerbit'       => $totalSptTerbit,
-            'totalSptSelesai'      => $totalSptSelesai,
-            'totalSptBerjalan'     => $totalSptBerjalan,
-            'totalSptBelum'        => $totalSptBelum,
-            'persenRealisasiPkppt' => $persenRealisasiPkppt,
-            'kategoriAudit'        => $kategoriAudit,
-            'kategoriReviu'        => $kategoriReviu,
-            'kategoriEvaluasi'     => $kategoriEvaluasi,
-            'kategoriPemantauan'   => $kategoriPemantauan,
-            'kategoriLainnya'      => $kategoriLainnya,
-            'tlCountTotal'         => $tlCountTotal,
-            'tlCountSelesai'       => $tlCountSelesai,
-            'tlCountBelumSesuai'   => $tlCountBelumSesuai,
-            'tlCountBelum'         => $tlCountBelum,
-            'tlCountTdt'           => $tlCountTdt,
-            'tlTotalTargetRp'      => $tlTotalTargetRp,
-            'tlTotalSetorRp'       => $tlTotalSetorRp,
-            'tlSisaSetorRp'        => $tlSisaSetorRp,
-            'tlPersenSelesai'      => $tlPersenSelesai,
-            'matrixOpd'            => $matrixOpd,
-            'sptDumas'             => $sptDumas,
+            'dasarHukum'             => $dasarHukum,
+            'irbans'                 => $irbans,
+            'totalPersonilAktif'     => $totalPersonilAktif,
+            'totalAuditor'           => $totalAuditor,
+            'totalPpupd'             => $totalPpupd,
+            'totalStaf'              => $totalStaf,
+            'totalTargetPkppt'       => $totalTargetPkppt,
+            'totalTargetLaporan'     => $totalTargetLaporan,
+            'totalSptTerbit'         => $totalSptTerbit,
+            'totalSptSelesai'        => $totalSptSelesai,
+            'totalSptBerjalan'       => $totalSptBerjalan,
+            'totalSptBelum'          => $totalSptBelum,
+            'persenRealisasiPkppt'   => $persenRealisasiPkppt,
+            'kategoriAudit'          => $kategoriAudit,
+            'kategoriReviu'          => $kategoriReviu,
+            'kategoriEvaluasi'       => $kategoriEvaluasi,
+            'kategoriPemantauan'     => $kategoriPemantauan,
+            'kategoriLainnya'        => $kategoriLainnya,
+            'rekapKlusterPengawasan' => $rekapKlusterPengawasan,
+            'tlCountTotal'           => $tlCountTotal,
+            'tlCountSelesai'         => $tlCountSelesai,
+            'tlCountBelumSesuai'     => $tlCountBelumSesuai,
+            'tlCountBelum'           => $tlCountBelum,
+            'tlCountTdt'             => $tlCountTdt,
+            'tlTotalTargetRp'        => $tlTotalTargetRp,
+            'tlTotalSetorRp'         => $tlTotalSetorRp,
+            'tlSisaSetorRp'          => $tlSisaSetorRp,
+            'tlPersenSelesai'        => $tlPersenSelesai,
+            'matrixOpd'              => $matrixOpd,
+            'sptDumas'               => $sptDumas,
         ];
     }
 }

@@ -152,7 +152,12 @@
                             </td>
                             <td class="py-3 px-4 whitespace-nowrap">
                                 <span class="block font-semibold text-slate-800 dark:text-slate-200">{{ $item->jenisPenugasan?->nama }}</span>
-                                <span class="text-[10px] text-slate-400">Sumber: {{ $item->sumberPenugasan?->nama }}</span>
+                                <span class="text-[10px] text-slate-400 block">Sumber: {{ $item->sumberPenugasan?->nama }}</span>
+                                @if($item->kelompokPengawasan)
+                                    <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                        📁 {{ $item->kelompokPengawasan->nama_kelompok }}
+                                    </span>
+                                @endif
                             </td>
                             <td class="py-3 px-4 font-semibold text-emerald-600 dark:text-emerald-400">
                                 {{ $item->irban_list_names }}

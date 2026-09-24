@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\Irban;
 use App\Models\JenisPenugasan;
+use App\Models\KelompokPengawasan;
 use App\Models\ObjekPenugasan;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -368,5 +369,85 @@ class MasterDataController extends Controller
         $userList  = User::internal()->orderBy('nama')->get();
 
         return view('master.audit-log', compact('logs', 'tabelList', 'userList', 'tabel', 'aksi', 'dari', 'sampai', 'userId', 'search'));
+    }
+
+    /**
+     * Master Data: Kelompok / Kluster Jenis Pengawasan (Bahan ILHP & PKPPT).
+     */
+    public function kelompokPengawasan(Request $request): View
+    {
+        $search = $request->input('search');
+
+        $query = KelompokPengawasan::withCount(['pkppts', 'penugasans'])->orderBy('urutan', 'asc');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_kelompok', 'like', "%{$search}%")
+                  ->orWhere('kode_kelompok', 'like', "%{$search}%")
+                  ->orWhere('deskripsi_singkat', 'like', "%{$search}%")
+                  ->orWhere('bentuk_pengawasan', 'like', "%{$search}%");
+            });
+        }
+
+        $kelompoks = $query->paginate(15)->withQueryString();
+
+        return view('master.kelompok-pengawasan', compact('kelompoks', 'search'));
+    }
+
+    /** Simpan Kelompok Pengawasan Baru */
+    public function storeKelompokPengawasan(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'nama_kelompok'     => ['required', 'string', 'max:200'],
+            'kode_kelompok'     => ['nullable', 'string', 'max:50', 'unique:kelompok_pengawasan,kode_kelompok'],
+            'deskripsi_singkat' => ['nullable', 'string'],
+            'bentuk_pengawasan' => ['nullable', 'string'],
+            'urutan'            => ['nullable', 'integer', 'min:1'],
+            'is_active'         => ['boolean'],
+        ]);
+
+        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['urutan'] = $validated['urutan'] ?? ((KelompokPengawasan::max('urutan') ?? 0) + 1);
+
+        $kelompok = KelompokPengawasan::create($validated);
+        ActivityLog::catat('kelompok_pengawasan', $kelompok->id, 'create', null, $kelompok->toArray());
+
+        return back()->with('status', "Kelompok Pengawasan '{$kelompok->nama_kelompok}' berhasil ditambahkan.");
+    }
+
+    /** Update Kelompok Pengawasan */
+    public function updateKelompokPengawasan(Request $request, KelompokPengawasan $kelompok): RedirectResponse
+    {
+        $validated = $request->validate([
+            'nama_kelompok'     => ['required', 'string', 'max:200'],
+            'kode_kelompok'     => ['nullable', 'string', 'max:50', 'unique:kelompok_pengawasan,kode_kelompok,' . $kelompok->id],
+            'deskripsi_singkat' => ['nullable', 'string'],
+            'bentuk_pengawasan' => ['nullable', 'string'],
+            'urutan'            => ['nullable', 'integer', 'min:1'],
+            'is_active'         => ['boolean'],
+        ]);
+
+        $validated['is_active'] = $request->boolean('is_active', true);
+        $sebelum = $kelompok->toArray();
+
+        $kelompok->update($validated);
+        ActivityLog::catat('kelompok_pengawasan', $kelompok->id, 'update', $sebelum, $kelompok->toArray());
+
+        return back()->with('status', "Kelompok Pengawasan '{$kelompok->nama_kelompok}' berhasil diperbarui.");
+    }
+
+    /** Hapus Kelompok Pengawasan */
+    public function destroyKelompokPengawasan(KelompokPengawasan $kelompok): RedirectResponse
+    {
+        if ($kelompok->pkppts()->exists() || $kelompok->penugasans()->exists()) {
+            return back()->with('error', "Kelompok Pengawasan tidak dapat dihapus karena telah terhubung dengan data PKPPT atau Surat Tugas SPT.");
+        }
+
+        $sebelum = $kelompok->toArray();
+        $nama = $kelompok->nama_kelompok;
+        $kelompok->delete();
+        ActivityLog::catat('kelompok_pengawasan', $sebelum['id'], 'delete', $sebelum, null);
+
+        return back()->with('status', "Kelompok Pengawasan '{$nama}' berhasil dihapus.");
     }
 }

@@ -97,6 +97,11 @@
                                         v{{ $item->versi_revisi }}
                                     </span>
                                 </div>
+                                @if($item->kelompokPengawasan)
+                                    <span class="inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                        📁 {{ $item->kelompokPengawasan->nama_kelompok }}
+                                    </span>
+                                @endif
                                 @if($item->catatan_revisi)
                                     <p class="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5 italic">
                                         Catatan: {{ Str::limit($item->catatan_revisi, 50) }}
@@ -273,6 +278,16 @@
                     <input type="text" name="area_pengawasan" required placeholder="mis. Pengendalian Inflasi Daerah / Audit Kinerja OPD" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
                 </div>
 
+                <div>
+                    <label class="block font-semibold mb-1">Kelompok / Kluster Pengawasan (Bahan ILHP)</label>
+                    <select name="kelompok_pengawasan_id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        <option value="">-- Pilih Kelompok Pengawasan (Opsional) --</option>
+                        @foreach($kelompokList as $k)
+                            <option value="{{ $k->id }}">{{ $k->nama_kelompok }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block font-semibold mb-1">Jenis Pengawasan <span class="text-rose-500">*</span></label>
@@ -340,6 +355,16 @@
                 <div>
                     <label class="block font-semibold mb-1">Area Pengawasan</label>
                     <input type="text" id="editAreaPengawasan" name="area_pengawasan" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                </div>
+
+                <div>
+                    <label class="block font-semibold mb-1">Kelompok / Kluster Pengawasan (Bahan ILHP)</label>
+                    <select id="editKelompokPengawasanId" name="kelompok_pengawasan_id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        <option value="">-- Pilih Kelompok Pengawasan (Opsional) --</option>
+                        @foreach($kelompokList as $k)
+                            <option value="{{ $k->id }}">{{ $k->nama_kelompok }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -450,6 +475,16 @@
                     <input type="text" id="revisiAreaPengawasan" name="area_pengawasan" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
                 </div>
 
+                <div>
+                    <label class="block font-semibold mb-1">Kelompok / Kluster Pengawasan (Bahan ILHP)</label>
+                    <select id="revisiKelompokPengawasanId" name="kelompok_pengawasan_id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        <option value="">-- Pilih Kelompok Pengawasan (Opsional) --</option>
+                        @foreach($kelompokList as $k)
+                            <option value="{{ $k->id }}">{{ $k->nama_kelompok }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block font-semibold mb-1">Jenis Pengawasan <span class="text-rose-500">*</span></label>
@@ -495,13 +530,14 @@
         function openModalEditPkppt(data) {
             const form = document.getElementById('formEditPkppt');
             form.action = '/pkppt/' + data.id;
-            document.getElementById('editIrbanId').value = data.irban_id;
-            document.getElementById('editAreaPengawasan').value = data.area_pengawasan;
-            document.getElementById('editJenisPengawasan').value = data.jenis_pengawasan;
-            document.getElementById('editJumlahLaporan').value = data.jumlah_laporan_rencana;
-            document.getElementById('editSasaran').value = data.sasaran;
-            document.getElementById('editRencanaMulai').value = data.rencana_mulai;
-            document.getElementById('editRencanaSelesai').value = data.rencana_selesai_laporan;
+            document.getElementById('editIrbanId').value = data.irban_id || '';
+            document.getElementById('editAreaPengawasan').value = data.area_pengawasan || '';
+            document.getElementById('editKelompokPengawasanId').value = data.kelompok_pengawasan_id || '';
+            document.getElementById('editJenisPengawasan').value = data.jenis_pengawasan || '';
+            document.getElementById('editJumlahLaporan').value = data.jumlah_laporan_rencana || 1;
+            document.getElementById('editSasaran').value = data.sasaran || '';
+            document.getElementById('editRencanaMulai').value = data.rencana_mulai || '';
+            document.getElementById('editRencanaSelesai').value = data.rencana_selesai_laporan || '';
             document.getElementById('modalEditPkppt').classList.remove('hidden');
         }
 
@@ -516,13 +552,14 @@
             const form = document.getElementById('formRevisiPkppt');
             form.action = '/pkppt/' + data.id + '/revisi';
             document.getElementById('revisiVersiLabel').innerText = 'Membuat Versi ' + (data.versi + 1) + ' dari Versi ' + data.versi;
-            document.getElementById('revisiIrbanId').value = data.irban_id;
-            document.getElementById('revisiAreaPengawasan').value = data.area_pengawasan;
-            document.getElementById('revisiJenisPengawasan').value = data.jenis_pengawasan;
-            document.getElementById('revisiJumlahLaporan').value = data.jumlah_laporan_rencana;
-            document.getElementById('revisiSasaran').value = data.sasaran;
-            document.getElementById('revisiRencanaMulai').value = data.rencana_mulai;
-            document.getElementById('revisiRencanaSelesai').value = data.rencana_selesai_laporan;
+            document.getElementById('revisiIrbanId').value = data.irban_id || '';
+            document.getElementById('revisiAreaPengawasan').value = data.area_pengawasan || '';
+            document.getElementById('revisiKelompokPengawasanId').value = data.kelompok_pengawasan_id || '';
+            document.getElementById('revisiJenisPengawasan').value = data.jenis_pengawasan || '';
+            document.getElementById('revisiJumlahLaporan').value = data.jumlah_laporan_rencana || 1;
+            document.getElementById('revisiSasaran').value = data.sasaran || '';
+            document.getElementById('revisiRencanaMulai').value = data.rencana_mulai || '';
+            document.getElementById('revisiRencanaSelesai').value = data.rencana_selesai_laporan || '';
             document.getElementById('modalRevisiPkppt').classList.remove('hidden');
         }
     </script>

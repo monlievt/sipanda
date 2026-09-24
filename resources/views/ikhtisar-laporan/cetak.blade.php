@@ -123,10 +123,59 @@
                 <h3 class="font-bold text-sm uppercase">BAB II HASIL PENGAWASAN</h3>
                 
                 <div class="space-y-3 pl-4 text-xs">
-                    <p>Realisasi kegiatan pengawasan yang dilaksanakan pada periode ini dikelompokkan menurut jenis pengawasan sebagai berikut:</p>
+                    <p>Realisasi kegiatan pengawasan yang dilaksanakan pada periode ini dikelompokkan menurut 6 (enam) Kluster Pengelompokan Pengawasan dan rincian jenis pengawasan sebagai berikut:</p>
+
+                    <!-- TABEL REKAPITULASI 6 KLUSTER PENGAWASAN (BAHAN ILHP) -->
+                    <p class="font-bold">Tabel Rekapitulasi Realisasi Pengawasan Berdasarkan 6 Pengelompokan Pengawasan (Bahan ILHP):</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;">No</th>
+                                <th style="width: 40%;">Kelompok / Kluster Pengawasan</th>
+                                <th style="width: 11%;">Target PKPT</th>
+                                <th style="width: 11%;">Target Laporan</th>
+                                <th style="width: 11%;">Realisasi SPT</th>
+                                <th style="width: 11%;">Selesai (LHP)</th>
+                                <th style="width: 11%;">% Realisasi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $totTargetPkpt = 0;
+                                $totTargetLap = 0;
+                                $totSpt = 0;
+                                $totSelesai = 0;
+                            @endphp
+                            @foreach($compiledData['rekapKlusterPengawasan'] as $idx => $kluster)
+                                @php
+                                    $totTargetPkpt += $kluster->target_pkppt;
+                                    $totTargetLap += $kluster->target_laporan;
+                                    $totSpt += $kluster->spt_total;
+                                    $totSelesai += $kluster->spt_selesai;
+                                @endphp
+                                <tr>
+                                    <td style="text-align: center;">{{ $idx + 1 }}</td>
+                                    <td class="font-semibold">{{ $kluster->nama_kelompok }}</td>
+                                    <td style="text-align: center;">{{ $kluster->target_pkppt }}</td>
+                                    <td style="text-align: center;">{{ $kluster->target_laporan }}</td>
+                                    <td style="text-align: center; font-weight: bold;">{{ $kluster->spt_total }}</td>
+                                    <td style="text-align: center;">{{ $kluster->spt_selesai }}</td>
+                                    <td style="text-align: center; font-weight: bold;">{{ $kluster->persen }}%</td>
+                                </tr>
+                            @endforeach
+                            <tr style="font-weight: bold; background-color: #f8fafc;">
+                                <td colspan="2" style="text-align: center; text-transform: uppercase;">Jumlah Keseluruhan</td>
+                                <td style="text-align: center;">{{ $totTargetPkpt }}</td>
+                                <td style="text-align: center;">{{ $totTargetLap }}</td>
+                                <td style="text-align: center;">{{ $totSpt }}</td>
+                                <td style="text-align: center;">{{ $totSelesai }}</td>
+                                <td style="text-align: center;">{{ $totTargetPkpt > 0 ? round(($totSpt / $totTargetPkpt) * 100, 1) : 0 }}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
                     <!-- A. Audit -->
-                    <p class="font-bold">A. Audit</p>
+                    <p class="font-bold pt-3">A. Audit</p>
                     
                     <p class="font-semibold pl-2">1. Audit Kinerja ({{ count($compiledData['kategoriAudit']['audit_kinerja'] ?? []) }} Penugasan)</p>
                     <table>

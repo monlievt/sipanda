@@ -375,6 +375,19 @@
                     </div>
                 </div>
 
+                <!-- Kelompok / Kluster Pengawasan (Bahan ILHP) -->
+                <div x-show="isPerpanjangan == '0'" x-transition>
+                    <label class="block font-semibold mb-1">Kelompok / Kluster Pengawasan (Bahan ILHP)</label>
+                    <select name="kelompok_pengawasan_id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500 font-semibold text-slate-800 dark:text-slate-200">
+                        <option value="">-- Pilih Kelompok Pengawasan (Opsional) --</option>
+                        @foreach($kelompokList as $k)
+                            <option value="{{ $k->id }}" {{ old('kelompok_pengawasan_id', $penugasan->kelompok_pengawasan_id) == $k->id ? 'selected' : '' }}>
+                                {{ $k->nama_kelompok }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block font-semibold mb-1">Tanggal Mulai <span class="text-rose-500">*</span></label>

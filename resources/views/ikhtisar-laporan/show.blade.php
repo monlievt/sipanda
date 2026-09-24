@@ -118,11 +118,80 @@
 
                 <div class="pl-9 space-y-6 text-xs">
                     <p class="text-slate-700 dark:text-slate-300 leading-relaxed">
-                        Selama periode {{ $ikhtisarLaporan->periode_label }} Tahun Anggaran {{ $ikhtisarLaporan->tahun }}, Inspektorat Daerah telah merealisasikan penugasan pengawasan *Assurance* dan *Consulting* dengan rincian sebagai berikut:
+                        Selama periode {{ $ikhtisarLaporan->periode_label }} Tahun Anggaran {{ $ikhtisarLaporan->tahun }}, Inspektorat Daerah telah merealisasikan penugasan pengawasan *Assurance* dan *Consulting* dengan rincian pengelompokan pengawasan dan kategori penugasan sebagai berikut:
                     </p>
 
-                    <!-- A. Audit -->
+                    <!-- TABEL REKAPITULASI 6 KLUSTER PENGAWASAN (BAHAN ILHP) -->
                     <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                                Rekapitulasi Berdasarkan 6 Pengelompokan Pengawasan (Bahan ILHP)
+                            </h4>
+                            <span class="text-[11px] text-slate-500">Total: <strong>{{ count($compiledData['rekapKlusterPengawasan']) }} Kelompok</strong></span>
+                        </div>
+                        <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-100 dark:bg-slate-800/80 text-[10px] font-bold uppercase text-slate-700 dark:text-slate-300">
+                                    <tr>
+                                        <th class="px-3.5 py-2.5 text-center w-10">No</th>
+                                        <th class="px-3.5 py-2.5">Kelompok / Kluster Pengawasan</th>
+                                        <th class="px-3.5 py-2.5 text-center">Target PKPT</th>
+                                        <th class="px-3.5 py-2.5 text-center">Target Laporan</th>
+                                        <th class="px-3.5 py-2.5 text-center">Realisasi SPT</th>
+                                        <th class="px-3.5 py-2.5 text-center">Selesai (LHP)</th>
+                                        <th class="px-3.5 py-2.5 text-center">% Realisasi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                    @php
+                                        $totTargetPkpt = 0;
+                                        $totTargetLap = 0;
+                                        $totSpt = 0;
+                                        $totSelesai = 0;
+                                    @endphp
+                                    @foreach($compiledData['rekapKlusterPengawasan'] as $idx => $kluster)
+                                        @php
+                                            $totTargetPkpt += $kluster->target_pkppt;
+                                            $totTargetLap += $kluster->target_laporan;
+                                            $totSpt += $kluster->spt_total;
+                                            $totSelesai += $kluster->spt_selesai;
+                                        @endphp
+                                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                                            <td class="px-3.5 py-2.5 text-center text-slate-400 font-bold">{{ $idx + 1 }}</td>
+                                            <td class="px-3.5 py-2.5">
+                                                <div class="font-bold text-slate-900 dark:text-white">{{ $kluster->nama_kelompok }}</div>
+                                                @if($kluster->deskripsi_singkat)
+                                                    <div class="text-[11px] text-slate-500 line-clamp-1">{{ $kluster->deskripsi_singkat }}</div>
+                                                @endif
+                                            </td>
+                                            <td class="px-3.5 py-2.5 text-center font-semibold">{{ $kluster->target_pkppt }}</td>
+                                            <td class="px-3.5 py-2.5 text-center font-semibold text-slate-600 dark:text-slate-400">{{ $kluster->target_laporan }}</td>
+                                            <td class="px-3.5 py-2.5 text-center font-black text-emerald-600 dark:text-emerald-400">{{ $kluster->spt_total }}</td>
+                                            <td class="px-3.5 py-2.5 text-center font-bold text-slate-700 dark:text-slate-300">{{ $kluster->spt_selesai }}</td>
+                                            <td class="px-3.5 py-2.5 text-center">
+                                                <span class="px-2 py-0.5 rounded-md font-bold text-[10px] {{ $kluster->persen >= 100 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : ($kluster->persen > 0 ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400') }}">
+                                                    {{ $kluster->persen }}%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                    <tr class="bg-slate-50/80 dark:bg-slate-800/60 font-bold text-slate-900 dark:text-white border-t-2 border-slate-200 dark:border-slate-700">
+                                        <td colspan="2" class="px-3.5 py-2.5 text-center uppercase tracking-wider text-[11px]">Total Jumlah Keseluruhan</td>
+                                        <td class="px-3.5 py-2.5 text-center">{{ $totTargetPkpt }}</td>
+                                        <td class="px-3.5 py-2.5 text-center">{{ $totTargetLap }}</td>
+                                        <td class="px-3.5 py-2.5 text-center text-emerald-600 dark:text-emerald-400">{{ $totSpt }}</td>
+                                        <td class="px-3.5 py-2.5 text-center">{{ $totSelesai }}</td>
+                                        <td class="px-3.5 py-2.5 text-center text-emerald-600 dark:text-emerald-400">
+                                            {{ $totTargetPkpt > 0 ? round(($totSpt / $totTargetPkpt) * 100, 1) : 0 }}%
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- A. Audit -->
+                    <div class="space-y-3 pt-4">
                         <h4 class="font-bold text-slate-900 dark:text-white text-xs uppercase text-emerald-600 dark:text-emerald-400">
                             A. AUDIT (Kinerja & Dengan Tujuan Tertentu)
                         </h4>

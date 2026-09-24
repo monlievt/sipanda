@@ -189,6 +189,18 @@
                         <p class="font-bold text-slate-800 dark:text-slate-200">{{ $penugasan->sumberPenugasan?->nama ?? '-' }}</p>
                     </div>
 
+                    <div class="p-3 bg-indigo-50/70 dark:bg-indigo-950/40 rounded-xl border border-indigo-200 dark:border-indigo-800/60 space-y-1 sm:col-span-2">
+                        <span class="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 block uppercase">Kelompok / Kluster Pengawasan (Bahan ILHP):</span>
+                        <p class="font-bold text-indigo-900 dark:text-indigo-200">
+                            {{ $penugasan->kelompokPengawasan?->nama_kelompok ?? ($penugasan->pkppt?->kelompokPengawasan?->nama_kelompok ?? 'Belum Ditentukan') }}
+                        </p>
+                        @if($penugasan->kelompokPengawasan?->deskripsi_singkat)
+                            <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+                                {{ $penugasan->kelompokPengawasan->deskripsi_singkat }}
+                            </p>
+                        @endif
+                    </div>
+
                     <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
                         <span class="text-[10px] font-bold text-slate-400 block uppercase">Irban Penanggung Jawab:</span>
                         <p class="font-bold text-emerald-600 dark:text-emerald-400">{{ $penugasan->irban_list_names }}</p>

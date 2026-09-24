@@ -15,6 +15,7 @@ class Pkppt extends Model {
         'rencana_selesai_laporan',
         'jumlah_laporan_rencana',
         'irban_id',
+        'kelompok_pengawasan_id',
         'status',
         'skor_risiko_acuan',
         'ditetapkan_oleh',
@@ -37,6 +38,11 @@ class Pkppt extends Model {
     ];
 
     // ─── Relasi ───────────────────────────────────────────
+
+    public function kelompokPengawasan()
+    {
+        return $this->belongsTo(KelompokPengawasan::class, 'kelompok_pengawasan_id');
+    }
 
     public function irban()
     {

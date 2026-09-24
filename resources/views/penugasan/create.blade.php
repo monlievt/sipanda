@@ -414,6 +414,19 @@
                     </div>
                 </div>
 
+                <!-- Kelompok / Kluster Pengawasan (Bahan ILHP) -->
+                <div x-show="isPerpanjangan == '0'" x-transition>
+                    <label class="block font-semibold mb-1">Kelompok / Kluster Pengawasan (Bahan ILHP) <span class="text-slate-400 font-normal">(Otomatis terisi jika memilih PKPPT)</span></label>
+                    <select name="kelompok_pengawasan_id" id="kelompokPengawasanSelect" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500 font-semibold text-slate-800 dark:text-slate-200">
+                        <option value="">-- Pilih Kelompok Pengawasan (Opsional / Otomatis dari PKPPT) --</option>
+                        @foreach($kelompokList as $k)
+                            <option value="{{ $k->id }}" {{ old('kelompok_pengawasan_id') == $k->id ? 'selected' : '' }}>
+                                {{ $k->nama_kelompok }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <!-- Tanggal Mulai & Selesai -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -451,7 +464,11 @@
                             selectedLabel: '-- Pilih Rencana PKPPT --',
                             options: [
                                 @foreach($pkpptList as $pk)
-                                    { id: '{{ $pk->id }}', label: '[{{ addslashes($pk->irban?->nama_irban ?? 'Semua Irban') }}] {{ addslashes($pk->area_pengawasan) }} (Target: {{ $pk->jumlah_laporan_rencana }} Laporan)' },
+                                    { 
+                                        id: '{{ $pk->id }}', 
+                                        label: '[{{ addslashes($pk->irban?->nama_irban ?? 'Semua Irban') }}] {{ addslashes($pk->area_pengawasan) }} (Target: {{ $pk->jumlah_laporan_rencana }} Laporan)',
+                                        kelompok_id: '{{ $pk->kelompok_pengawasan_id }}'
+                                    },
                                 @endforeach
                             ],
                             get filteredOptions() {
@@ -463,6 +480,10 @@
                                 this.selectedLabel = opt.label;
                                 this.open = false;
                                 this.search = '';
+                                if (opt.kelompok_id) {
+                                    const sel = document.getElementById('kelompokPengawasanSelect');
+                                    if (sel) sel.value = opt.kelompok_id;
+                                }
                             },
                             init() {
                                 if (this.selectedId) {

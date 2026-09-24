@@ -93,15 +93,24 @@
                             </td>
                             <td class="py-3 px-4 font-mono text-slate-700 dark:text-slate-300">{{ $u->nip ?? '-' }}</td>
                             <td class="py-3 px-4">
-                                <div class="flex items-center gap-1.5 flex-wrap">
-                                    <span class="font-semibold text-slate-800 dark:text-slate-200">{{ $u->jabatan ?? '-' }}</span>
+                                <div class="space-y-0.5">
+                                    <p class="font-bold text-slate-800 dark:text-slate-200">{{ $u->jabatan ?? '-' }}</p>
                                     @if($u->status_jabatan && $u->status_jabatan !== 'definitif')
-                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                                            {{ $u->status_jabatan_badge }}
-                                        </span>
+                                        <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                                            <span>⚡</span>
+                                            <span>
+                                                @if($u->hasRole('inspektur'))
+                                                    {{ $u->status_jabatan_badge }} Inspektur Daerah
+                                                @elseif($u->hasRole('irban'))
+                                                    {{ $u->status_jabatan_badge }} {{ $u->irban?->nama_irban ?? 'Irban' }}
+                                                @else
+                                                    {{ $u->status_jabatan_badge }}
+                                                @endif
+                                            </span>
+                                        </div>
                                     @endif
+                                    <p class="text-[10px] text-slate-400">{{ $u->pangkat ?? '-' }} {{ $u->golongan ? "({$u->golongan})" : '' }}</p>
                                 </div>
-                                <span class="text-[10px] text-slate-400">{{ $u->pangkat ?? '-' }} {{ $u->golongan ? "({$u->golongan})" : '' }}</span>
                             </td>
                             <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">
                                 {{ $u->no_hp ?? '-' }}
@@ -156,7 +165,7 @@
 
     <!-- Modal Tambah Pegawai Baru -->
     <div id="modalCreateUser" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 text-xs">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-xl w-full p-6 border border-slate-200 dark:border-slate-800 text-xs">
             <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
                     <h3 class="font-bold text-slate-900 dark:text-white text-base">Tambah Pegawai Internal Baru</h3>
@@ -165,81 +174,92 @@
                 <button onclick="document.getElementById('modalCreateUser').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
 
-            <form method="POST" action="{{ route('master.users.store') }}" class="space-y-3.5 mt-4">
+            <form method="POST" action="{{ route('master.users.store') }}" class="space-y-4 mt-4">
                 @csrf
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">Nama Lengkap (dg Gelar) <span class="text-rose-500">*</span></label>
-                        <input type="text" name="nama" required placeholder="Contoh: AHMAD FAUZI, SE.M.Si" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                <!-- 1. Identitas & Kontak -->
+                <div class="space-y-2.5">
+                    <p class="font-bold text-emerald-600 uppercase tracking-wider text-[10px]">1. Identitas & Kontak Pegawai</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold mb-1">Nama Lengkap (dg Gelar) <span class="text-rose-500">*</span></label>
+                            <input type="text" name="nama" required placeholder="Contoh: Ir. WIJIONO, S.T., M.MKes." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Nama Panggilan / Sapaan</label>
+                            <input type="text" name="nama_tanpa_gelar" placeholder="Contoh: Pak Wijiono" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Nama Panggilan / Sapaan</label>
-                        <input type="text" name="nama_tanpa_gelar" placeholder="Contoh: Pak Fauzi" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block font-semibold mb-1">NIP Pegawai <span class="text-rose-500">*</span></label>
+                            <input type="text" name="nip" required placeholder="1980xxxxxxxxxxxxxx" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-mono">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Email <span class="text-rose-500">*</span></label>
+                            <input type="email" name="email" required placeholder="nama@trenggalek.go.id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">No. WhatsApp / HP</label>
+                            <input type="text" name="no_hp" placeholder="081234567890" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">NIP Pegawai <span class="text-rose-500">*</span></label>
-                        <input type="text" name="nip" required placeholder="1980xxxxxxxxxxxxxx" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-mono">
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Email <span class="text-rose-500">*</span></label>
-                        <input type="email" name="email" required placeholder="nama@trenggalek.go.id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">No. WhatsApp / HP</label>
-                        <input type="text" name="no_hp" placeholder="081234567890" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                        <span class="text-[10px] text-slate-400">Untuk pengiriman notifikasi penugasan via WA.</span>
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Status Penugasan Jabatan <span class="text-rose-500">*</span></label>
-                        <select name="status_jabatan" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
-                            <option value="definitif">Definitif (Pejabat Tetap)</option>
-                            <option value="plt">Plt. (Pelaksana Tugas)</option>
-                            <option value="plh">Plh. (Pelaksana Harian)</option>
-                            <option value="pj">Pj. (Penjabat)</option>
-                        </select>
+                <!-- 2. Jabatan Definitif ASN -->
+                <div class="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <p class="font-bold text-emerald-600 uppercase tracking-wider text-[10px]">2. Jabatan Definitif ASN</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block font-semibold mb-1">Nama Jabatan Definitif <span class="text-rose-500">*</span></label>
+                            <input type="text" name="jabatan" required placeholder="Contoh: Sekretaris / Auditor Madya" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Pangkat</label>
+                            <input type="text" name="pangkat" placeholder="Contoh: Pembina" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Golongan Ruang</label>
+                            <input type="text" name="golongan" placeholder="Contoh: IV/a" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">Nama Jabatan</label>
-                        <input type="text" name="jabatan" placeholder="Contoh: Sekretaris / Auditor" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                <!-- 3. Penugasan Pimpinan & Hak Akses -->
+                <div class="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <p class="font-bold text-emerald-600 uppercase tracking-wider text-[10px]">3. Penugasan Pimpinan & Hak Akses Sistem</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block font-semibold mb-1">Role / Peran di Sistem <span class="text-rose-500">*</span></label>
+                            <select name="role" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200">
+                                @foreach($roles as $r)
+                                    <option value="{{ $r->name }}" {{ $r->name === 'auditor' ? 'selected' : '' }}>{{ ucfirst($r->name) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Unit Kerja / Irban</label>
+                            <select name="irban_id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                                <option value="">-- Sekretariat / Umum --</option>
+                                @foreach($irbans as $irban)
+                                    <option value="{{ $irban->id }}">{{ $irban->nama_irban }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Status Penugasan Pimpinan <span class="text-rose-500">*</span></label>
+                            <select name="status_jabatan" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                                <option value="definitif">Definitif (Pejabat Tetap)</option>
+                                <option value="plt">Plt. (Pelaksana Tugas)</option>
+                                <option value="plh">Plh. (Pelaksana Harian)</option>
+                                <option value="pj">Pj. (Penjabat)</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Pangkat</label>
-                        <input type="text" name="pangkat" placeholder="Contoh: Pembina" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Golongan Ruang</label>
-                        <input type="text" name="golongan" placeholder="Contoh: IV/a" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">Unit Kerja / Irban</label>
-                        <select name="irban_id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                            <option value="">-- Sekretariat / Umum --</option>
-                            @foreach($irbans as $irban)
-                                <option value="{{ $irban->id }}">{{ $irban->nama_irban }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Role Hak Akses <span class="text-rose-500">*</span></label>
-                        <select name="role" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                            @foreach($roles as $r)
-                                <option value="{{ $r->name }}" {{ $r->name === 'anggota' ? 'selected' : '' }}>{{ ucfirst($r->name) }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    <p class="text-[10px] text-slate-500 leading-relaxed">
+                        💡 <em>Jika seorang pejabat definitif (misal: Sekretaris) ditunjuk memimpin Inspektorat, pilih Role: <strong>Inspektur</strong> dan Status: <strong>Plt.</strong> Dokumen SPT otomatis mencetak <strong>Plt. INSPEKTUR KABUPATEN TRENGGALEK</strong>.</em>
+                    </p>
                 </div>
 
                 <div>
@@ -257,91 +277,112 @@
 
     <!-- Modal Edit User -->
     <div id="modalEditUser" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 text-xs">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-xl w-full p-6 border border-slate-200 dark:border-slate-800 text-xs">
             <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
                     <h3 class="font-bold text-slate-900 dark:text-white text-base">Edit Data Pegawai & Role</h3>
-                    <p class="text-[11px] text-slate-500">Perbarui profil, nomor kontak, jabatan, unit, atau hak akses.</p>
+                    <p class="text-[11px] text-slate-500">Perbarui profil, jabatan definitif, penugasan pimpinan (Plt/Definitif), atau hak akses.</p>
                 </div>
                 <button onclick="document.getElementById('modalEditUser').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
 
-            <form id="formEditUser" method="POST" action="" class="space-y-3.5 mt-4">
+            <form id="formEditUser" method="POST" action="" class="space-y-4 mt-4">
                 @csrf
                 @method('PATCH')
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">Nama Lengkap (dg Gelar) <span class="text-rose-500">*</span></label>
-                        <input type="text" id="editNama" name="nama" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                <!-- 1. Identitas & Kontak -->
+                <div class="space-y-2.5">
+                    <p class="font-bold text-blue-600 uppercase tracking-wider text-[10px]">1. Identitas & Kontak Pegawai</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold mb-1">Nama Lengkap (dg Gelar) <span class="text-rose-500">*</span></label>
+                            <input type="text" id="editNama" name="nama" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Nama Panggilan / Sapaan</label>
+                            <input type="text" id="editNamaTanpaGelar" name="nama_tanpa_gelar" placeholder="Contoh: Pak Retno" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Nama Panggilan / Sapaan</label>
-                        <input type="text" id="editNamaTanpaGelar" name="nama_tanpa_gelar" placeholder="Contoh: Pak Retno" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block font-semibold mb-1">NIP Pegawai <span class="text-rose-500">*</span></label>
+                            <input type="text" id="editNip" name="nip" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-mono">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Email <span class="text-rose-500">*</span></label>
+                            <input type="email" id="editEmail" name="email" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">No. WhatsApp / HP</label>
+                            <input type="text" id="editNoHp" name="no_hp" placeholder="081234567890" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">NIP Pegawai <span class="text-rose-500">*</span></label>
-                        <input type="text" id="editNip" name="nip" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-mono">
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Email <span class="text-rose-500">*</span></label>
-                        <input type="email" id="editEmail" name="email" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">No. WhatsApp / HP</label>
-                        <input type="text" id="editNoHp" name="no_hp" placeholder="081234567890" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                        <span class="text-[10px] text-slate-400">Untuk pengiriman notifikasi penugasan via WA.</span>
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Status Penugasan Jabatan <span class="text-rose-500">*</span></label>
-                        <select id="editStatusJabatan" name="status_jabatan" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
-                            <option value="definitif">Definitif (Pejabat Tetap)</option>
-                            <option value="plt">Plt. (Pelaksana Tugas)</option>
-                            <option value="plh">Plh. (Pelaksana Harian)</option>
-                            <option value="pj">Pj. (Penjabat)</option>
-                        </select>
+                <!-- 2. Jabatan Definitif ASN -->
+                <div class="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <p class="font-bold text-blue-600 uppercase tracking-wider text-[10px]">2. Jabatan Definitif ASN</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block font-semibold mb-1">Nama Jabatan Definitif <span class="text-rose-500">*</span></label>
+                            <input type="text" id="editJabatan" name="jabatan" required placeholder="Contoh: Sekretaris / Auditor Madya" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Pangkat</label>
+                            <input type="text" id="editPangkat" name="pangkat" placeholder="Contoh: Pembina" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Golongan Ruang</label>
+                            <input type="text" id="editGolongan" name="golongan" placeholder="Contoh: IV/a" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">Nama Jabatan</label>
-                        <input type="text" id="editJabatan" name="jabatan" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                <!-- 3. Penugasan Pimpinan & Hak Akses -->
+                <div class="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <p class="font-bold text-blue-600 uppercase tracking-wider text-[10px]">3. Penugasan Pimpinan & Hak Akses Sistem</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block font-semibold mb-1">Role / Peran di Sistem <span class="text-rose-500">*</span></label>
+                            <select id="editRole" name="role" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200">
+                                @foreach($roles as $r)
+                                    <option value="{{ $r->name }}">{{ ucfirst($r->name) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Unit Kerja / Irban</label>
+                            <select id="editIrbanId" name="irban_id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                                <option value="">-- Sekretariat --</option>
+                                @foreach($irbans as $irban)
+                                    <option value="{{ $irban->id }}">{{ $irban->nama_irban }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Status Penugasan Pimpinan <span class="text-rose-500">*</span></label>
+                            <select id="editStatusJabatan" name="status_jabatan" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                                <option value="definitif">Definitif (Pejabat Tetap)</option>
+                                <option value="plt">Plt. (Pelaksana Tugas)</option>
+                                <option value="plh">Plh. (Pelaksana Harian)</option>
+                                <option value="pj">Pj. (Penjabat)</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Pangkat</label>
-                        <input type="text" id="editPangkat" name="pangkat" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Golongan</label>
-                        <input type="text" id="editGolongan" name="golongan" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                    <div class="p-3 bg-blue-50/80 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800/60 text-[11px] text-blue-900 dark:text-blue-300 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold flex items-center gap-1">⚡ Hasil Penugasan Sistem:</span>
+                            <span id="editPreviewJabatan" class="font-black px-2.5 py-0.5 rounded-full bg-blue-200/80 text-blue-900 dark:bg-blue-900 dark:text-blue-100 text-[11px]">-</span>
+                        </div>
+                        <p class="leading-relaxed text-[10px] text-slate-600 dark:text-slate-400">
+                            • Jika pegawai definitif (misal: Sekretaris) ditunjuk sebagai <strong>Plt. Inspektur</strong>: isi Jabatan Definitif = <code>Sekretaris</code>, Role = <code>Inspektur</code>, Status = <code>Plt.</code><br>
+                            • Jika pegawai definitif (misal: Auditor Madya) ditunjuk sebagai <strong>Plt. Irban Khusus</strong>: isi Jabatan Definitif = <code>Auditor Ahli Madya</code>, Role = <code>Irban</code>, Unit = <code>Irban Khusus</code>, Status = <code>Plt.</code>
+                        </p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                        <label class="block font-semibold mb-1">Unit Kerja / Irban</label>
-                        <select id="editIrbanId" name="irban_id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                            <option value="">-- Sekretariat --</option>
-                            @foreach($irbans as $irban)
-                                <option value="{{ $irban->id }}">{{ $irban->nama_irban }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-1">Role Akses <span class="text-rose-500">*</span></label>
-                        <select id="editRole" name="role" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
-                            @foreach($roles as $r)
-                                <option value="{{ $r->name }}">{{ ucfirst($r->name) }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <div>
                         <label class="block font-semibold mb-1">Status Akun <span class="text-rose-500">*</span></label>
                         <select id="editIsActive" name="is_active" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
@@ -349,16 +390,15 @@
                             <option value="0">Nonaktif</option>
                         </select>
                     </div>
-                </div>
-
-                <div>
-                    <label class="block font-semibold mb-1">Ganti Password (Kosongkan jika tidak diubah)</label>
-                    <input type="password" name="password" placeholder="Minimal 6 karakter" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                    <div>
+                        <label class="block font-semibold mb-1">Ganti Password (Kosongkan jika tidak diubah)</label>
+                        <input type="password" name="password" placeholder="Minimal 6 karakter" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                    </div>
                 </div>
 
                 <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800">
                     <button type="button" onclick="document.getElementById('modalEditUser').classList.add('hidden')" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold rounded-xl cursor-pointer">Batal</button>
-                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md cursor-pointer">Simpan Perubahan</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md cursor-pointer">Simpan Perubahan</button>
                 </div>
             </form>
         </div>
@@ -369,6 +409,34 @@
             document.getElementById('modalCreateUser').classList.remove('hidden');
         }
 
+        function updateEditPreview() {
+            const role = document.getElementById('editRole').value;
+            const status = document.getElementById('editStatusJabatan').value;
+            const irbanSelect = document.getElementById('editIrbanId');
+            const irbanText = irbanSelect.options[irbanSelect.selectedIndex]?.text || '';
+            const previewEl = document.getElementById('editPreviewJabatan');
+            
+            let prefix = '';
+            if (status === 'plt') prefix = 'Plt. ';
+            else if (status === 'plh') prefix = 'Plh. ';
+            else if (status === 'pj') prefix = 'Pj. ';
+
+            if (role === 'inspektur') {
+                previewEl.innerText = prefix ? `${prefix}Inspektur Daerah` : 'Inspektur Daerah (Definitif)';
+            } else if (role === 'irban') {
+                const namaIrban = irbanText.replace('--', '').trim() || 'Irban';
+                previewEl.innerText = prefix ? `${prefix}${namaIrban}` : `${namaIrban} (Definitif)`;
+            } else if (role === 'sekretaris') {
+                previewEl.innerText = prefix ? `${prefix}Sekretaris Inspektorat` : 'Sekretaris Inspektorat (Definitif)';
+            } else {
+                previewEl.innerText = `${prefix ? prefix : 'Pejabat Definitif ('}${role.toUpperCase()}${prefix ? '' : ')'}`;
+            }
+        }
+
+        document.getElementById('editRole')?.addEventListener('change', updateEditPreview);
+        document.getElementById('editStatusJabatan')?.addEventListener('change', updateEditPreview);
+        document.getElementById('editIrbanId')?.addEventListener('change', updateEditPreview);
+
         function openModalEditUser(user, role) {
             document.getElementById('formEditUser').action = '/master/users/' + user.id;
             document.getElementById('editNama').value = user.nama || '';
@@ -376,13 +444,14 @@
             document.getElementById('editNip').value = user.nip || '';
             document.getElementById('editEmail').value = user.email || '';
             document.getElementById('editNoHp').value = user.no_hp || '';
-            document.getElementById('editStatusJabatan').value = user.status_jabatan || 'definitif';
             document.getElementById('editJabatan').value = user.jabatan || '';
             document.getElementById('editPangkat').value = user.pangkat || '';
             document.getElementById('editGolongan').value = user.golongan || '';
+            document.getElementById('editStatusJabatan').value = user.status_jabatan || 'definitif';
             document.getElementById('editIrbanId').value = user.irban_id || '';
             document.getElementById('editRole').value = role || '';
             document.getElementById('editIsActive').value = user.is_active ? 1 : 0;
+            updateEditPreview();
             document.getElementById('modalEditUser').classList.remove('hidden');
         }
     </script>

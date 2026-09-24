@@ -122,6 +122,30 @@ class User extends Authenticatable
         };
     }
 
+    public function getJabatanLengkapAttribute(): string
+    {
+        $definitif = $this->jabatan ?: 'Pegawai';
+        $status = strtolower($this->status_jabatan ?? 'definitif');
+
+        if ($this->hasRole('inspektur')) {
+            if ($status !== 'definitif') {
+                $prefix = $this->prefix_status_jabatan;
+                return "{$definitif} ({$prefix}Inspektur Daerah)";
+            }
+            return 'Inspektur Daerah';
+        }
+
+        if ($this->hasRole('irban') && $this->irban) {
+            if ($status !== 'definitif') {
+                $prefix = $this->prefix_status_jabatan;
+                return "{$definitif} ({$prefix}{$this->irban->nama_irban})";
+            }
+            return $this->irban->nama_irban;
+        }
+
+        return $definitif;
+    }
+
     public function routeNotificationForWhatsApp(): ?string
     {
         return $this->no_hp;

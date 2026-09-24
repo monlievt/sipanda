@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\Irban;
 use App\Models\JenisPenugasan;
+use App\Models\KelompokPengawasan;
 use App\Models\ObjekPenugasan;
 use App\Models\Penugasan;
 use App\Models\PenugasanTim;
@@ -37,8 +38,8 @@ class PenugasanController extends Controller
         $search = $request->input('search');
 
         $query = Penugasan::with([
-            'irban', 'irbans', 'jenisPenugasan', 'sumberPenugasan',
-            'objekPenugasan', 'timUsers', 'pkppt', 'pembuatData',
+            'irban', 'irbans', 'jenisPenugasan', 'sumberPenugasan', 'kelompokPengawasan',
+            'objekPenugasan', 'timUsers', 'pkppt.kelompokPengawasan', 'pembuatData',
             'penugasanInduk', 'stPerpanjangan'
         ])->tahun($tahun);
 
@@ -73,10 +74,11 @@ class PenugasanController extends Controller
 
         $irbans = Irban::all();
         $jenisList = JenisPenugasan::all();
+        $kelompokList = KelompokPengawasan::where('is_active', true)->orderBy('urutan')->get();
         $tahunList = range(date('Y') + 1, 2022);
 
         return view('penugasan.index', compact(
-            'listPenugasan', 'irbans', 'jenisList', 'tahun', 'irbanId',
+            'listPenugasan', 'irbans', 'jenisList', 'kelompokList', 'tahun', 'irbanId',
             'status', 'jenisId', 'sesuaiPkppt', 'search', 'tahunList'
         ));
     }
@@ -154,18 +156,19 @@ class PenugasanController extends Controller
 
         $objekList = ObjekPenugasan::aktif()->orderBy('nama')->get();
         $jenisList = JenisPenugasan::orderBy('kategori')->orderBy('nama')->get();
+        $kelompokList = KelompokPengawasan::where('is_active', true)->orderBy('urutan')->get();
         $sumberList = SumberPenugasan::all();
         $irbans = Irban::all();
         $usersList = User::aktif()->internal()->orderBy('nama')->get();
 
-        $pkpptQuery = Pkppt::tahun(date('Y'));
+        $pkpptQuery = Pkppt::with('kelompokPengawasan')->tahun(date('Y'));
         if (! $user->isPimpinanOrAdmin() && $user->irban_id) {
             $pkpptQuery->where('irban_id', $user->irban_id);
         }
         $pkpptList = $pkpptQuery->orderBy('area_pengawasan')->get();
 
         // Daftar ST Induk yang bisa diperpanjang (dengan relasi lengkap)
-        $parentStQuery = Penugasan::with(['irbans', 'objekPenugasan', 'tim.user', 'jenisPenugasan', 'sumberPenugasan', 'pkppt'])
+        $parentStQuery = Penugasan::with(['irbans', 'objekPenugasan', 'tim.user', 'jenisPenugasan', 'sumberPenugasan', 'pkppt.kelompokPengawasan', 'kelompokPengawasan'])
             ->whereNull('penugasan_induk_id');
         if (! $user->isPimpinanOrAdmin()) {
             $parentStQuery->accessibleBy($user);
@@ -196,7 +199,7 @@ class PenugasanController extends Controller
         }
 
         return view('penugasan.create', compact(
-            'objekList', 'jenisList', 'sumberList', 'irbans', 'usersList', 'pkpptList', 'parentStList', 'defaultDasarPenugasan', 'regulasiBaku', 'allRegulasi'
+            'objekList', 'jenisList', 'kelompokList', 'sumberList', 'irbans', 'usersList', 'pkpptList', 'parentStList', 'defaultDasarPenugasan', 'regulasiBaku', 'allRegulasi'
         ));
     }
 
@@ -210,12 +213,13 @@ class PenugasanController extends Controller
 
         if ($isPerpanjangan) {
             $validated = $request->validate([
-                'no_spt'              => ['required', 'string', 'max:60', 'unique:penugasan,no_spt'],
-                'penugasan_induk_id'  => ['required', 'exists:penugasan,id'],
-                'uraian_penugasan'    => ['required', 'string'],
-                'dasar_penugasan'     => ['nullable', 'string'],
-                'tanggal_mulai'       => ['required', 'date'],
-                'tanggal_selesai'     => ['required', 'date', 'after_or_equal:tanggal_mulai'],
+                'no_spt'                 => ['required', 'string', 'max:60', 'unique:penugasan,no_spt'],
+                'penugasan_induk_id'     => ['required', 'exists:penugasan,id'],
+                'kelompok_pengawasan_id' => ['nullable', 'exists:kelompok_pengawasan,id'],
+                'uraian_penugasan'       => ['required', 'string'],
+                'dasar_penugasan'        => ['nullable', 'string'],
+                'tanggal_mulai'          => ['required', 'date'],
+                'tanggal_selesai'        => ['required', 'date', 'after_or_equal:tanggal_mulai'],
             ], [
                 'no_spt.required'               => 'Nomor SPT perpanjangan wajib diisi.',
                 'no_spt.unique'                 => 'Nomor SPT ini sudah terdaftar. Mohon gunakan nomor yang lain.',
@@ -238,23 +242,24 @@ class PenugasanController extends Controller
             $statusPersetujuan = $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban', 'admin_irban']) ? 'disetujui' : 'diajukan';
 
             $penugasan = Penugasan::create([
-                'no_spt'              => $validated['no_spt'],
-                'uraian_penugasan'    => $validated['uraian_penugasan'],
-                'dasar_penugasan'     => $dasarPerpanjangan,
-                'sumber_penugasan_id' => $parentSt->sumber_penugasan_id,
-                'jenis_penugasan_id'  => $parentSt->jenis_penugasan_id,
-                'tanggal_mulai'       => $validated['tanggal_mulai'],
-                'tanggal_selesai'     => $validated['tanggal_selesai'],
-                'status'              => $statusOtomatis,
-                'status_persetujuan'  => $statusPersetujuan,
-                'diverifikasi_oleh'   => ($statusPersetujuan === 'disetujui') ? $user->id : null,
-                'diverifikasi_pada'   => ($statusPersetujuan === 'disetujui') ? now() : null,
-                'progres_persen'      => 0,
-                'is_sesuai_pkppt'     => (bool) $parentSt->is_sesuai_pkppt,
-                'pkppt_id'            => $parentSt->pkppt_id,
-                'penugasan_induk_id'  => $parentSt->id,
-                'irban_id'            => $parentSt->irban_id,
-                'dibuat_oleh'         => $user->id,
+                'no_spt'                 => $validated['no_spt'],
+                'uraian_penugasan'       => $validated['uraian_penugasan'],
+                'dasar_penugasan'        => $dasarPerpanjangan,
+                'sumber_penugasan_id'    => $parentSt->sumber_penugasan_id,
+                'jenis_penugasan_id'     => $parentSt->jenis_penugasan_id,
+                'kelompok_pengawasan_id' => $validated['kelompok_pengawasan_id'] ?? $parentSt->kelompok_pengawasan_id,
+                'tanggal_mulai'          => $validated['tanggal_mulai'],
+                'tanggal_selesai'        => $validated['tanggal_selesai'],
+                'status'                 => $statusOtomatis,
+                'status_persetujuan'     => $statusPersetujuan,
+                'diverifikasi_oleh'      => ($statusPersetujuan === 'disetujui') ? $user->id : null,
+                'diverifikasi_pada'      => ($statusPersetujuan === 'disetujui') ? now() : null,
+                'progres_persen'         => 0,
+                'is_sesuai_pkppt'        => (bool) $parentSt->is_sesuai_pkppt,
+                'pkppt_id'               => $parentSt->pkppt_id,
+                'penugasan_induk_id'     => $parentSt->id,
+                'irban_id'               => $parentSt->irban_id,
+                'dibuat_oleh'            => $user->id,
             ]);
 
             // Otomatis sinkronkan Irban dan Objek dari ST Induk
@@ -275,30 +280,31 @@ class PenugasanController extends Controller
             }
         } else {
             $validated = $request->validate([
-                'no_spt'              => ['required', 'string', 'max:60', 'unique:penugasan,no_spt'],
-                'uraian_penugasan'    => ['required', 'string'],
-                'dasar_penugasan'     => ['nullable', 'string'],
-                'sumber_penugasan_id' => ['required', 'exists:sumber_penugasan,id'],
-                'jenis_penugasan_id'  => ['required', 'exists:jenis_penugasan,id'],
-                'tanggal_mulai'       => ['required', 'date'],
-                'tanggal_selesai'     => ['required', 'date', 'after_or_equal:tanggal_mulai'],
-                'is_sesuai_pkppt'     => ['required', 'boolean'],
-                'pkppt_id'            => ['nullable', 'required_if:is_sesuai_pkppt,1', 'exists:pkppt,id'],
+                'no_spt'                 => ['required', 'string', 'max:60', 'unique:penugasan,no_spt'],
+                'uraian_penugasan'       => ['required', 'string'],
+                'dasar_penugasan'        => ['nullable', 'string'],
+                'sumber_penugasan_id'    => ['required', 'exists:sumber_penugasan,id'],
+                'jenis_penugasan_id'     => ['required', 'exists:jenis_penugasan,id'],
+                'kelompok_pengawasan_id' => ['nullable', 'exists:kelompok_pengawasan,id'],
+                'tanggal_mulai'          => ['required', 'date'],
+                'tanggal_selesai'        => ['required', 'date', 'after_or_equal:tanggal_mulai'],
+                'is_sesuai_pkppt'        => ['required', 'boolean'],
+                'pkppt_id'               => ['nullable', 'required_if:is_sesuai_pkppt,1', 'exists:pkppt,id'],
                 // Multi-Irban Selection
-                'irban_ids'           => ['required', 'array', 'min:1'],
-                'irban_ids.*'         => ['exists:irbans,id'],
+                'irban_ids'              => ['required', 'array', 'min:1'],
+                'irban_ids.*'            => ['exists:irbans,id'],
                 // Objek Multi-Select
-                'objek_ids'           => ['required', 'array', 'min:1'],
-                'objek_ids.*'         => ['exists:objek_penugasan,id'],
+                'objek_ids'              => ['required', 'array', 'min:1'],
+                'objek_ids.*'            => ['exists:objek_penugasan,id'],
                 // Tim multi-select
-                'tim_wakil_pj'        => ['required', 'array', 'min:1'],
-                'tim_wakil_pj.*'      => ['exists:users,id'],
-                'tim_daltek'          => ['required', 'array', 'min:1'],
-                'tim_daltek.*'        => ['exists:users,id'],
-                'tim_ketua'           => ['required', 'array', 'min:1'],
-                'tim_ketua.*'         => ['exists:users,id'],
-                'tim_anggota'         => ['required', 'array', 'min:1'],
-                'tim_anggota.*'       => ['exists:users,id'],
+                'tim_wakil_pj'           => ['required', 'array', 'min:1'],
+                'tim_wakil_pj.*'         => ['exists:users,id'],
+                'tim_daltek'             => ['required', 'array', 'min:1'],
+                'tim_daltek.*'           => ['exists:users,id'],
+                'tim_ketua'              => ['required', 'array', 'min:1'],
+                'tim_ketua.*'            => ['exists:users,id'],
+                'tim_anggota'            => ['required', 'array', 'min:1'],
+                'tim_anggota.*'          => ['exists:users,id'],
             ], [
                 'no_spt.required'               => 'Nomor SPT wajib diisi.',
                 'no_spt.unique'                 => 'Nomor SPT ini sudah terdaftar. Mohon gunakan nomor yang lain.',
@@ -332,25 +338,31 @@ class PenugasanController extends Controller
 
             $isSesuaiPkppt = (bool) ($validated['is_sesuai_pkppt'] ?? false);
             $pkpptId = $isSesuaiPkppt ? ($validated['pkppt_id'] ?? null) : null;
+            $kelompokId = $validated['kelompok_pengawasan_id'] ?? null;
+            if (!$kelompokId && $pkpptId) {
+                $pkppt = Pkppt::find($pkpptId);
+                $kelompokId = $pkppt?->kelompok_pengawasan_id;
+            }
 
             $penugasan = Penugasan::create([
-                'no_spt'              => $validated['no_spt'],
-                'uraian_penugasan'    => $validated['uraian_penugasan'],
-                'dasar_penugasan'     => $validated['dasar_penugasan'] ?? null,
-                'sumber_penugasan_id' => $validated['sumber_penugasan_id'],
-                'jenis_penugasan_id'  => $validated['jenis_penugasan_id'],
-                'tanggal_mulai'       => $validated['tanggal_mulai'],
-                'tanggal_selesai'     => $validated['tanggal_selesai'],
-                'status'              => $statusOtomatis,
-                'status_persetujuan'  => $statusPersetujuan,
-                'diverifikasi_oleh'   => ($statusPersetujuan === 'disetujui') ? $user->id : null,
-                'diverifikasi_pada'   => ($statusPersetujuan === 'disetujui') ? now() : null,
-                'progres_persen'      => 0,
-                'is_sesuai_pkppt'     => $isSesuaiPkppt,
-                'pkppt_id'            => $pkpptId,
-                'penugasan_induk_id'  => null,
-                'irban_id'            => $primaryIrbanId,
-                'dibuat_oleh'         => $user->id,
+                'no_spt'                 => $validated['no_spt'],
+                'uraian_penugasan'       => $validated['uraian_penugasan'],
+                'dasar_penugasan'        => $validated['dasar_penugasan'] ?? null,
+                'sumber_penugasan_id'    => $validated['sumber_penugasan_id'],
+                'jenis_penugasan_id'     => $validated['jenis_penugasan_id'],
+                'kelompok_pengawasan_id' => $kelompokId,
+                'tanggal_mulai'          => $validated['tanggal_mulai'],
+                'tanggal_selesai'        => $validated['tanggal_selesai'],
+                'status'                 => $statusOtomatis,
+                'status_persetujuan'     => $statusPersetujuan,
+                'diverifikasi_oleh'      => ($statusPersetujuan === 'disetujui') ? $user->id : null,
+                'diverifikasi_pada'      => ($statusPersetujuan === 'disetujui') ? now() : null,
+                'progres_persen'         => 0,
+                'is_sesuai_pkppt'        => $isSesuaiPkppt,
+                'pkppt_id'               => $pkpptId,
+                'penugasan_induk_id'     => null,
+                'irban_id'               => $primaryIrbanId,
+                'dibuat_oleh'            => $user->id,
             ]);
 
             $penugasan->irbans()->sync($validated['irban_ids']);
@@ -424,21 +436,22 @@ class PenugasanController extends Controller
             abort(403, 'Akses Ditolak: Anda tidak memiliki hak akses untuk mengubah penugasan ini.');
         }
 
-        $penugasan->load(['irbans', 'objekPenugasan', 'tim']);
+        $penugasan->load(['irbans', 'objekPenugasan', 'tim', 'kelompokPengawasan', 'pkppt.kelompokPengawasan']);
 
         $objekList = ObjekPenugasan::aktif()->orderBy('nama')->get();
         $jenisList = JenisPenugasan::orderBy('kategori')->orderBy('nama')->get();
+        $kelompokList = KelompokPengawasan::where('is_active', true)->orderBy('urutan')->get();
         $sumberList = SumberPenugasan::all();
         $irbans = Irban::all();
         $usersList = User::aktif()->internal()->orderBy('nama')->get();
         $user = auth()->user();
-        $pkpptQuery = Pkppt::tahun($penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->format('Y') : date('Y'));
+        $pkpptQuery = Pkppt::with('kelompokPengawasan')->tahun($penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->format('Y') : date('Y'));
         if (! $user->isPimpinanOrAdmin() && $user->irban_id) {
             $pkpptQuery->where('irban_id', $user->irban_id);
         }
         $pkpptList = $pkpptQuery->orderBy('area_pengawasan')->get();
 
-        $parentStQuery = Penugasan::with(['irbans', 'objekPenugasan', 'tim.user', 'jenisPenugasan', 'sumberPenugasan', 'pkppt'])
+        $parentStQuery = Penugasan::with(['irbans', 'objekPenugasan', 'tim.user', 'jenisPenugasan', 'sumberPenugasan', 'pkppt.kelompokPengawasan', 'kelompokPengawasan'])
             ->where('id', '!=', $penugasan->id)
             ->whereNull('penugasan_induk_id');
         if (! $user->isPimpinanOrAdmin()) {
@@ -474,7 +487,7 @@ class PenugasanController extends Controller
             ->values();
 
         return view('penugasan.edit', compact(
-            'penugasan', 'objekList', 'jenisList', 'sumberList', 'irbans',
+            'penugasan', 'objekList', 'jenisList', 'kelompokList', 'sumberList', 'irbans',
             'usersList', 'pkpptList', 'parentStList', 'selectedIrbanIds',
             'selectedObjekIds', 'selectedTim', 'regulasiBaku', 'allRegulasi'
         ));
@@ -494,13 +507,14 @@ class PenugasanController extends Controller
 
         if ($isPerpanjangan) {
             $validated = $request->validate([
-                'no_spt'              => ['required', 'string', 'max:60', 'unique:penugasan,no_spt,' . $penugasan->id],
-                'penugasan_induk_id'  => ['required', 'exists:penugasan,id'],
-                'uraian_penugasan'    => ['required', 'string'],
-                'dasar_penugasan'     => ['nullable', 'string'],
-                'tanggal_mulai'       => ['required', 'date'],
-                'tanggal_selesai'     => ['required', 'date', 'after_or_equal:tanggal_mulai'],
-                'status'              => ['required', 'in:belum_berjalan,berjalan,selesai'],
+                'no_spt'                 => ['required', 'string', 'max:60', 'unique:penugasan,no_spt,' . $penugasan->id],
+                'penugasan_induk_id'     => ['required', 'exists:penugasan,id'],
+                'kelompok_pengawasan_id' => ['nullable', 'exists:kelompok_pengawasan,id'],
+                'uraian_penugasan'       => ['required', 'string'],
+                'dasar_penugasan'        => ['nullable', 'string'],
+                'tanggal_mulai'          => ['required', 'date'],
+                'tanggal_selesai'        => ['required', 'date', 'after_or_equal:tanggal_mulai'],
+                'status'                 => ['required', 'in:belum_berjalan,berjalan,selesai'],
             ], [
                 'no_spt.required'               => 'Nomor SPT perpanjangan wajib diisi.',
                 'penugasan_induk_id.required'   => 'Anda wajib memilih Surat Tugas Indikator (ST Induk) yang diperpanjang.',
@@ -513,19 +527,20 @@ class PenugasanController extends Controller
             $parentSt = Penugasan::with(['irbans', 'objekPenugasan', 'tim'])->findOrFail($validated['penugasan_induk_id']);
 
             $penugasan->update([
-                'no_spt'              => $validated['no_spt'],
-                'uraian_penugasan'    => $validated['uraian_penugasan'],
-                'dasar_penugasan'     => $validated['dasar_penugasan'] ?? null,
-                'sumber_penugasan_id' => $parentSt->sumber_penugasan_id,
-                'jenis_penugasan_id'  => $parentSt->jenis_penugasan_id,
-                'tanggal_mulai'       => $validated['tanggal_mulai'],
-                'tanggal_selesai'     => $validated['tanggal_selesai'],
-                'status'              => $validated['status'],
-                'is_sesuai_pkppt'     => (bool) $parentSt->is_sesuai_pkppt,
-                'pkppt_id'            => $parentSt->pkppt_id,
-                'penugasan_induk_id'  => $parentSt->id,
-                'irban_id'            => $parentSt->irban_id,
-                'diperbarui_oleh'     => $user->id,
+                'no_spt'                 => $validated['no_spt'],
+                'uraian_penugasan'       => $validated['uraian_penugasan'],
+                'dasar_penugasan'        => $validated['dasar_penugasan'] ?? null,
+                'sumber_penugasan_id'    => $parentSt->sumber_penugasan_id,
+                'jenis_penugasan_id'     => $parentSt->jenis_penugasan_id,
+                'kelompok_pengawasan_id' => $validated['kelompok_pengawasan_id'] ?? $parentSt->kelompok_pengawasan_id,
+                'tanggal_mulai'          => $validated['tanggal_mulai'],
+                'tanggal_selesai'        => $validated['tanggal_selesai'],
+                'status'                 => $validated['status'],
+                'is_sesuai_pkppt'        => (bool) $parentSt->is_sesuai_pkppt,
+                'pkppt_id'               => $parentSt->pkppt_id,
+                'penugasan_induk_id'     => $parentSt->id,
+                'irban_id'               => $parentSt->irban_id,
+                'diperbarui_oleh'        => $user->id,
             ]);
 
             $penugasan->irbans()->sync($parentSt->irbans->pluck('id'));
@@ -546,46 +561,55 @@ class PenugasanController extends Controller
             }
         } else {
             $validated = $request->validate([
-                'no_spt'              => ['required', 'string', 'max:60', 'unique:penugasan,no_spt,' . $penugasan->id],
-                'uraian_penugasan'    => ['required', 'string'],
-                'dasar_penugasan'     => ['nullable', 'string'],
-                'sumber_penugasan_id' => ['required', 'exists:sumber_penugasan,id'],
-                'jenis_penugasan_id'  => ['required', 'exists:jenis_penugasan,id'],
-                'tanggal_mulai'       => ['required', 'date'],
-                'tanggal_selesai'     => ['required', 'date', 'after_or_equal:tanggal_mulai'],
-                'status'              => ['required', 'in:belum_berjalan,berjalan,selesai'],
-                'is_sesuai_pkppt'     => ['required', 'boolean'],
-                'pkppt_id'            => ['nullable', 'required_if:is_sesuai_pkppt,1', 'exists:pkppt,id'],
-                'irban_ids'           => ['required', 'array', 'min:1'],
-                'irban_ids.*'         => ['exists:irbans,id'],
-                'objek_ids'           => ['required', 'array', 'min:1'],
-                'objek_ids.*'         => ['exists:objek_penugasan,id'],
-                'tim_wakil_pj'        => ['required', 'array', 'min:1'],
-                'tim_wakil_pj.*'      => ['exists:users,id'],
-                'tim_daltek'          => ['required', 'array', 'min:1'],
-                'tim_daltek.*'        => ['exists:users,id'],
-                'tim_ketua'           => ['required', 'array', 'min:1'],
-                'tim_ketua.*'         => ['exists:users,id'],
-                'tim_anggota'         => ['required', 'array', 'min:1'],
-                'tim_anggota.*'       => ['exists:users,id'],
+                'no_spt'                 => ['required', 'string', 'max:60', 'unique:penugasan,no_spt,' . $penugasan->id],
+                'uraian_penugasan'       => ['required', 'string'],
+                'dasar_penugasan'        => ['nullable', 'string'],
+                'sumber_penugasan_id'    => ['required', 'exists:sumber_penugasan,id'],
+                'jenis_penugasan_id'     => ['required', 'exists:jenis_penugasan,id'],
+                'kelompok_pengawasan_id' => ['nullable', 'exists:kelompok_pengawasan,id'],
+                'tanggal_mulai'          => ['required', 'date'],
+                'tanggal_selesai'        => ['required', 'date', 'after_or_equal:tanggal_mulai'],
+                'status'                 => ['required', 'in:belum_berjalan,berjalan,selesai'],
+                'is_sesuai_pkppt'        => ['required', 'boolean'],
+                'pkppt_id'               => ['nullable', 'required_if:is_sesuai_pkppt,1', 'exists:pkppt,id'],
+                'irban_ids'              => ['required', 'array', 'min:1'],
+                'irban_ids.*'            => ['exists:irbans,id'],
+                'objek_ids'              => ['required', 'array', 'min:1'],
+                'objek_ids.*'            => ['exists:objek_penugasan,id'],
+                'tim_wakil_pj'           => ['required', 'array', 'min:1'],
+                'tim_wakil_pj.*'         => ['exists:users,id'],
+                'tim_daltek'             => ['required', 'array', 'min:1'],
+                'tim_daltek.*'           => ['exists:users,id'],
+                'tim_ketua'              => ['required', 'array', 'min:1'],
+                'tim_ketua.*'            => ['exists:users,id'],
+                'tim_anggota'            => ['required', 'array', 'min:1'],
+                'tim_anggota.*'          => ['exists:users,id'],
             ]);
 
             $primaryIrbanId = $validated['irban_ids'][0];
 
+            $pkpptId = $validated['is_sesuai_pkppt'] ? $validated['pkppt_id'] : null;
+            $kelompokId = $validated['kelompok_pengawasan_id'] ?? null;
+            if (!$kelompokId && $pkpptId) {
+                $pkppt = Pkppt::find($pkpptId);
+                $kelompokId = $pkppt?->kelompok_pengawasan_id;
+            }
+
             $penugasan->update([
-                'no_spt'              => $validated['no_spt'],
-                'uraian_penugasan'    => $validated['uraian_penugasan'],
-                'dasar_penugasan'     => $validated['dasar_penugasan'] ?? null,
-                'sumber_penugasan_id' => $validated['sumber_penugasan_id'],
-                'jenis_penugasan_id'  => $validated['jenis_penugasan_id'],
-                'tanggal_mulai'       => $validated['tanggal_mulai'],
-                'tanggal_selesai'     => $validated['tanggal_selesai'],
-                'status'              => $validated['status'],
-                'is_sesuai_pkppt'     => (bool) $validated['is_sesuai_pkppt'],
-                'pkppt_id'            => $validated['is_sesuai_pkppt'] ? $validated['pkppt_id'] : null,
-                'penugasan_induk_id'  => null,
-                'irban_id'            => $primaryIrbanId,
-                'diperbarui_oleh'     => $user->id,
+                'no_spt'                 => $validated['no_spt'],
+                'uraian_penugasan'       => $validated['uraian_penugasan'],
+                'dasar_penugasan'        => $validated['dasar_penugasan'] ?? null,
+                'sumber_penugasan_id'    => $validated['sumber_penugasan_id'],
+                'jenis_penugasan_id'     => $validated['jenis_penugasan_id'],
+                'kelompok_pengawasan_id' => $kelompokId,
+                'tanggal_mulai'          => $validated['tanggal_mulai'],
+                'tanggal_selesai'        => $validated['tanggal_selesai'],
+                'status'                 => $validated['status'],
+                'is_sesuai_pkppt'        => (bool) $validated['is_sesuai_pkppt'],
+                'pkppt_id'               => $pkpptId,
+                'penugasan_induk_id'     => null,
+                'irban_id'               => $primaryIrbanId,
+                'diperbarui_oleh'        => $user->id,
             ]);
 
             $penugasan->irbans()->sync($validated['irban_ids']);

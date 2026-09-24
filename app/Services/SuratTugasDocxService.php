@@ -213,7 +213,8 @@ class SuratTugasDocxService
         // Sesuaikan gelar penandatangan (Definitif / Plt. / Plh. / Pj.)
         $statusJabatan = strtolower($inspektur?->status_jabatan ?? 'plt');
         if ($statusJabatan === 'definitif') {
-            $xml = preg_replace('/<w:t>Plt\.<\/w:t><\/w:r>.*?<w:tab\/><\/w:r>/s', '', $xml);
+            $xml = preg_replace('/<w:r\b[^>]*>(?:<w:rPr>.*?<\/w:rPr>)?(?:<w:lastRenderedPageBreak\/>)?<w:t>Plt\.<\/w:t><\/w:r>\s*<w:r\b[^>]*>(?:<w:rPr>.*?<\/w:rPr>)?<w:tab\/><\/w:r>/s', '', $xml);
+            $xml = str_replace('w:hanging="425"', '', $xml);
         } elseif ($statusJabatan === 'plh') {
             $xml = str_replace('<w:t>Plt.</w:t>', '<w:t>Plh.</w:t>', $xml);
         } elseif ($statusJabatan === 'pj') {

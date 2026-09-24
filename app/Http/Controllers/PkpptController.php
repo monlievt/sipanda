@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\Irban;
+use App\Models\KelompokPengawasan;
 use App\Models\Pkppt;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ class PkpptController extends Controller
 
         $query = Pkppt::with([
             'irban',
+            'kelompokPengawasan',
             'pembuatData',
             'penugasan',
             'pkpptInduk',
@@ -47,10 +49,11 @@ class PkpptController extends Controller
 
         $listPkppt = $query->orderBy('rencana_mulai', 'asc')->get();
         $irbans = Irban::all();
+        $kelompokList = KelompokPengawasan::where('is_active', true)->orderBy('urutan')->get();
         $tahunList = range(date('Y') + 1, 2022);
         $jenisList = \App\Models\JenisPenugasan::orderBy('kategori')->orderBy('nama')->get();
 
-        return view('pkppt.index', compact('listPkppt', 'irbans', 'tahun', 'irbanId', 'status', 'tahunList', 'jenisList'));
+        return view('pkppt.index', compact('listPkppt', 'irbans', 'kelompokList', 'tahun', 'irbanId', 'status', 'tahunList', 'jenisList'));
     }
 
     /**
@@ -62,6 +65,7 @@ class PkpptController extends Controller
             'tahun'                   => ['required', 'integer', 'min:2020', 'max:2035'],
             'area_pengawasan'         => ['required', 'string', 'max:150'],
             'jenis_pengawasan'        => ['required', 'string', 'max:100'],
+            'kelompok_pengawasan_id'  => ['nullable', 'exists:kelompok_pengawasan,id'],
             'sasaran'                 => ['nullable', 'string', 'max:150'],
             'rencana_mulai'           => ['required', 'date'],
             'rencana_selesai_laporan' => ['required', 'date', 'after_or_equal:rencana_mulai'],
@@ -89,6 +93,7 @@ class PkpptController extends Controller
         $validated = $request->validate([
             'area_pengawasan'         => ['required', 'string', 'max:150'],
             'jenis_pengawasan'        => ['required', 'string', 'max:100'],
+            'kelompok_pengawasan_id'  => ['nullable', 'exists:kelompok_pengawasan,id'],
             'sasaran'                 => ['nullable', 'string', 'max:150'],
             'rencana_mulai'           => ['required', 'date'],
             'rencana_selesai_laporan' => ['required', 'date', 'after_or_equal:rencana_mulai'],
@@ -115,6 +120,7 @@ class PkpptController extends Controller
             'catatan_revisi'          => ['required', 'string'],
             'area_pengawasan'         => ['required', 'string', 'max:150'],
             'jenis_pengawasan'        => ['required', 'string', 'max:100'],
+            'kelompok_pengawasan_id'  => ['nullable', 'exists:kelompok_pengawasan,id'],
             'sasaran'                 => ['nullable', 'string', 'max:150'],
             'rencana_mulai'           => ['required', 'date'],
             'rencana_selesai_laporan' => ['required', 'date', 'after_or_equal:rencana_mulai'],
@@ -133,6 +139,7 @@ class PkpptController extends Controller
             'tahun'                   => $pkppt->tahun,
             'area_pengawasan'         => $validated['area_pengawasan'],
             'jenis_pengawasan'        => $validated['jenis_pengawasan'],
+            'kelompok_pengawasan_id'  => $validated['kelompok_pengawasan_id'] ?? $pkppt->kelompok_pengawasan_id,
             'sasaran'                 => $validated['sasaran'] ?? $pkppt->sasaran,
             'rencana_mulai'           => $validated['rencana_mulai'],
             'rencana_selesai_laporan' => $validated['rencana_selesai_laporan'],
