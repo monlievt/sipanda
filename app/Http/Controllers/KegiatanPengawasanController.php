@@ -53,7 +53,10 @@ class KegiatanPengawasanController extends Controller
         foreach ($listPkppt as $item) {
             $realisasi = $item->penugasan;
             $countReal = $realisasi->count();
-            $countSelesai = $realisasi->where('status', 'selesai')->count();
+            $sptsSelesai = $realisasi->where('status', 'selesai');
+            $sptsAktif   = $realisasi->whereNotIn('status', ['selesai', 'dibatalkan']);
+            $countSelesai = $sptsSelesai->count();
+            $countAktif   = $sptsAktif->count();
             $jumlahRencana = max(1, (int) $item->jumlah_laporan_rencana);
 
             $rekap['total_realisasi'] += $countReal;
@@ -74,13 +77,51 @@ class KegiatanPengawasanController extends Controller
                     $item->indikator_label = 'Belum Dimulai (Terjadwal)';
                     $rekap['indikator_abu']++;
                 }
-            } elseif ($countSelesai >= $jumlahRencana || ($countReal > 0 && $countSelesai === $countReal)) {
-                // KASUS 2: Semua SPT / target laporan telah SELESAI
-                // Cek apakah tanggal pelaksanaan SPT melebihi target rencana selesai
+            } elseif ($countAktif > 0 || ($countSelesai < $jumlahRencana && $tglRencanaSelesai && $today->lte($tglRencanaSelesai))) {
+                // KASUS 2: Masih ada SPT aktif yang sedang berjalan atau target laporan belum penuh tapi masih dalam masa jadwal
+                if ($tglRencanaSelesai && $today->gt($tglRencanaSelesai)) {
+                    $item->indikator = 'kuning';
+                    $item->indikator_label = 'Pelaksanaan Terlambat';
+                    $rekap['indikator_kuning']++;
+                } else {
+                    $item->indikator = 'biru';
+                    $item->indikator_label = 'Sedang Dalam Pelaksanaan';
+                    $rekap['indikator_biru']++;
+                }
+            } elseif ($countSelesai < $jumlahRencana && $tglRencanaSelesai && $today->gt($tglRencanaSelesai)) {
+                // KASUS 3: Tidak ada SPT aktif, target belum terpenuhi, dan jadwal rencana sudah habis
+                $item->indikator = 'kuning';
+                $item->indikator_label = 'Pelaksanaan Terlambat';
+                $rekap['indikator_kuning']++;
+            } else {
+                // KASUS 4: Semua SPT telah SELESAI dan target laporan tercapai
                 $isLewatJadwal = false;
-                if ($tglRencanaSelesai) {
-                    foreach ($realisasi as $spt) {
-                        if ($spt->tanggal_selesai && $spt->tanggal_selesai->startOfDay()->gt($tglRencanaSelesai)) {
+                if ($tglRencanaSelesai && $sptsSelesai->isNotEmpty()) {
+                    foreach ($sptsSelesai as $spt) {
+                        // Cek tanggal LHP resmi jika ada
+                        $tglLhp = $spt->tindakLanjut?->pluck('tgl_lhp')->filter()->max();
+                        if ($tglLhp) {
+                            $tglLhpDate = \Carbon\Carbon::parse($tglLhp)->startOfDay();
+                            if ($tglLhpDate->gt($tglRencanaSelesai)) {
+                                $isLewatJadwal = true;
+                                break;
+                            }
+                        } else {
+                            // Jika belum/tidak ada LHP, cek tanggal penyelesaian aktual (updated_at) dan jadwal SPT
+                            $tglActualSelesai = $spt->updated_at ? $spt->updated_at->startOfDay() : null;
+                            $tglSptSelesai    = $spt->tanggal_selesai ? $spt->tanggal_selesai->startOfDay() : null;
+
+                            // Jika tanggal saat diselesaikan (updated_at) <= rencana selesai, maka TEPAT WAKTU
+                            if ($tglActualSelesai && $tglActualSelesai->lte($tglRencanaSelesai)) {
+                                continue;
+                            }
+
+                            // Jika jadwal batas SPT <= rencana selesai, maka TEPAT WAKTU
+                            if ($tglSptSelesai && $tglSptSelesai->lte($tglRencanaSelesai)) {
+                                continue;
+                            }
+
+                            // Melewati jadwal hanya jika keduanya melebihi tanggal rencana selesai
                             $isLewatJadwal = true;
                             break;
                         }
@@ -95,17 +136,6 @@ class KegiatanPengawasanController extends Controller
                     $item->indikator = 'hijau';
                     $item->indikator_label = 'Selesai Sesuai Target';
                     $rekap['indikator_hijau']++;
-                }
-            } else {
-                // KASUS 3: Ada SPT aktif dan sedang dalam pelaksanaan
-                if ($tglRencanaSelesai && $today->gt($tglRencanaSelesai)) {
-                    $item->indikator = 'kuning';
-                    $item->indikator_label = 'Pelaksanaan Terlambat';
-                    $rekap['indikator_kuning']++;
-                } else {
-                    $item->indikator = 'biru';
-                    $item->indikator_label = 'Sedang Dalam Pelaksanaan';
-                    $rekap['indikator_biru']++;
                 }
             }
         }

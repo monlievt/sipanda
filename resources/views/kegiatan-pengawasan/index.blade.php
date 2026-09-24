@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Kegiatan Pengawasan — Perbandingan Rencana (PKPPT) vs Realisasi
+        Realisasi PKPPT — Perbandingan Rencana (PKPPT) vs Realisasi
     </x-slot>
 
     <!-- Main Container with Alpine State for Detail Modal -->
