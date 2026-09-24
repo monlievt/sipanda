@@ -19,7 +19,11 @@ class SuratTugasDocxService
             throw new \RuntimeException("Template surat tugas tidak ditemukan di: {$templatePath}");
         }
 
-        $tempPath = tempnam(sys_get_temp_dir(), 'spt_') . '.docx';
+        $tempDir = storage_path('app/temp');
+        if (!is_dir($tempDir)) {
+            @mkdir($tempDir, 0775, true);
+        }
+        $tempPath = $tempDir . '/spt_' . uniqid() . '_' . time() . '.docx';
         copy($templatePath, $tempPath);
 
         $zip = new ZipArchive();
