@@ -280,7 +280,9 @@ class ApipAiService
     {
         $stopwords = ['apakah', 'bagaimana', 'apa', 'yang', 'dan', 'di', 'ke', 'dari', 'untuk', 'pada', 'dengan', 'adalah', 'bisa', 'bolehkah', 'syarat', 'cara', 'dalam', 'ini', 'itu', 'atau', 'agar', 'jika'];
         $words = preg_split('/[\s,\.\?\!\:\;]+/', strtolower($text));
-        
+        return array_values(array_filter($words, fn($w) => strlen($w) >= 3 && !in_array($w, $stopwords)));
+    }
+
     /**
      * Generate ringkasan resume eksekutif dari catatan temuan & saran rekomendasi LHP.
      */
