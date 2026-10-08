@@ -82,16 +82,31 @@
                     </div>
                     <p class="text-[11px] text-slate-600 dark:text-slate-300 mb-2">Surat Tugas dasar pemantauan atas pengawasan assurance.</p>
                     @if($tindakLanjut->stPemantauan)
-                        <span class="inline-block font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded text-[10px] border border-emerald-200">
-                            📄 {{ $tindakLanjut->stPemantauan->no_spt }}
-                        </span>
+                        <div class="space-y-1.5">
+                            <span class="inline-block font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded text-[10px] border border-emerald-200">
+                                📄 {{ $tindakLanjut->stPemantauan->no_spt }}
+                            </span>
+                            @if($tindakLanjut->stPemantauan->tim->isNotEmpty())
+                                <div class="text-[10px] text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900/80 p-2 rounded-xl border border-slate-200 dark:border-slate-800">
+                                    <span class="font-bold text-emerald-800 dark:text-emerald-400 block mb-0.5">👥 Tim Pemantau TL (Rolling):</span>
+                                    <div class="space-y-0.5">
+                                        @foreach($tindakLanjut->stPemantauan->tim as $member)
+                                            <div class="flex items-center justify-between text-[9.5px]">
+                                                <span class="font-semibold text-slate-800 dark:text-slate-200">• {{ $member->user?->name ?? 'Personil' }}</span>
+                                                <span class="text-slate-400">{{ $member->peran_label }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
                     @else
                         <span class="inline-block text-slate-400 italic text-[10px]">Belum dikaitkan ST Pemantauan</span>
                     @endif
 
                     <div class="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700">
                         <button type="button" onclick="document.getElementById('modalKaitkanStPemantauan').classList.remove('hidden')" class="w-full py-1.5 px-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-[10px] font-bold shadow-2xs flex items-center justify-center gap-1">
-                            <span>🔗 {{ $tindakLanjut->st_pemantauan_id ? 'Ubah ST Pemantauan' : 'Kaitkan ST Pemantauan' }}</span>
+                            <span>🔗 {{ $tindakLanjut->st_pemantauan_id ? 'Ubah / Kaitkan ST Pemantauan' : 'Kaitkan ST Pemantauan' }}</span>
                         </button>
                     </div>
                 </div>

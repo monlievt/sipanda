@@ -15,8 +15,8 @@ class ApipAiService
 
     public function __construct()
     {
-        $this->apiKey = config('services.gemini.api_key', env('GEMINI_API_KEY', ''));
-        $this->model  = config('services.gemini.model', env('GEMINI_MODEL', 'gemini-1.5-flash'));
+        $this->apiKey = \App\Models\AppSetting::get('gemini_api_key', config('services.gemini.api_key', env('GEMINI_API_KEY', '')));
+        $this->model  = \App\Models\AppSetting::get('gemini_model', config('services.gemini.model', env('GEMINI_MODEL', 'gemini-1.5-flash')));
     }
 
     /**
@@ -281,8 +281,99 @@ class ApipAiService
         $stopwords = ['apakah', 'bagaimana', 'apa', 'yang', 'dan', 'di', 'ke', 'dari', 'untuk', 'pada', 'dengan', 'adalah', 'bisa', 'bolehkah', 'syarat', 'cara', 'dalam', 'ini', 'itu', 'atau', 'agar', 'jika'];
         $words = preg_split('/[\s,\.\?\!\:\;]+/', strtolower($text));
         
-        return array_values(array_filter($words, function ($w) use ($stopwords) {
-            return strlen($w) >= 3 && ! in_array($w, $stopwords);
-        }));
+    /**
+     * Generate ringkasan resume eksekutif dari catatan temuan & saran rekomendasi LHP.
+     */
+    public function generateResumeIkhtisar(int $tahun, string $periode, array $temuanRekomendasiList): array
+    {
+        if (empty($temuanRekomendasiList)) {
+            return [
+                'success' => false,
+                'message' => 'Belum ada data catatan temuan atau rekomendasi pada periode/tahun ini untuk dianalisis oleh AI.',
+                'resume'  => "Pada periode {$periode} Tahun {$tahun}, belum terdapat catatan temuan maupun rekomendasi pengawasan yang tercatat dalam sistem.",
+                'is_ai'   => false,
+            ];
+        }
+
+        // Susun ringkasan temuan untuk prompt AI
+        $promptContext = "=== DATA TEMUAN DAN REKOMENDASI HASIL PENGAWASAN TAHUN {$tahun} ({$periode}) ===\n";
+        foreach ($temuanRekomendasiList as $idx => $item) {
+            $num = $idx + 1;
+            $objek = $item['objek'] ?? 'Instansi Terkait';
+            $temuan = $item['uraian_temuan'] ?? '-';
+            $rekomendasi = $item['rekomendasi'] ?? '-';
+            $nilaiRekom = isset($item['nilai_rekomendasi_rp']) && $item['nilai_rekomendasi_rp'] > 0 
+                ? (' (Nilai Finansial: Rp ' . number_format($item['nilai_rekomendasi_rp'], 0, ',', '.') . ')') 
+                : '';
+            $promptContext .= "[$num] Objek/Auditi: {$objek}\n- Catatan/Temuan: {$temuan}\n- Rekomendasi: {$rekomendasi}{$nilaiRekom}\n\n";
+        }
+
+        if ($this->hasApiKey()) {
+            $systemInstruction = "Anda adalah Tenaga Ahli Pengawasan APIP (Aparat Pengawasan Intern Pemerintah) Inspektorat Kabupaten Trenggalek. " .
+                "Tugas Anda adalah menyusun Resume Eksekutif Temuan dan Saran/Rekomendasi Hasil Pengawasan Internal untuk Laporan Ikhtisar Hasil Pengawasan (ILHP) Periode {$periode} Tahun {$tahun}.\n\n" .
+                "PEDOMAN PENYUSUNAN:\n" .
+                "1. Susun resume dalam bahasa Indonesia yang formal, lugas, profesional, dan berbobot pengawasan APIP.\n" .
+                "2. Rangkum permasalahan utama yang berhasil ditemukan oleh tim pemeriksa, penyebab/kelemahan mendasar (Sistem Pengendalian Intern atau Kepatuhan Peraturan Perundang-undangan).\n" .
+                "3. Rangkum arah saran/rekomendasi perbaikan yang diberikan kepada Auditi/Perangkat Daerah.\n" .
+                "4. Format dalam bentuk paragraf terstruktur dan poin-poin ringkas tematik (tanpa menyebut nomor kasus mentah, namun dalam bentuk kesimpulan kluster permasalahan makro/institusional).\n" .
+                "5. Panjang narasi sekitar 3-5 paragraf padat dan berbobot.";
+
+            try {
+                $url = "https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent?key={$this->apiKey}";
+                $payload = [
+                    'contents' => [
+                        [
+                            'role'  => 'user',
+                            'parts' => [
+                                ['text' => "Berikut data catatan temuan dan rekomendasi pengawasan:\n\n{$promptContext}\n\nTolong buatkan Resume Eksekutif Temuan dan Rekomendasi Hasil Pengawasan Internal."]
+                            ]
+                        ]
+                    ],
+                    'systemInstruction' => [
+                        'parts' => [
+                            ['text' => $systemInstruction]
+                        ]
+                    ],
+                    'generationConfig' => [
+                        'temperature'     => 0.3,
+                        'maxOutputTokens' => 2000,
+                    ]
+                ];
+
+                $response = Http::timeout(30)->withHeaders(['Content-Type' => 'application/json'])->post($url, $payload);
+                if ($response->successful()) {
+                    $candidates = $response->json('candidates', []);
+                    if (!empty($candidates)) {
+                        $text = $candidates[0]['content']['parts'][0]['text'] ?? null;
+                        if ($text) {
+                            return [
+                                'success' => true,
+                                'resume'  => trim($text),
+                                'is_ai'   => true,
+                            ];
+                        }
+                    }
+                } else {
+                    Log::warning("[SIPANDA AI] Gemini API Error status {$response->status()}: " . $response->body());
+                }
+            } catch (\Throwable $e) {
+                Log::error("[SIPANDA AI] Exception saat generate resume ILHP: " . $e->getMessage());
+            }
+        }
+
+        // Fallback jika API key belum diset atau offline
+        $totalTemuan = count($temuanRekomendasiList);
+        $totalFinansial = array_sum(array_column($temuanRekomendasiList, 'nilai_rekomendasi_rp'));
+        $fallbackResume = "Berdasarkan hasil pengawasan internal Inspektorat Kabupaten Trenggalek pada periode {$periode} Tahun {$tahun}, tim pengawas telah mengidentifikasi sebanyak {$totalTemuan} catatan temuan dan rekomendasi perbaikan tata kelola.\n\n" .
+            "Secara umum, pokok permasalahan yang ditemukan berfokus pada penguatan Sistem Pengendalian Intern Pemerintah (SPIP), penatausahaan administrasi dan pertanggungjawaban keuangan, serta kepatuhan terhadap regulasi pengadaan barang dan jasa.\n\n" .
+            ($totalFinansial > 0 ? ("Terdapat rekomendasi penyetoran/pengembalian finansial ke Kas Daerah sebesar Rp " . number_format($totalFinansial, 0, ',', '.') . " yang menjadi perhatian tindak lanjut.") : "Seluruh rekomendasi diarahkan pada perbaikan administratif, penegakan SOP, dan tindak lanjut korektif oleh Perangkat Daerah terkait.") . "\n\n" .
+            "Diharapkan seluruh Kepala Perangkat Daerah dan pihak terkait segera menindaklanjuti rekomendasi sesuai batas waktu yang telah ditetapkan.";
+
+        return [
+            'success' => true,
+            'resume'  => $fallbackResume,
+            'is_ai'   => false,
+            'note'    => 'Dihasilkan dari template fallback terstruktur (konfigurasikan Gemini API Key untuk analisis AI dinamis).',
+        ];
     }
 }

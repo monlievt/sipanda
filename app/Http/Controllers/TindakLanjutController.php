@@ -31,8 +31,12 @@ class TindakLanjutController extends Controller
         $query = TindakLanjut::with(['penugasan.irban', 'penugasan.objekPenugasan', 'objekPenugasan', 'buktiTindakLanjut.pengunggah', 'rincianPenyetoran']);
 
         if (! $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
-            $query->whereHas('penugasan', function ($pq) use ($user) {
-                $pq->accessibleBy($user);
+            $query->where(function ($q) use ($user) {
+                $q->whereHas('penugasan', function ($pq) use ($user) {
+                    $pq->accessibleBy($user);
+                })->orWhereHas('stPemantauan', function ($sq) use ($user) {
+                    $sq->accessibleBy($user);
+                });
             });
         }
 
@@ -146,8 +150,11 @@ class TindakLanjutController extends Controller
     {
         $user = auth()->user();
 
-        // Otorisasi akses dokumen LHP
-        if ($tindakLanjut->penugasan && ! $tindakLanjut->penugasan->canAccess($user)) {
+        // Otorisasi akses dokumen LHP (Dapat diakses jika user berhak pada penugasan awal ATAU ST Pemantauan yang dikaitkan)
+        $canAccessParent = $tindakLanjut->penugasan && $tindakLanjut->penugasan->canAccess($user);
+        $canAccessPemantauan = $tindakLanjut->stPemantauan && $tindakLanjut->stPemantauan->canAccess($user);
+
+        if (!$canAccessParent && !$canAccessPemantauan && !$user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
             abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk membuka Dokumen LHP penugasan ini.');
         }
         $tindakLanjut->load([

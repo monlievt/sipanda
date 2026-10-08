@@ -20,6 +20,7 @@ class OpdUserManagementController extends Controller
     {
         $search = $request->input('search');
         $objekFilter = $request->input('objek_id');
+        $statusFilter = $request->input('status');
 
         $query = User::with('objekPenugasan')
             ->where('tipe_akun', 'opd')
@@ -30,7 +31,7 @@ class OpdUserManagementController extends Controller
                 $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
                   ->orWhere('no_hp', 'like', "%{$search}%")
-                  ->orWhereHas('objekPenugasan', fn($oq) => $oq->where('nama', 'like', "%{$search}%"));
+                  ->orWhereHas('objekPenugasan', fn($oq) => $oq->where('nama', 'like', "%{$search}%")->orWhere('kategori', 'like', "%{$search}%"));
             });
         }
 
@@ -38,10 +39,18 @@ class OpdUserManagementController extends Controller
             $query->where('objek_penugasan_id', $objekFilter);
         }
 
+        if ($statusFilter === 'aktif') {
+            $query->where('is_active', true);
+        } elseif ($statusFilter === 'nonaktif') {
+            $query->where('is_active', false);
+        } elseif ($statusFilter === 'pending') {
+            $query->where('status_undangan', 'pending')->whereNotNull('token_undangan');
+        }
+
         $opdUsers = $query->paginate(20)->withQueryString();
         $objekList = ObjekPenugasan::aktif()->orderBy('nama')->get();
 
-        return view('master.opd-users', compact('opdUsers', 'objekList', 'search', 'objekFilter'));
+        return view('master.opd-users', compact('opdUsers', 'objekList', 'search', 'objekFilter', 'statusFilter'));
     }
 
     /**

@@ -23,6 +23,7 @@ class IkhtisarLaporan extends Model
         'hambatan',
         'rekomendasi',
         'catatan_khusus',
+        'resume_ai',
         'status',
         'dibuat_oleh',
     ];

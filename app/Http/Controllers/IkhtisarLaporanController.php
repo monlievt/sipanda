@@ -3,19 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use App\Models\AppSetting;
 use App\Models\IkhtisarLaporan;
-use App\Models\Irban;
-use App\Models\JenisPenugasan;
 use App\Models\KelompokPengawasan;
-use App\Models\ObjekPenugasan;
 use App\Models\Penugasan;
 use App\Models\Pkppt;
-use App\Models\RegulasiHukum;
 use App\Models\RincianPenyetoranTl;
-use App\Models\SumberPenugasan;
 use App\Models\TindakLanjut;
 use App\Models\User;
+use App\Services\ApipAiService;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -48,20 +46,20 @@ class IkhtisarLaporanController extends Controller
     protected function authorizePenyusun(): void
     {
         $user = auth()->user();
-        if (!$user || !$user->hasAnyRole(['admin', 'sekretariat', 'superadmin'])) {
-            abort(403, 'Akses Terbatas: Penyusunan, pengeditan, dan penghapusan Ikhtisar Laporan Hasil Pengawasan (ILHP) hanya dapat dilakukan oleh Tim Evaluasi dan Pelaporan (Sekretariat).');
+        if (!$user || !$user->hasAnyRole(['admin', 'administrator', 'sekretariat', 'superadmin', 'inspektur', 'sekretaris'])) {
+            abort(403, 'Akses Terbatas: Penyusunan, pengeditan, dan penghapusan Ikhtisar Laporan Hasil Pengawasan (ILHP) hanya dapat dilakukan oleh Tim Evaluasi dan Pelaporan / Administrator.');
         }
     }
 
     /**
-     * Form Generator / Pembuatan Ikhtisar Baru (Dengan Kompilasi Data Otomatis).
+     * Form Generator / Pembuatan Ikhtisar Baru (Dengan Kompilasi Data Otomatis 4 Bagian).
      */
     public function create(Request $request): View
     {
         $this->authorizePenyusun();
 
         $tahun = (int) $request->input('tahun', date('Y'));
-        $periode = $request->input('periode', 'triwulan_1');
+        $periode = $request->input('periode', 'tahunan');
 
         $range = $this->calculateDateRange($tahun, $periode);
         $compiledData = $this->compileIlhpData($tahun, $periode, $range['start'], $range['end']);
@@ -70,11 +68,17 @@ class IkhtisarLaporanController extends Controller
         $defaultJudul = "Ikhtisar Laporan Hasil Pengawasan " . $periodeTitle . " Tahun Anggaran " . $tahun;
         $tahunList = range(date('Y') + 1, 2022);
 
-        return view('ikhtisar-laporan.create', compact('tahun', 'periode', 'periodeTitle', 'range', 'compiledData', 'defaultJudul', 'tahunList'));
+        $geminiApiKey = AppSetting::get('gemini_api_key', config('services.gemini.api_key', env('GEMINI_API_KEY', '')));
+        $geminiModel  = AppSetting::get('gemini_model', config('services.gemini.model', env('GEMINI_MODEL', 'gemini-1.5-flash')));
+
+        return view('ikhtisar-laporan.create', compact(
+            'tahun', 'periode', 'periodeTitle', 'range', 'compiledData', 'defaultJudul', 'tahunList',
+            'geminiApiKey', 'geminiModel'
+        ));
     }
 
     /**
-     * Simpan Draf / Dokumen Ikhtisar Laporan.
+     * Simpan Draf / Dokumen Ikhtisar Laporan (Sistematika Baru).
      */
     public function store(Request $request): RedirectResponse
     {
@@ -85,9 +89,7 @@ class IkhtisarLaporanController extends Controller
             'judul'           => ['required', 'string', 'max:255'],
             'nomor_surat'     => ['nullable', 'string', 'max:100'],
             'tanggal_laporan' => ['required', 'date'],
-            'simpulan'        => ['nullable', 'string'],
-            'hambatan'        => ['nullable', 'string'],
-            'rekomendasi'     => ['nullable', 'string'],
+            'resume_ai'       => ['nullable', 'string'],
             'catatan_khusus'  => ['nullable', 'string'],
             'status'          => ['required', 'in:draft,final'],
         ]);
@@ -102,10 +104,8 @@ class IkhtisarLaporanController extends Controller
             'tanggal_laporan'       => $validated['tanggal_laporan'],
             'tanggal_awal_periode'  => $range['start'],
             'tanggal_akhir_periode' => $range['end'],
-            'simpulan'              => $validated['simpulan'],
-            'hambatan'              => $validated['hambatan'],
-            'rekomendasi'           => $validated['rekomendasi'],
-            'catatan_khusus'        => $validated['catatan_khusus'],
+            'resume_ai'             => $validated['resume_ai'] ?? null,
+            'catatan_khusus'        => $validated['catatan_khusus'] ?? null,
             'status'                => $validated['status'],
             'dibuat_oleh'           => auth()->id(),
         ]);
@@ -117,7 +117,7 @@ class IkhtisarLaporanController extends Controller
     }
 
     /**
-     * Tampilkan Dokumen Lengkap Ikhtisar Hasil Pengawasan (BAB I s/d BAB V).
+     * Tampilkan Dokumen Lengkap Ikhtisar Hasil Pengawasan (4 Bagian Utama).
      */
     public function show(IkhtisarLaporan $ikhtisarLaporan): View
     {
@@ -128,9 +128,14 @@ class IkhtisarLaporanController extends Controller
             $ikhtisarLaporan->tanggal_akhir_periode
         );
 
-        $inspektur = User::role('inspektur')->first();
+        $inspektur = User::where('jabatan', 'like', '%inspektur%')
+            ->where('jabatan', 'not like', '%pembantu%')
+            ->first() ?? User::role('inspektur')->first();
 
-        return view('ikhtisar-laporan.show', compact('ikhtisarLaporan', 'compiledData', 'inspektur'));
+        $geminiApiKey = AppSetting::get('gemini_api_key', config('services.gemini.api_key', env('GEMINI_API_KEY', '')));
+        $geminiModel  = AppSetting::get('gemini_model', config('services.gemini.model', env('GEMINI_MODEL', 'gemini-1.5-flash')));
+
+        return view('ikhtisar-laporan.show', compact('ikhtisarLaporan', 'compiledData', 'inspektur', 'geminiApiKey', 'geminiModel'));
     }
 
     /**
@@ -145,23 +150,35 @@ class IkhtisarLaporanController extends Controller
             $ikhtisarLaporan->tanggal_akhir_periode
         );
 
-        $inspektur = User::role('inspektur')->first();
+        $inspektur = User::where('jabatan', 'like', '%inspektur%')
+            ->where('jabatan', 'not like', '%pembantu%')
+            ->first() ?? User::role('inspektur')->first();
 
         return view('ikhtisar-laporan.cetak', compact('ikhtisarLaporan', 'compiledData', 'inspektur'));
     }
 
     /**
-     * Form Edit Narasi & Catatan Ikhtisar.
+     * Form Edit Narasi Resume AI & Metadata Ikhtisar.
      */
     public function edit(IkhtisarLaporan $ikhtisarLaporan): View
     {
         $this->authorizePenyusun();
 
-        return view('ikhtisar-laporan.edit', compact('ikhtisarLaporan'));
+        $compiledData = $this->compileIlhpData(
+            $ikhtisarLaporan->tahun,
+            $ikhtisarLaporan->periode,
+            $ikhtisarLaporan->tanggal_awal_periode,
+            $ikhtisarLaporan->tanggal_akhir_periode
+        );
+
+        $geminiApiKey = AppSetting::get('gemini_api_key', config('services.gemini.api_key', env('GEMINI_API_KEY', '')));
+        $geminiModel  = AppSetting::get('gemini_model', config('services.gemini.model', env('GEMINI_MODEL', 'gemini-1.5-flash')));
+
+        return view('ikhtisar-laporan.edit', compact('ikhtisarLaporan', 'compiledData', 'geminiApiKey', 'geminiModel'));
     }
 
     /**
-     * Update Narasi & Status Ikhtisar.
+     * Update Narasi Resume AI & Metadata Ikhtisar.
      */
     public function update(Request $request, IkhtisarLaporan $ikhtisarLaporan): RedirectResponse
     {
@@ -171,9 +188,7 @@ class IkhtisarLaporanController extends Controller
             'judul'           => ['required', 'string', 'max:255'],
             'nomor_surat'     => ['nullable', 'string', 'max:100'],
             'tanggal_laporan' => ['required', 'date'],
-            'simpulan'        => ['nullable', 'string'],
-            'hambatan'        => ['nullable', 'string'],
-            'rekomendasi'     => ['nullable', 'string'],
+            'resume_ai'       => ['nullable', 'string'],
             'catatan_khusus'  => ['nullable', 'string'],
             'status'          => ['required', 'in:draft,final'],
         ]);
@@ -203,7 +218,49 @@ class IkhtisarLaporanController extends Controller
             ->with('status', 'Dokumen Ikhtisar Laporan berhasil dihapus.');
     }
 
-    // ─── ENGINE KOMPILASI DATA OTOMATIS (BAB I s/d BAB IV) ──────────────────────────
+    /**
+     * AJAX Endpoint: Generate Ringkasan Resume AI dari Temuan & Rekomendasi.
+     */
+    public function generateResumeAi(Request $request, ApipAiService $aiService): JsonResponse
+    {
+        $this->authorizePenyusun();
+
+        $tahun = (int) $request->input('tahun', date('Y'));
+        $periode = $request->input('periode', 'tahunan');
+
+        $range = $this->calculateDateRange($tahun, $periode);
+        $compiled = $this->compileIlhpData($tahun, $periode, $range['start'], $range['end']);
+
+        $periodeTitle = $this->getPeriodeTitle($periode);
+        $result = $aiService->generateResumeIkhtisar($tahun, $periodeTitle, $compiled['listTemuanRekomendasi']);
+
+        return response()->json($result);
+    }
+
+    /**
+     * AJAX Endpoint: Simpan Pengaturan Gemini API Key & Model (AppSetting).
+     */
+    public function saveGeminiKey(Request $request): JsonResponse
+    {
+        $this->authorizePenyusun();
+
+        $validated = $request->validate([
+            'gemini_api_key' => ['required', 'string'],
+            'gemini_model'   => ['nullable', 'string'],
+        ]);
+
+        AppSetting::set('gemini_api_key', trim($validated['gemini_api_key']));
+        if (!empty($validated['gemini_model'])) {
+            AppSetting::set('gemini_model', trim($validated['gemini_model']));
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => '✓ Pengaturan Google Gemini API Key berhasil disimpan.',
+        ]);
+    }
+
+    // ─── ENGINE KOMPILASI DATA OTOMATIS 4 BAGIAN UTAMA ──────────────────────────
 
     /**
      * Hitung tanggal awal & akhir berdasarkan periode.
@@ -235,207 +292,221 @@ class IkhtisarLaporanController extends Controller
     }
 
     /**
-     * Kompilasi seluruh metrik, tabel rekapitulasi, dan rincian BAB I - IV dari database.
+     * Kompilasi seluruh data 4 Bagian Utama ILHP sesuai pedoman template resmi.
      */
     protected function compileIlhpData(int $tahun, string $periode, $startDate, $endDate): array
     {
         $start = Carbon::parse($startDate)->startOfDay();
         $end   = Carbon::parse($endDate)->endOfDay();
 
-        // ── BAB I: INFORMASI UMUM ──
-        $dasarHukum = RegulasiHukum::dasarSptBaku()->get()->sortBy('hierarki_order')->values();
-        if ($dasarHukum->isEmpty()) {
-            $dasarHukum = RegulasiHukum::orderBy('tahun', 'desc')->take(5)->get();
-        }
+        // ══════════════════════════════════════════════════════════════════════════
+        // BAGIAN 1: SUMBER DAYA MANUSIA (SDM) BERDASARKAN JABATAN DEFINITIF
+        // ══════════════════════════════════════════════════════════════════════════
+        // Perhitungan:
+        // - Data diambil dari jumlah pegawai aktif internal SIPANDA
+        // - Didasarkan pada jabatan definitif yang diduduki
+        // - Formula Unsur Kesekretariatan = Total Pegawai - Inspektur - Sekretaris - Irban - Auditor - PPUPD
+        $usersAktif = User::where('is_active', true)->where('tipe_akun', 'internal')->get();
+        $totalPegawaiAktif = $usersAktif->count();
 
-        $irbans = Irban::with(['users' => fn($q) => $q->aktif()])->get();
-        $totalPersonilAktif = User::aktif()->internal()->count();
-        $totalAuditor = User::aktif()->where('jabatan', 'like', '%auditor%')->count();
-        $totalPpupd   = User::aktif()->where('jabatan', 'like', '%ppupd%')->count();
-        
-        // Fallback jika jabatan belum diisi spesifik
-        if ($totalAuditor === 0 && $totalPpupd === 0) {
-            $totalAuditor = User::aktif()->role('auditor')->count();
-        }
-        $totalStaf    = max(0, $totalPersonilAktif - $totalAuditor - $totalPpupd);
+        $countInspektur = $usersAktif->filter(function ($u) {
+            $jab = strtolower($u->jabatan ?? '');
+            $statusJab = strtolower($u->status_jabatan ?? 'definitif');
+            return str_contains($jab, 'inspektur') && !str_contains($jab, 'pembantu') && !str_contains($jab, 'irban') && ($statusJab === 'definitif' || empty($u->status_jabatan));
+        })->count();
 
-        // Capaian Program PKPPT dalam periode
-        $pkpptList = Pkppt::with('penugasan')->where('tahun', $tahun)->get();
-        $totalTargetPkppt = $pkpptList->count();
-        $totalTargetLaporan = $pkpptList->sum('jumlah_laporan_rencana');
+        $countSekretaris = $usersAktif->filter(function ($u) {
+            $jab = strtolower($u->jabatan ?? '');
+            return str_contains($jab, 'sekretaris');
+        })->count();
 
-        // Seluruh Penugasan SPT yang berada dalam rentang tanggal periode
-        $allPenugasanPeriode = Penugasan::with([
-            'irban', 'irbans', 'jenisPenugasan', 'sumberPenugasan', 'objekPenugasan', 'tim.user'
-        ])->where(function ($q) use ($start, $end) {
-            $q->whereBetween('tanggal_mulai', [$start, $end])
-              ->orWhereBetween('tanggal_selesai', [$start, $end]);
-        })->orderBy('tanggal_mulai', 'asc')->get();
+        $countIrban = $usersAktif->filter(function ($u) {
+            $jab = strtolower($u->jabatan ?? '');
+            return str_contains($jab, 'inspektur pembantu') || str_contains($jab, 'irban');
+        })->count();
 
-        $totalSptTerbit = $allPenugasanPeriode->count();
-        $totalSptSelesai = $allPenugasanPeriode->where('status', 'selesai')->count();
-        $totalSptBerjalan = $allPenugasanPeriode->where('status', 'berjalan')->count();
-        $totalSptBelum = $allPenugasanPeriode->where('status', 'belum_berjalan')->count();
-        $persenRealisasiPkppt = $totalTargetPkppt > 0 ? round(($totalSptTerbit / $totalTargetPkppt) * 100, 1) : 0;
+        $countAuditor = $usersAktif->filter(function ($u) {
+            $jab = strtolower($u->jabatan ?? '');
+            $isNotPimpinan = !str_contains($jab, 'inspektur') && !str_contains($jab, 'sekretaris');
+            return $isNotPimpinan && (str_contains($jab, 'auditor') || $u->hasRole('auditor'));
+        })->count();
 
-        // ── BAB II: HASIL PENGAWASAN PER JENIS PENGAWASAN ──
-        $kategoriAudit = [];
-        $kategoriReviu = [];
-        $kategoriEvaluasi = [];
-        $kategoriPemantauan = [];
-        $kategoriLainnya = [];
+        $countPpupd = $usersAktif->filter(function ($u) {
+            $jab = strtolower($u->jabatan ?? '');
+            $isNotPimpinan = !str_contains($jab, 'inspektur') && !str_contains($jab, 'sekretaris');
+            return $isNotPimpinan && (str_contains($jab, 'ppupd') || $u->hasRole('ppupd'));
+        })->count();
 
-        foreach ($allPenugasanPeriode as $spt) {
-            $namaJenis = strtolower($spt->jenisPenugasan?->nama ?? '');
-            $katJenis  = strtolower($spt->jenisPenugasan?->kategori ?? '');
+        $countKesekretariatan = max(0, $totalPegawaiAktif - ($countInspektur + $countSekretaris + $countIrban + $countAuditor + $countPpupd));
 
-            if (str_contains($namaJenis, 'audit') || $katJenis === 'audit') {
-                if (str_contains($namaJenis, 'kinerja')) {
-                    $kategoriAudit['audit_kinerja'][] = $spt;
-                } else {
-                    $kategoriAudit['audit_dtt'][] = $spt;
-                }
-            } elseif (str_contains($namaJenis, 'reviu') || $katJenis === 'reviu') {
-                $kategoriReviu[] = $spt;
-            } elseif (str_contains($namaJenis, 'evaluasi') || $katJenis === 'evaluasi') {
-                $kategoriEvaluasi[] = $spt;
-            } elseif (str_contains($namaJenis, 'pemantauan') || str_contains($namaJenis, 'monitoring') || $katJenis === 'pemantauan') {
-                $kategoriPemantauan[] = $spt;
-            } else {
-                $kategoriLainnya[] = $spt;
-            }
-        }
+        $tabelSdm = [
+            ['no' => 1, 'jabatan' => 'Inspektur', 'jumlah' => $countInspektur],
+            ['no' => 2, 'jabatan' => 'Sekretaris', 'jumlah' => $countSekretaris],
+            ['no' => 3, 'jabatan' => 'Inspektur Pembantu', 'jumlah' => $countIrban],
+            ['no' => 4, 'jabatan' => 'Fungsional Auditor', 'jumlah' => $countAuditor],
+            ['no' => 5, 'jabatan' => 'Fungsional PPUPD', 'jumlah' => $countPpupd],
+            ['no' => 6, 'jabatan' => 'Unsur Kesekretariatan', 'jumlah' => $countKesekretariatan],
+        ];
 
-        // ── BAB III: PEMANTAUAN TINDAK LANJUT HASIL PENGAWASAN ──
-        $allTindakLanjut = TindakLanjut::with(['penugasan.irban', 'penugasan.objekPenugasan', 'objekPenugasan', 'rincianPenyetoran'])
-            ->where(function ($q) use ($start, $end) {
+        // ══════════════════════════════════════════════════════════════════════════
+        // BAGIAN 2: DATA CATATAN/TEMUAN & REKOMENDASI UNTUK RESUME AI
+        // ══════════════════════════════════════════════════════════════════════════
+        $allTindakLanjutPeriode = TindakLanjut::with(['penugasan.objekPenugasan', 'objekPenugasan', 'rincianPenyetoran'])
+            ->where(function ($q) use ($start, $end, $tahun) {
                 $q->whereBetween('tgl_lhp', [$start, $end])
                   ->orWhereBetween('created_at', [$start, $end])
                   ->orWhereHas('penugasan', fn($pq) => $pq->whereBetween('tanggal_mulai', [$start, $end]));
             })->get();
 
-        if ($allTindakLanjut->isEmpty()) {
-            // Fallback: Ambil seluruh data TL tahun terkait jika periode berjalan baru dimulai
-            $allTindakLanjut = TindakLanjut::with(['penugasan.irban', 'penugasan.objekPenugasan', 'objekPenugasan', 'rincianPenyetoran'])
+        if ($allTindakLanjutPeriode->isEmpty()) {
+            $allTindakLanjutPeriode = TindakLanjut::with(['penugasan.objekPenugasan', 'objekPenugasan', 'rincianPenyetoran'])
                 ->whereYear('created_at', $tahun)
                 ->get();
         }
 
-        $tlCountTotal       = $allTindakLanjut->count();
-        $tlCountSelesai     = $allTindakLanjut->where('status_tindak_lanjut', 'selesai')->count();
-        $tlCountBelumSesuai = $allTindakLanjut->whereIn('status_tindak_lanjut', ['proses', 'menunggu_verifikasi'])->count();
-        $tlCountBelum       = $allTindakLanjut->where('status_tindak_lanjut', 'belum')->count();
-        $tlCountTdt         = $allTindakLanjut->where('status_tindak_lanjut', 'tdt')->count();
-
-        $tlTotalTargetRp = (float) $allTindakLanjut->sum('nilai_rekomendasi_rp');
-        $tlTotalSetorRp  = (float) $allTindakLanjut->sum(fn($tl) => $tl->rincianPenyetoran->sum('nilai_setor_rp'));
-        $tlSisaSetorRp   = max(0, $tlTotalTargetRp - $tlTotalSetorRp);
-        $tlPersenSelesai = $tlCountTotal > 0 ? round(($tlCountSelesai / $tlCountTotal) * 100, 1) : 0;
-
-        // Grouping Matrix per Objek Penugasan (OPD)
-        $matrixOpd = $allTindakLanjut->groupBy(function ($it) {
-            return $it->objekPenugasan?->nama ?? ($it->penugasan?->objekPenugasan?->first()?->nama ?? 'Umum / Lainnya');
-        })->map(function ($items, $opdName) {
-            $total = $items->count();
-            $ss    = $items->where('status_tindak_lanjut', 'selesai')->count();
-            $bs    = $items->whereIn('status_tindak_lanjut', ['proses', 'menunggu_verifikasi'])->count();
-            $btl   = $items->where('status_tindak_lanjut', 'belum')->count();
-            $tdt   = $items->where('status_tindak_lanjut', 'tdt')->count();
-            $target = $items->sum('nilai_rekomendasi_rp');
-            $setor  = $items->sum(fn($it) => $it->rincianPenyetoran->sum('nilai_setor_rp'));
-            $sisa   = max(0, $target - $setor);
-            $persen = $total > 0 ? round(($ss / $total) * 100, 1) : 0;
-
-            return (object) [
-                'nama_opd'     => $opdName,
-                'total'        => $total,
-                'ss'           => $ss,
-                'bs'           => $bs,
-                'btl'          => $btl,
-                'tdt'          => $tdt,
-                'persen'       => $persen,
-                'target_rp'    => $target,
-                'setor_rp'     => $setor,
-                'sisa_rp'      => $sisa,
+        $listTemuanRekomendasi = $allTindakLanjutPeriode->map(function ($tl) {
+            return [
+                'id'                   => $tl->id,
+                'no_lhp'               => $tl->no_lhp ?? ($tl->penugasan?->no_spt ?? '-'),
+                'judul_lhp'            => $tl->judul_lhp ?? '-',
+                'objek'                => $tl->objekPenugasan?->nama ?? ($tl->penugasan?->objekPenugasan?->pluck('nama')->implode(', ') ?? 'Perangkat Daerah'),
+                'uraian_temuan'        => $tl->uraian_temuan,
+                'rekomendasi'          => $tl->rekomendasi,
+                'nilai_rekomendasi_rp' => (float) $tl->nilai_rekomendasi_rp,
+                'status'               => $tl->status_tindak_lanjut,
             ];
-        })->sortByDesc('total')->values();
+        })->values()->toArray();
 
-        // ── BAB IV: HASIL PENANGANAN PENGADUAN MASYARAKAT (DUMAS & INVESTIGASI) ──
-        $sptDumas = $allPenugasanPeriode->filter(function ($spt) {
-            $sumberNama = strtolower($spt->sumberPenugasan?->nama ?? '');
-            $jenisNama  = strtolower($spt->jenisPenugasan?->nama ?? '');
-            return str_contains($sumberNama, 'pengaduan') || str_contains($sumberNama, 'aph') || str_contains($sumberNama, 'wbs')
-                || str_contains($jenisNama, 'investigasi') || str_contains($jenisNama, 'khusus');
-        })->values();
+        // ══════════════════════════════════════════════════════════════════════════
+        // BAGIAN 3: REKAPITULASI HASIL PENGAWASAN (MATRIKS TINDAK LANJUT)
+        // ══════════════════════════════════════════════════════════════════════════
+        // Tabel per Tahun: Total LHP, Nilai Pengawasan, Total Saran/Rekom, Nilai Rekom, Status TL (Sesuai, Belum Sesuai, Belum di TL, TDT), Nilai Pengembalian, Sisa Pengembalian
+        $targetYears = range($tahun, max(2023, $tahun - 2));
+        $rekapHasilPengawasanPerTahun = [];
 
-        // ── REKAPITULASI 6 KLUSTER / KELOMPOK PENGAWASAN RESMI (Bahan ILHP) ──
-        $kelompoks = KelompokPengawasan::where('is_active', true)->orderBy('urutan')->get();
-        $rekapKlusterPengawasan = [];
+        foreach ($targetYears as $idx => $t) {
+            $tlYearQuery = TindakLanjut::with(['penugasan', 'rincianPenyetoran'])
+                ->where(function ($q) use ($t) {
+                    $q->whereYear('tgl_lhp', $t)
+                      ->orWhereYear('created_at', $t)
+                      ->orWhereHas('penugasan', fn($pq) => $pq->whereYear('tanggal_mulai', $t));
+                })->get();
 
-        foreach ($kelompoks as $kel) {
-            $pkpptKel = $pkpptList->filter(fn($p) => $p->kelompok_pengawasan_id === $kel->id);
-            $targetLaporan = $pkpptKel->sum('jumlah_laporan_rencana');
-            $targetPkppt = $pkpptKel->count();
+            $totalLhp = $tlYearQuery->pluck('no_lhp')->filter()->unique()->count();
+            if ($totalLhp === 0) {
+                $totalLhp = $tlYearQuery->pluck('penugasan_id')->filter()->unique()->count();
+            }
 
-            $sptKel = $allPenugasanPeriode->filter(function ($s) use ($kel) {
-                if ($s->kelompok_pengawasan_id) {
-                    return $s->kelompok_pengawasan_id === $kel->id;
+            $nilaiDiawasi = (float) $tlYearQuery->groupBy(fn($i) => $i->no_lhp ?: $i->penugasan_id)->map(fn($g) => $g->max('nilai_diawasi_rp') ?? 0)->sum();
+            $totalRekom = $tlYearQuery->count();
+            $nilaiRekom = (float) $tlYearQuery->sum('nilai_rekomendasi_rp');
+
+            $countSesuai      = $tlYearQuery->where('status_tindak_lanjut', 'selesai')->count();
+            $countBelumSesuai = $tlYearQuery->whereIn('status_tindak_lanjut', ['proses', 'menunggu_verifikasi'])->count();
+            $countBelumDiTl   = $tlYearQuery->where('status_tindak_lanjut', 'belum')->count();
+            $countTdt         = $tlYearQuery->where('status_tindak_lanjut', 'tdt')->count();
+
+            $nilaiPengembalian = (float) $tlYearQuery->sum(fn($it) => $it->rincianPenyetoran->sum('nilai_setor_rp'));
+            $sisaPengembalian  = max(0, $nilaiRekom - $nilaiPengembalian);
+
+            $rekapHasilPengawasanPerTahun[] = [
+                'no'                 => $idx + 1,
+                'tahun'              => $t,
+                'total_lhp'          => $totalLhp,
+                'nilai_diawasi_rp'   => $nilaiDiawasi,
+                'total_rekomendasi'  => $totalRekom,
+                'nilai_rekomendasi_rp' => $nilaiRekom,
+                'status_sesuai'      => $countSesuai,
+                'status_belum_sesuai'=> $countBelumSesuai,
+                'status_belum_tl'    => $countBelumDiTl,
+                'status_tdt'         => $countTdt,
+                'nilai_pengembalian_rp' => $nilaiPengembalian,
+                'sisa_pengembalian_rp'  => $sisaPengembalian,
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // BAGIAN 4: RINCIAN PENGAWASAN SESUAI KELOMPOK / KLUSTER PENGAWASAN
+        // ══════════════════════════════════════════════════════════════════════════
+        // 6 Kluster Resmi:
+        // 1. Pengawasan Proyek Strategis Daerah (PSD)
+        // 2. Pengawasan Keuangan dan Aset Daerah
+        // 3. Pengawasan Keuangan dan Aset Desa
+        // 4. Pengawasan Kinerja
+        // 5. Pengawasan Khusus
+        // 6. Pengawasan dan Pembinaan Lainnya
+        // Rencana: Dari PKPPT tahun berjalan
+        // Realisasi: Dari SPT (Surat Tugas perpanjangan & bantuan tidak dihitung ganda / dihitung 1 dengan SPT induk)
+        $masterKluster = [
+            ['kode' => 'PSD',       'nama' => 'Pengawasan Proyek Strategis Daerah (PSD)'],
+            ['kode' => 'KEU_ASET',  'nama' => 'Pengawasan Keuangan dan Aset Daerah'],
+            ['kode' => 'KEU_DESA',  'nama' => 'Pengawasan Keuangan dan Aset Desa'],
+            ['kode' => 'KINERJA',   'nama' => 'Pengawasan Kinerja'],
+            ['kode' => 'KHUSUS',    'nama' => 'Pengawasan Khusus'],
+            ['kode' => 'LAINNYA',   'nama' => 'Pengawasan dan Pembinaan Lainnya'],
+        ];
+
+        $pkpptTahunList = Pkppt::where('tahun', $tahun)->get();
+
+        // Ambil penugasan tahun berjalan yang BUKAN merupakan surat tugas perpanjangan/bantuan (penugasan_induk_id IS NULL)
+        $penugasanTahunList = Penugasan::where('tahun', $tahun)
+            ->whereNull('penugasan_induk_id')
+            ->get();
+
+        $tabelKlusterPengawasan = [];
+        $totalRencanaKluster = 0;
+        $totalRealisasiKluster = 0;
+
+        foreach ($masterKluster as $idx => $kluster) {
+            $kelompokModel = KelompokPengawasan::where('kode_kelompok', $kluster['kode'])
+                ->orWhere('nama_kelompok', 'like', '%' . $kluster['nama'] . '%')
+                ->first();
+
+            $kelId = $kelompokModel?->id;
+
+            // Rencana: Penjumlahan dari PKPPT tahun berjalan
+            $rencana = $pkpptTahunList->filter(function ($p) use ($kelId, $kluster) {
+                if ($kelId && $p->kelompok_pengawasan_id === $kelId) {
+                    return true;
                 }
-                return $s->pkppt?->kelompok_pengawasan_id === $kel->id;
-            });
+                return str_contains(strtolower($p->area_pengawasan ?? ''), strtolower($kluster['kode']))
+                    || str_contains(strtolower($p->jenis_pengawasan ?? ''), strtolower($kluster['kode']));
+            })->sum('jumlah_laporan_rencana');
 
-            $sptCount = $sptKel->count();
-            $sptSelesai = $sptKel->where('status', 'selesai')->count();
-            $sptBerjalan = $sptKel->where('status', 'berjalan')->count();
-            $persen = $targetPkppt > 0 ? round(($sptCount / $targetPkppt) * 100, 1) : ($sptCount > 0 ? 100 : 0);
+            // Realisasi: Penjumlahan dari SPT induk (1 penugasan induk = 1 realisasi kluster)
+            $realisasi = $penugasanTahunList->filter(function ($s) use ($kelId, $kluster) {
+                if ($kelId && $s->kelompok_pengawasan_id === $kelId) {
+                    return true;
+                }
+                if ($s->pkppt_id) {
+                    return $s->pkppt?->kelompok_pengawasan_id === $kelId;
+                }
+                $uraian = strtolower($s->uraian_penugasan ?? '');
+                return str_contains($uraian, strtolower($kluster['kode']));
+            })->count();
 
-            $rekapKlusterPengawasan[] = (object) [
-                'id'                => $kel->id,
-                'nama_kelompok'     => $kel->nama_kelompok,
-                'kode_kelompok'     => $kel->kode_kelompok,
-                'deskripsi_singkat' => $kel->deskripsi_singkat,
-                'bentuk_pengawasan' => $kel->bentuk_pengawasan,
-                'target_pkppt'      => $targetPkppt,
-                'target_laporan'    => $targetLaporan,
-                'spt_total'         => $sptCount,
-                'spt_selesai'       => $sptSelesai,
-                'spt_berjalan'      => $sptBerjalan,
-                'persen'            => $persen,
-                'spt_items'         => $sptKel->values(),
+            $totalRencanaKluster += $rencana;
+            $totalRealisasiKluster += $realisasi;
+
+            $tabelKlusterPengawasan[] = [
+                'no'        => $idx + 1,
+                'kluster'   => $kluster['nama'],
+                'kode'      => $kluster['kode'],
+                'rencana'   => $rencana,
+                'realisasi' => $realisasi,
             ];
         }
 
         return [
-            'dasarHukum'             => $dasarHukum,
-            'irbans'                 => $irbans,
-            'totalPersonilAktif'     => $totalPersonilAktif,
-            'totalAuditor'           => $totalAuditor,
-            'totalPpupd'             => $totalPpupd,
-            'totalStaf'              => $totalStaf,
-            'totalTargetPkppt'       => $totalTargetPkppt,
-            'totalTargetLaporan'     => $totalTargetLaporan,
-            'totalSptTerbit'         => $totalSptTerbit,
-            'totalSptSelesai'        => $totalSptSelesai,
-            'totalSptBerjalan'       => $totalSptBerjalan,
-            'totalSptBelum'          => $totalSptBelum,
-            'persenRealisasiPkppt'   => $persenRealisasiPkppt,
-            'kategoriAudit'          => $kategoriAudit,
-            'kategoriReviu'          => $kategoriReviu,
-            'kategoriEvaluasi'       => $kategoriEvaluasi,
-            'kategoriPemantauan'     => $kategoriPemantauan,
-            'kategoriLainnya'        => $kategoriLainnya,
-            'rekapKlusterPengawasan' => $rekapKlusterPengawasan,
-            'tlCountTotal'           => $tlCountTotal,
-            'tlCountSelesai'         => $tlCountSelesai,
-            'tlCountBelumSesuai'     => $tlCountBelumSesuai,
-            'tlCountBelum'           => $tlCountBelum,
-            'tlCountTdt'             => $tlCountTdt,
-            'tlTotalTargetRp'        => $tlTotalTargetRp,
-            'tlTotalSetorRp'         => $tlTotalSetorRp,
-            'tlSisaSetorRp'          => $tlSisaSetorRp,
-            'tlPersenSelesai'        => $tlPersenSelesai,
-            'matrixOpd'              => $matrixOpd,
-            'sptDumas'               => $sptDumas,
+            'totalPegawaiAktif'             => $totalPegawaiAktif,
+            'tabelSdm'                      => $tabelSdm,
+            'listTemuanRekomendasi'         => $listTemuanRekomendasi,
+            'rekapHasilPengawasanPerTahun'  => $rekapHasilPengawasanPerTahun,
+            'tabelKlusterPengawasan'        => $tabelKlusterPengawasan,
+            'totalRencanaKluster'           => $totalRencanaKluster,
+            'totalRealisasiKluster'         => $totalRealisasiKluster,
+            'tahun'                         => $tahun,
+            'periode'                       => $periode,
         ];
     }
 }

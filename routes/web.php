@@ -135,6 +135,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/ikhtisar-laporan', [\App\Http\Controllers\IkhtisarLaporanController::class, 'index'])->name('ikhtisar-laporan.index');
     Route::get('/ikhtisar-laporan/create', [\App\Http\Controllers\IkhtisarLaporanController::class, 'create'])->name('ikhtisar-laporan.create');
     Route::post('/ikhtisar-laporan', [\App\Http\Controllers\IkhtisarLaporanController::class, 'store'])->name('ikhtisar-laporan.store');
+    Route::post('/ikhtisar-laporan/generate-resume-ai', [\App\Http\Controllers\IkhtisarLaporanController::class, 'generateResumeAi'])->name('ikhtisar-laporan.generate_resume_ai');
+    Route::post('/ikhtisar-laporan/save-gemini-key', [\App\Http\Controllers\IkhtisarLaporanController::class, 'saveGeminiKey'])->name('ikhtisar-laporan.save_gemini_key');
     Route::get('/ikhtisar-laporan/{ikhtisarLaporan}', [\App\Http\Controllers\IkhtisarLaporanController::class, 'show'])->name('ikhtisar-laporan.show');
     Route::get('/ikhtisar-laporan/{ikhtisarLaporan}/cetak', [\App\Http\Controllers\IkhtisarLaporanController::class, 'cetak'])->name('ikhtisar-laporan.cetak');
     Route::get('/ikhtisar-laporan/{ikhtisarLaporan}/edit', [\App\Http\Controllers\IkhtisarLaporanController::class, 'edit'])->name('ikhtisar-laporan.edit');

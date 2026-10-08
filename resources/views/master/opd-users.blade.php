@@ -31,10 +31,15 @@
 
     <!-- Filter & Search -->
     <div class="mb-6 bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
-        <form method="GET" action="{{ route('master.opd-users.index') }}" class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 items-end text-xs">
+        <form method="GET" action="{{ route('master.opd-users.index') }}" class="grid grid-cols-1 sm:grid-cols-4 gap-3.5 items-end text-xs">
             <div>
-                <label class="block font-semibold text-[11px] text-slate-500 uppercase mb-1">Cari Nama PIC / Email / No. HP</label>
-                <input type="text" name="search" value="{{ $search }}" placeholder="Ketik nama atau email..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                <label class="block font-semibold text-[11px] text-slate-500 uppercase mb-1">Cari PIC / Email / HP / Instansi</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </span>
+                    <input type="text" name="search" value="{{ $search }}" placeholder="Ketik nama, instansi, email..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs pl-9 pr-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                </div>
             </div>
 
             <div>
@@ -42,14 +47,24 @@
                 <select name="objek_id" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
                     <option value="">-- Semua Instansi OPD / Desa --</option>
                     @foreach($objekList as $obj)
-                        <option value="{{ $obj->id }}" {{ $objekFilter == $obj->id ? 'selected' : '' }}>{{ $obj->nama }}</option>
+                        <option value="{{ $obj->id }}" {{ $objekFilter == $obj->id ? 'selected' : '' }}>{{ $obj->nama }} ({{ $obj->kategori }})</option>
                     @endforeach
                 </select>
             </div>
 
+            <div>
+                <label class="block font-semibold text-[11px] text-slate-500 uppercase mb-1">Filter Status Akun</label>
+                <select name="status" onchange="this.form.submit()" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                    <option value="">-- Semua Status --</option>
+                    <option value="aktif" {{ $statusFilter === 'aktif' ? 'selected' : '' }}>Aktif</option>
+                    <option value="nonaktif" {{ $statusFilter === 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                    <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>Menunggu Aktivasi</option>
+                </select>
+            </div>
+
             <div class="flex items-center gap-2">
-                <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl text-xs shadow-xs transition-all cursor-pointer">Filter</button>
-                @if($search || $objekFilter)
+                <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl text-xs shadow-xs transition-all cursor-pointer">Cari & Filter</button>
+                @if($search || $objekFilter || $statusFilter)
                     <a href="{{ route('master.opd-users.index') }}" class="py-2.5 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 font-semibold rounded-xl text-xs transition-all text-center">Reset</a>
                 @endif
             </div>
