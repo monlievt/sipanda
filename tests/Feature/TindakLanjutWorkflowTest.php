@@ -138,4 +138,85 @@ class TindakLanjutWorkflowTest extends TestCase
         $this->assertEquals('diterima', $bukti->status_verifikasi);
         $this->assertNotNull($tl->tanggal_selesai_aktual);
     }
+
+    public function test_cross_irban_and_creator_access_for_tindak_lanjut(): void
+    {
+        $this->seed([\Database\Seeders\RoleSeeder::class, \Database\Seeders\IrbanSeeder::class, \Database\Seeders\MasterDataSeeder::class]);
+
+        $irban1 = Irban::find(1);
+        $irbanKhusus = Irban::find(4) ?? Irban::create(['nama_irban' => 'Inspektur Pembantu Khusus', 'kode_irban' => 'IRBAN-KHUSUS']);
+
+        // Auditor & Irban dari Irban Khusus
+        $idhamAuditor = User::create([
+            'nama'         => 'MUHAMMAD IDHAM FIRDAUS',
+            'email'        => 'idham@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'AUDITOR TERAMPIL',
+            'status_aktif' => 'aktif',
+            'nip'          => '199501012020011002',
+            'irban_id'     => $irbanKhusus->id,
+        ]);
+        $idhamAuditor->assignRole('auditor');
+
+        $didikIrban = User::create([
+            'nama'         => 'DIDIK AGIT WAHYUDIANTO',
+            'email'        => 'didik@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'INSPEKTUR PEMBANTU KHUSUS',
+            'status_aktif' => 'aktif',
+            'nip'          => '198001012005011002',
+            'irban_id'     => $irbanKhusus->id,
+        ]);
+        $didikIrban->assignRole('irban');
+
+        $objek = ObjekPenugasan::create([
+            'nama'      => 'Inspektorat Kabupaten Trenggalek',
+            'kategori'  => 'opd',
+            'is_active' => true,
+        ]);
+
+        // SPT induk dibuat untuk Irban 1 (bukan Irban Khusus)
+        $penugasan = Penugasan::create([
+            'no_spt'              => '700/681/406.008/2026',
+            'uraian_penugasan'    => 'Pemeriksaan Khusus Kepatuhan Internal',
+            'tanggal_mulai'       => now()->subDays(5),
+            'tanggal_selesai'     => now()->addDays(5),
+            'status'              => 'aktif',
+            'status_persetujuan'  => 'disetujui',
+            'irban_id'            => $irban1->id,
+            'jenis_penugasan_id'  => 1,
+            'sumber_penugasan_id' => 1,
+            'dibuat_oleh'         => 1,
+        ]);
+
+        // Idham menginput temuan untuk SPT tersebut
+        $tl = TindakLanjut::create([
+            'penugasan_id'          => $penugasan->id,
+            'objek_penugasan_id'    => $objek->id,
+            'no_lhp'                => '700.1.2.1/681/406.008/2026',
+            'judul_lhp'             => 'LHP Pemeriksaan Kepatuhan Inspektorat',
+            'tgl_lhp'               => now()->toDateString(),
+            'uraian_temuan'         => 'Catatan Temuan Kepatuhan Administrasi',
+            'rekomendasi'           => 'Rekomendasi tindak lanjut perbaikan SOP',
+            'status_tindak_lanjut'  => 'belum',
+            'dibuat_oleh'           => $idhamAuditor->id,
+        ]);
+
+        // Test: Idham (Auditor Irban Khusus) bisa melihat data di halaman /tindak-lanjut
+        $resIdham = $this->actingAs($idhamAuditor)->get(route('tindak-lanjut.index'));
+        $resIdham->assertStatus(200);
+        $resIdham->assertSee('700.1.2.1/681/406.008/2026');
+        $resIdham->assertSee('LHP Pemeriksaan Kepatuhan Inspektorat');
+
+        // Test: Didik (Irban Khusus) juga bisa melihat data temuan yang diinput oleh Idham
+        $resDidik = $this->actingAs($didikIrban)->get(route('tindak-lanjut.index'));
+        $resDidik->assertStatus(200);
+        $resDidik->assertSee('700.1.2.1/681/406.008/2026');
+        $resDidik->assertSee('LHP Pemeriksaan Kepatuhan Inspektorat');
+
+        // Test: Buka halaman show LHP
+        $resShow = $this->actingAs($idhamAuditor)->get(route('tindak-lanjut.show', $tl->id));
+        $resShow->assertStatus(200);
+        $resShow->assertSee('Catatan Temuan Kepatuhan Administrasi');
+    }
 }
