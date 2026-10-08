@@ -449,7 +449,11 @@ class IkhtisarLaporanController extends Controller
         $pkpptTahunList = Pkppt::where('tahun', $tahun)->get();
 
         // Ambil penugasan tahun berjalan yang BUKAN merupakan surat tugas perpanjangan/bantuan (penugasan_induk_id IS NULL)
-        $penugasanTahunList = Penugasan::where('tahun', $tahun)
+        $penugasanTahunList = Penugasan::with('pkppt')
+            ->where(function ($q) use ($tahun) {
+                $q->whereYear('tanggal_mulai', $tahun)
+                  ->orWhereHas('pkppt', fn($pk) => $pk->where('tahun', $tahun));
+            })
             ->whereNull('penugasan_induk_id')
             ->get();
 
