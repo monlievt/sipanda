@@ -28,15 +28,24 @@ class TindakLanjutController extends Controller
         $search = $request->input('search');
         $tahun  = $request->input('tahun');
 
-        $query = TindakLanjut::with(['penugasan.irban', 'penugasan.objekPenugasan', 'objekPenugasan', 'buktiTindakLanjut.pengunggah', 'rincianPenyetoran']);
+        $query = TindakLanjut::with(['penugasan.irban', 'penugasan.objekPenugasan', 'objekPenugasan', 'buktiTindakLanjut.pengunggah', 'rincianPenyetoran', 'pembuatData']);
 
         if (! $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
             $query->where(function ($q) use ($user) {
                 $q->whereHas('penugasan', function ($pq) use ($user) {
                     $pq->accessibleBy($user);
-                })->orWhereHas('stPemantauan', function ($sq) use ($user) {
+                })
+                ->orWhereHas('stPemantauan', function ($sq) use ($user) {
                     $sq->accessibleBy($user);
-                });
+                })
+                ->orWhere('dibuat_oleh', $user->id)
+                ->orWhere('telaah_oleh', $user->id);
+
+                if ($user->irban_id) {
+                    $q->orWhereHas('pembuatData', function ($uq) use ($user) {
+                        $uq->where('irban_id', $user->irban_id);
+                    });
+                }
             });
         }
 
@@ -150,11 +159,13 @@ class TindakLanjutController extends Controller
     {
         $user = auth()->user();
 
-        // Otorisasi akses dokumen LHP (Dapat diakses jika user berhak pada penugasan awal ATAU ST Pemantauan yang dikaitkan)
+        // Otorisasi akses dokumen LHP (Dapat diakses jika user berhak pada penugasan awal, ST Pemantauan yang dikaitkan, pembuat temuan, penelaah, atau personil satu unit Irban)
         $canAccessParent = $tindakLanjut->penugasan && $tindakLanjut->penugasan->canAccess($user);
         $canAccessPemantauan = $tindakLanjut->stPemantauan && $tindakLanjut->stPemantauan->canAccess($user);
+        $isCreator = $tindakLanjut->dibuat_oleh == $user->id || $tindakLanjut->telaah_oleh == $user->id;
+        $isSameIrban = $user->irban_id && ($tindakLanjut->pembuatData?->irban_id == $user->irban_id || $tindakLanjut->penugasan?->irban_id == $user->irban_id || $tindakLanjut->penugasan?->irbans()->where('irbans.id', $user->irban_id)->exists());
 
-        if (!$canAccessParent && !$canAccessPemantauan && !$user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
+        if (!$canAccessParent && !$canAccessPemantauan && !$isCreator && !$isSameIrban && !$user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
             abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk membuka Dokumen LHP penugasan ini.');
         }
         $tindakLanjut->load([
