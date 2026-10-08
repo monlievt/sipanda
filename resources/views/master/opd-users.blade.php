@@ -221,14 +221,72 @@
                     <p class="text-[10px] text-slate-400 mt-1">Digunakan sebagai username saat login di Portal OPD.</p>
                 </div>
 
-                <div>
-                    <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Instansi Objek Penugasan <span class="text-rose-500">*</span></label>
-                    <select name="objek_penugasan_id" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200">
-                        <option value="">-- Pilih Instansi OPD / Kecamatan / Desa --</option>
+                <!-- Searchable Select Instansi Objek Penugasan (Modal Tambah) -->
+                <div x-data="{
+                    open: false,
+                    search: '',
+                    selectedId: '',
+                    selectedLabel: '',
+                    options: [
                         @foreach($objekList as $obj)
-                            <option value="{{ $obj->id }}">{{ $obj->nama }} ({{ strtoupper($obj->kategori) }})</option>
+                            { id: '{{ $obj->id }}', nama: '{{ addslashes($obj->nama) }}', kategori: '{{ strtoupper($obj->kategori) }}', label: '{{ addslashes($obj->nama) }} ({{ strtoupper($obj->kategori) }})' },
                         @endforeach
-                    </select>
+                    ],
+                    get filteredOptions() {
+                        if (!this.search.trim()) return this.options;
+                        const q = this.search.toLowerCase();
+                        return this.options.filter(o => o.nama.toLowerCase().includes(q) || o.kategori.toLowerCase().includes(q));
+                    },
+                    select(opt) {
+                        this.selectedId = opt.id;
+                        this.selectedLabel = opt.label;
+                        this.open = false;
+                        this.search = '';
+                    },
+                    reset() {
+                        this.selectedId = '';
+                        this.selectedLabel = '';
+                        this.search = '';
+                        this.open = false;
+                    }
+                }" id="tambahObjekDropdownWrapper">
+                    <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Instansi Objek Penugasan <span class="text-rose-500">*</span></label>
+                    <input type="hidden" name="objek_penugasan_id" :value="selectedId" required id="tambahObjekPenugasanId">
+
+                    <div class="relative">
+                        <button type="button" @click="open = !open; if(open) $nextTick(() => $refs.objSearchInput.focus())" @click.outside="open = false" 
+                            class="w-full text-left px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold flex items-center justify-between shadow-xs focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                            <span x-text="selectedId ? selectedLabel : '-- 🔍 Cari & Pilih Instansi OPD / Kecamatan / Desa --'" :class="selectedId ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-400 font-medium'" class="truncate"></span>
+                            <svg class="w-4 h-4 text-slate-400 shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div x-show="open" x-transition 
+                            class="absolute z-50 mt-1 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-2.5 space-y-2 max-w-full">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </span>
+                                <input type="text" x-model="search" x-ref="objSearchInput" placeholder="Ketik nama instansi / dinas / desa untuk mencari..." 
+                                    class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs pl-8 pr-3 py-2 focus:ring-2 focus:ring-emerald-500 font-medium">
+                            </div>
+                            
+                            <div class="max-h-48 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60 custom-scrollbar">
+                                <template x-for="opt in filteredOptions" :key="opt.id">
+                                    <div @click="select(opt)" 
+                                        class="px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-lg cursor-pointer transition-colors flex items-center justify-between gap-2"
+                                        :class="{ 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/80 font-bold': selectedId == opt.id }">
+                                        <span x-text="opt.nama" class="truncate"></span>
+                                        <span x-text="opt.kategori" class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold shrink-0"></span>
+                                    </div>
+                                </template>
+                                <div x-show="filteredOptions.length === 0" class="p-3 text-center text-slate-400 text-xs">
+                                    Tidak ada instansi yang cocok dengan kata kunci.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div>
@@ -278,13 +336,73 @@
                     <input type="email" id="editEmail" name="email" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
                 </div>
 
-                <div>
-                    <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Instansi Objek Penugasan <span class="text-rose-500">*</span></label>
-                    <select id="editObjekPenugasanId" name="objek_penugasan_id" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200">
+                <!-- Searchable Select Instansi Objek Penugasan (Modal Edit) -->
+                <div x-data="{
+                    open: false,
+                    search: '',
+                    selectedId: '',
+                    selectedLabel: '',
+                    options: [
                         @foreach($objekList as $obj)
-                            <option value="{{ $obj->id }}">{{ $obj->nama }} ({{ strtoupper($obj->kategori) }})</option>
+                            { id: '{{ $obj->id }}', nama: '{{ addslashes($obj->nama) }}', kategori: '{{ strtoupper($obj->kategori) }}', label: '{{ addslashes($obj->nama) }} ({{ strtoupper($obj->kategori) }})' },
                         @endforeach
-                    </select>
+                    ],
+                    get filteredOptions() {
+                        if (!this.search.trim()) return this.options;
+                        const q = this.search.toLowerCase();
+                        return this.options.filter(o => o.nama.toLowerCase().includes(q) || o.kategori.toLowerCase().includes(q));
+                    },
+                    select(opt) {
+                        this.selectedId = opt.id;
+                        this.selectedLabel = opt.label;
+                        this.open = false;
+                        this.search = '';
+                    },
+                    setSelectedById(id) {
+                        this.selectedId = id;
+                        const found = this.options.find(o => o.id == id);
+                        this.selectedLabel = found ? found.label : '';
+                        this.search = '';
+                        this.open = false;
+                    }
+                }" id="editObjekDropdownWrapper">
+                    <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Instansi Objek Penugasan <span class="text-rose-500">*</span></label>
+                    <input type="hidden" name="objek_penugasan_id" :value="selectedId" required id="editObjekPenugasanId">
+
+                    <div class="relative">
+                        <button type="button" @click="open = !open; if(open) $nextTick(() => $refs.editObjSearchInput.focus())" @click.outside="open = false" 
+                            class="w-full text-left px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold flex items-center justify-between shadow-xs focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                            <span x-text="selectedId ? selectedLabel : '-- 🔍 Cari & Pilih Instansi OPD / Kecamatan / Desa --'" :class="selectedId ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-400 font-medium'" class="truncate"></span>
+                            <svg class="w-4 h-4 text-slate-400 shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div x-show="open" x-transition 
+                            class="absolute z-50 mt-1 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-2.5 space-y-2 max-w-full">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </span>
+                                <input type="text" x-model="search" x-ref="editObjSearchInput" placeholder="Ketik nama instansi / dinas / desa untuk mencari..." 
+                                    class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs pl-8 pr-3 py-2 focus:ring-2 focus:ring-blue-500 font-medium">
+                            </div>
+                            
+                            <div class="max-h-48 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60 custom-scrollbar">
+                                <template x-for="opt in filteredOptions" :key="opt.id">
+                                    <div @click="select(opt)" 
+                                        class="px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-700 dark:hover:text-blue-300 rounded-lg cursor-pointer transition-colors flex items-center justify-between gap-2"
+                                        :class="{ 'bg-blue-50 text-blue-800 dark:bg-blue-950/80 font-bold': selectedId == opt.id }">
+                                        <span x-text="opt.nama" class="truncate"></span>
+                                        <span x-text="opt.kategori" class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold shrink-0"></span>
+                                    </div>
+                                </template>
+                                <div x-show="filteredOptions.length === 0" class="p-3 text-center text-slate-400 text-xs">
+                                    Tidak ada instansi yang cocok dengan kata kunci.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div>
@@ -318,6 +436,13 @@
 
     <script>
         function openModalTambahOpdUser() {
+            const tambahWrapper = document.getElementById('tambahObjekDropdownWrapper');
+            if (tambahWrapper && window.Alpine) {
+                const alpineData = Alpine.$data(tambahWrapper);
+                if (alpineData && alpineData.reset) {
+                    alpineData.reset();
+                }
+            }
             document.getElementById('modalTambahOpdUser').classList.remove('hidden');
         }
 
@@ -327,8 +452,16 @@
             document.getElementById('editNama').value = data.nama;
             document.getElementById('editEmail').value = data.email;
             document.getElementById('editNoHp').value = data.no_hp || '';
-            document.getElementById('editObjekPenugasanId').value = data.objek_penugasan_id;
             document.getElementById('editIsActive').value = data.is_active;
+
+            const editWrapper = document.getElementById('editObjekDropdownWrapper');
+            if (editWrapper && window.Alpine) {
+                const alpineData = Alpine.$data(editWrapper);
+                if (alpineData && alpineData.setSelectedById) {
+                    alpineData.setSelectedById(data.objek_penugasan_id);
+                }
+            }
+
             document.getElementById('modalEditOpdUser').classList.remove('hidden');
         }
     </script>

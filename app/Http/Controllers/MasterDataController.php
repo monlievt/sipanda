@@ -279,10 +279,31 @@ class MasterDataController extends Controller
     /**
      * Master Data: Objek Penugasan (OPD/Kecamatan/Desa).
      */
-    public function objekPenugasan(): View
+    public function objekPenugasan(Request $request): View
     {
-        $listObjek = ObjekPenugasan::withCount(['penugasan', 'akunOpd'])->orderBy('kategori')->orderBy('nama')->paginate(20);
-        return view('master.objek-penugasan', compact('listObjek'));
+        $search = $request->input('search');
+        $kategoriFilter = $request->input('kategori');
+        $statusFilter = $request->input('status');
+
+        $query = ObjekPenugasan::withCount(['penugasan', 'akunOpd']);
+
+        if ($search) {
+            $query->where('nama', 'like', "%{$search}%");
+        }
+
+        if ($kategoriFilter) {
+            $query->where('kategori', $kategoriFilter);
+        }
+
+        if ($statusFilter === 'aktif') {
+            $query->where('is_active', true);
+        } elseif ($statusFilter === 'nonaktif') {
+            $query->where('is_active', false);
+        }
+
+        $listObjek = $query->orderBy('kategori')->orderBy('nama')->paginate(20)->withQueryString();
+
+        return view('master.objek-penugasan', compact('listObjek', 'search', 'kategoriFilter', 'statusFilter'));
     }
 
     public function storeObjekPenugasan(Request $request): RedirectResponse

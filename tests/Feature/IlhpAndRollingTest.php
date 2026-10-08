@@ -32,7 +32,8 @@ class IlhpAndRollingTest extends TestCase
         Role::firstOrCreate(['name' => 'sekretariat', 'guard_name' => 'web']);
 
         $permOpd = Permission::firstOrCreate(['name' => 'opd_users.manage', 'guard_name' => 'web']);
-        $adminRole->givePermissionTo($permOpd);
+        $permMasterView = Permission::firstOrCreate(['name' => 'master.view', 'guard_name' => 'web']);
+        $adminRole->givePermissionTo([$permOpd, $permMasterView]);
     }
 
     public function test_opd_user_search_and_status_filter()
@@ -236,4 +237,44 @@ class IlhpAndRollingTest extends TestCase
         $resCetak->assertStatus(200);
         $resCetak->assertSee('closing-signature-group');
     }
+
+    public function test_master_objek_penugasan_search_and_filter()
+    {
+        $admin = User::factory()->create([
+            'tipe_akun' => 'internal',
+            'is_active' => true,
+        ]);
+        $admin->assignRole('admin');
+
+        $obj1 = ObjekPenugasan::create([
+            'nama'      => 'Dinas Pekerjaan Umum dan Penataan Ruang',
+            'kategori'  => 'opd',
+            'is_active' => true,
+        ]);
+
+        $obj2 = ObjekPenugasan::create([
+            'nama'      => 'Kecamatan Panggul',
+            'kategori'  => 'kecamatan',
+            'is_active' => false,
+        ]);
+
+        // Search test
+        $resSearch = $this->actingAs($admin)->get(route('master.objek-penugasan.index', ['search' => 'Pekerjaan Umum']));
+        $resSearch->assertStatus(200);
+        $resSearch->assertSee('Dinas Pekerjaan Umum dan Penataan Ruang');
+        $resSearch->assertDontSee('Kecamatan Panggul');
+
+        // Kategori filter test
+        $resKat = $this->actingAs($admin)->get(route('master.objek-penugasan.index', ['kategori' => 'kecamatan']));
+        $resKat->assertStatus(200);
+        $resKat->assertSee('Kecamatan Panggul');
+        $resKat->assertDontSee('Dinas Pekerjaan Umum dan Penataan Ruang');
+
+        // Status filter test
+        $resStatus = $this->actingAs($admin)->get(route('master.objek-penugasan.index', ['status' => 'aktif']));
+        $resStatus->assertStatus(200);
+        $resStatus->assertSee('Dinas Pekerjaan Umum dan Penataan Ruang');
+        $resStatus->assertDontSee('Kecamatan Panggul');
+    }
 }
+
