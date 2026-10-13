@@ -87,7 +87,7 @@ class RoleSeeder extends Seeder
             'bukti.verifikasi',
         ]);
 
-        // 4. Admin Irban — operasional harian wilayah Irban-nya
+        // 4. Admin Irban — input SPT, Temuan, Rekomendasi, PKPPT, & Menandai Selesai di wilayah Irban-nya
         $adminIrban = Role::firstOrCreate(['name' => 'admin_irban', 'guard_name' => 'web']);
         $adminIrban->syncPermissions([
             'master.view',
@@ -100,14 +100,14 @@ class RoleSeeder extends Seeder
             'bukti.verifikasi',
         ]);
 
-        // 5. Irban — supervisi manajerial wilayah
+        // 5. Irban — supervisi manajerial wilayah, verifikasi (setujui/tolak) hasil input Admin Irban
         $irban = Role::firstOrCreate(['name' => 'irban', 'guard_name' => 'web']);
         $irban->syncPermissions([
             'master.view',
-            'pkppt.view','pkppt.create','pkppt.edit','pkppt.delete','pkppt.usulkan',
-            'penugasan.view','penugasan.create','penugasan.edit','penugasan.update_status',
-            'tindak_lanjut.view','tindak_lanjut.create','tindak_lanjut.edit',
-            'arsip.view','arsip.upload',
+            'pkppt.view','pkppt.edit','pkppt.usulkan',
+            'penugasan.view','penugasan.update_status',
+            'tindak_lanjut.view','tindak_lanjut.edit',
+            'arsip.view',
             'beban_kerja.view',
             'dashboard.view',
             'perencanaan.view',
@@ -115,16 +115,25 @@ class RoleSeeder extends Seeder
             'bukti.verifikasi',
         ]);
 
-        // 6. Auditor/P2UPD — pelaksana teknis
+        // 6. Auditor & PPUPD — pelihat data (view-only), pelaksana teknis di lapangan tanpa wewenang input mutasi data
         $auditor = Role::firstOrCreate(['name' => 'auditor', 'guard_name' => 'web']);
         $auditor->syncPermissions([
             'pkppt.view',
-            'penugasan.view','penugasan.create','penugasan.edit','penugasan.update_status',
-            'tindak_lanjut.view','tindak_lanjut.create',
-            'arsip.view','arsip.upload',
+            'penugasan.view',
+            'tindak_lanjut.view',
+            'arsip.view',
             'beban_kerja.view',
             'dashboard.view',
-            'bukti.verifikasi',
+        ]);
+
+        $ppupd = Role::firstOrCreate(['name' => 'ppupd', 'guard_name' => 'web']);
+        $ppupd->syncPermissions([
+            'pkppt.view',
+            'penugasan.view',
+            'tindak_lanjut.view',
+            'arsip.view',
+            'beban_kerja.view',
+            'dashboard.view',
         ]);
 
         // ─── 1 Role Eksternal (guard opd & web) ─────────────────────────

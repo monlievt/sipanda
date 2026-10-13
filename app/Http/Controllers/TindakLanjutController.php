@@ -41,8 +41,12 @@ class TindakLanjutController extends Controller
                 ->orWhere('dibuat_oleh', $user->id)
                 ->orWhere('telaah_oleh', $user->id);
 
-                if ($user->irban_id) {
-                    $q->orWhereHas('pembuatData', function ($uq) use ($user) {
+                if ($user->hasRole(['irban', 'admin_irban']) && $user->irban_id) {
+                    $q->orWhereHas('penugasan', function ($pq) use ($user) {
+                        $pq->where('irban_id', $user->irban_id)
+                           ->orWhereHas('irbans', fn($ib) => $ib->where('irbans.id', $user->irban_id));
+                    })
+                    ->orWhereHas('pembuatData', function ($uq) use ($user) {
                         $uq->where('irban_id', $user->irban_id);
                     });
                 }
@@ -134,21 +138,38 @@ class TindakLanjutController extends Controller
         // Daftar Pilihan Tahun untuk Filter
         $availableYears = range(date('Y') + 1, 2020);
 
-        // 📊 Metrik Ringkasan Banner Atas (Di-cache 60 detik)
-        $metrics = \Illuminate\Support\Facades\Cache::remember('tlhp_top_banner_metrics', 60, function () {
-            return [
-                'totalRekomendasi'      => TindakLanjut::count(),
-                'countSesuai'           => TindakLanjut::where('status_tindak_lanjut', 'selesai')->count(),
-                'countBelumSesuai'      => TindakLanjut::whereIn('status_tindak_lanjut', ['proses', 'menunggu_verifikasi'])->count(),
-                'countBelum'            => TindakLanjut::where('status_tindak_lanjut', 'belum')->count(),
-                'countTdt'              => TindakLanjut::where('status_tindak_lanjut', 'tdt')->count(),
-                'totalNilaiRekomendasi' => (float) TindakLanjut::sum('nilai_rekomendasi_rp'),
-                'totalRealisasiSetor'   => (float) RincianPenyetoranTl::sum('nilai_setor_rp'),
-            ];
+        // 📊 Metrik Ringkasan Banner Atas: dihitung dinamis dari data yang lolos filter hak akses user & filter aktif
+        $countSesuai      = $allTindakLanjut->where('status_tindak_lanjut', 'selesai')->count();
+        $countBelumSesuai = $allTindakLanjut->whereIn('status_tindak_lanjut', ['proses', 'menunggu_verifikasi'])->count();
+        $countBelum       = $allTindakLanjut->where('status_tindak_lanjut', 'belum')->count();
+        $countTdt         = $allTindakLanjut->where('status_tindak_lanjut', 'tdt')->count();
+        $totalRekomendasi = $allTindakLanjut->count();
+        $totalNilaiRekomendasi = (float) $allTindakLanjut->sum('nilai_rekomendasi_rp');
+        $totalRealisasiSetor   = (float) $allTindakLanjut->sum(function ($tl) {
+            return $tl->rincianPenyetoran->sum('nilai_setor_rp');
         });
 
+        $metrics = [
+            'totalRekomendasi'      => $totalRekomendasi,
+            'countSesuai'           => $countSesuai,
+            'countBelumSesuai'      => $countBelumSesuai,
+            'countBelum'            => $countBelum,
+            'countTdt'              => $countTdt,
+            'totalNilaiRekomendasi' => $totalNilaiRekomendasi,
+            'totalRealisasiSetor'   => $totalRealisasiSetor,
+        ];
+
+        $scopeBadge = null;
+        if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
+            $scopeBadge = 'Semua Unit Kerja (Inspektorat Daerah)';
+        } elseif ($user->hasRole(['irban', 'admin_irban'])) {
+            $scopeBadge = 'Unit: ' . ($user->irban->nama_irban ?? 'Irban Terkait');
+        } else {
+            $scopeBadge = 'Penugasan Tim Anda';
+        }
+
         return view('tindak-lanjut.index', array_merge($metrics, compact(
-            'groupedLhp', 'penugasanList', 'kodeAtributTemuanList', 'kodeAtributRekomendasiList', 'status', 'search', 'tahun', 'availableYears'
+            'groupedLhp', 'penugasanList', 'kodeAtributTemuanList', 'kodeAtributRekomendasiList', 'status', 'search', 'tahun', 'availableYears', 'scopeBadge'
         )));
     }
 
@@ -378,7 +399,22 @@ class TindakLanjutController extends Controller
             'berkas_dasar_lhp.max'   => 'Ukuran berkas lampiran maksimal 10 MB.',
         ]);
 
-        $penugasan = Penugasan::with('objekPenugasan')->findOrFail($request->penugasan_id);
+        $penugasan = Penugasan::with(['objekPenugasan', 'irbans'])->findOrFail($request->penugasan_id);
+        $user = auth()->user();
+
+        // Otorisasi hak input Temuan & Rekomendasi LHP
+        $isAuthorized = $user && (
+            $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris']) ||
+            ($user->hasRole(['irban', 'admin_irban']) && (
+                $user->irban_id == $penugasan->irban_id ||
+                $penugasan->irbans->pluck('id')->contains($user->irban_id)
+            ))
+        );
+
+        if (! $isAuthorized) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk menambahkan Temuan dan Rekomendasi LHP pada penugasan ini.');
+        }
+
         $defaultObjekId  = $penugasan->objekPenugasan->count() === 1 ? $penugasan->objekPenugasan->first()->id : null;
         $noLhp           = trim($request->input('no_lhp'));
         $judulLhp        = trim($request->input('judul_lhp'));
@@ -548,6 +584,8 @@ class TindakLanjutController extends Controller
      */
     public function update(Request $request, TindakLanjut $tindakLanjut): RedirectResponse
     {
+        $this->authorizeTindakLanjutMutation($tindakLanjut);
+
         $validated = $request->validate([
             'objek_penugasan_id'          => ['nullable', 'exists:objek_penugasan,id'],
             'no_lhp'                      => ['nullable', 'string', 'max:100'],
@@ -601,6 +639,8 @@ class TindakLanjutController extends Controller
 
     public function updateStatus(Request $request, TindakLanjut $tindakLanjut): RedirectResponse
     {
+        $this->authorizeTindakLanjutMutation($tindakLanjut);
+
         $validated = $request->validate([
             'status_tindak_lanjut' => ['required', 'in:belum,proses,menunggu_verifikasi,selesai,tdt'],
         ]);
@@ -619,12 +659,38 @@ class TindakLanjutController extends Controller
 
     public function destroy(TindakLanjut $tindakLanjut): RedirectResponse
     {
+        $this->authorizeTindakLanjutMutation($tindakLanjut);
+
         $sebelum = $tindakLanjut->toArray();
         $tindakLanjut->delete();
 
         ActivityLog::catat('tindak_lanjut', $tindakLanjut->id, 'delete', $sebelum, null);
 
         return back()->with('status', 'Catatan temuan & rekomendasi berhasil dihapus.');
+    }
+
+    /**
+     * Memastikan user memiliki wewenang untuk memodifikasi atau menghapus data LHP/Temuan ini.
+     */
+    protected function authorizeTindakLanjutMutation(TindakLanjut $tindakLanjut): void
+    {
+        $user = auth()->user();
+        if (! $user) {
+            abort(403);
+        }
+
+        if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
+            return;
+        }
+
+        $penugasan = $tindakLanjut->penugasan;
+        if ($user->hasRole(['irban', 'admin_irban']) && $penugasan) {
+            if ($user->irban_id == $penugasan->irban_id || $penugasan->irbans->pluck('id')->contains($user->irban_id)) {
+                return;
+            }
+        }
+
+        abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk mengubah atau menghapus data temuan/rekomendasi LHP ini.');
     }
 
     /**

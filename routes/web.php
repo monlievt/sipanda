@@ -77,7 +77,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/penugasan/{penugasan}/edit', [PenugasanController::class, 'edit'])->middleware('can:penugasan.edit')->name('penugasan.edit');
     Route::put('/penugasan/{penugasan}', [PenugasanController::class, 'update'])->middleware('can:penugasan.edit')->name('penugasan.update');
     Route::delete('/penugasan/{penugasan}', [PenugasanController::class, 'destroy'])->middleware('can:penugasan.delete')->name('penugasan.destroy');
-    Route::patch('/penugasan/{penugasan}/status', [PenugasanController::class, 'updateStatus'])->middleware('can:penugasan.update_status')->name('penugasan.update_status');
+    Route::patch('/penugasan/{penugasan}/status', [PenugasanController::class, 'updateStatus'])->name('penugasan.update_status');
 
     // Kegiatan Pengawasan (Monitoring Realisasi)
     Route::get('/kegiatan-pengawasan', [KegiatanPengawasanController::class, 'index'])->name('kegiatan-pengawasan.index');
@@ -90,10 +90,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tindak-lanjut/export/lhp/{tindakLanjut}', [ExportController::class, 'exportLhpMatrix'])->whereNumber('tindakLanjut')->name('tindak-lanjut.export_lhp');
     Route::get('/tindak-lanjut/{tindakLanjut}/berita-acara', [BeritaAcaraTlController::class, 'cetakLhp'])->whereNumber('tindakLanjut')->name('tindak-lanjut.berita_acara');
     Route::get('/tindak-lanjut/opd/{objek}/berita-acara', [BeritaAcaraTlController::class, 'cetakOpd'])->whereNumber('objek')->name('tindak-lanjut.berita_acara_opd');
-    Route::post('/tindak-lanjut', [TindakLanjutController::class, 'store'])->name('tindak-lanjut.store');
+    Route::post('/tindak-lanjut', [TindakLanjutController::class, 'store'])->middleware('can:tindak_lanjut.create')->name('tindak-lanjut.store');
     Route::get('/tindak-lanjut/{tindakLanjut}', [TindakLanjutController::class, 'show'])->whereNumber('tindakLanjut')->name('tindak-lanjut.show');
-    Route::put('/tindak-lanjut/{tindakLanjut}', [TindakLanjutController::class, 'update'])->whereNumber('tindakLanjut')->name('tindak-lanjut.update');
-    Route::delete('/tindak-lanjut/{tindakLanjut}', [TindakLanjutController::class, 'destroy'])->whereNumber('tindakLanjut')->name('tindak-lanjut.destroy');
+    Route::put('/tindak-lanjut/{tindakLanjut}', [TindakLanjutController::class, 'update'])->middleware('can:tindak_lanjut.edit')->whereNumber('tindakLanjut')->name('tindak-lanjut.update');
+    Route::delete('/tindak-lanjut/{tindakLanjut}', [TindakLanjutController::class, 'destroy'])->middleware('can:tindak_lanjut.edit')->whereNumber('tindakLanjut')->name('tindak-lanjut.destroy');
     Route::post('/tindak-lanjut/{tindakLanjut}/rincian-setor', [TindakLanjutController::class, 'storeRincianSetor'])->whereNumber('tindakLanjut')->name('tindak-lanjut.store_rincian_setor');
     Route::post('/tindak-lanjut/{tindakLanjut}/respon', [TindakLanjutController::class, 'storeRespon'])->whereNumber('tindakLanjut')->name('tindak-lanjut.store_respon');
     Route::patch('/tindak-lanjut/{tindakLanjut}/status', [TindakLanjutController::class, 'updateStatus'])->whereNumber('tindakLanjut')->name('tindak-lanjut.update_status');

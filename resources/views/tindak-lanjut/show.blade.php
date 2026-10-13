@@ -422,6 +422,7 @@
                                 </span>
                             @endif
 
+                            @can('tindak_lanjut.edit')
                             <!-- ✏️ Tombol Edit Item Rekomendasi -->
                             <button type="button" onclick="openModalEditTl({
                                 id: {{ $item->id }},
@@ -445,6 +446,7 @@
                                 </svg>
                                 <span>Edit Item Rekomendasi</span>
                             </button>
+                            @endcan
                         </div>
                     </div>
 

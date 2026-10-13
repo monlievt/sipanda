@@ -161,19 +161,20 @@ class Penugasan extends Model
             return $query->whereHas('objekPenugasan', fn($sub) => $sub->where('objek_penugasan.id', $user->objek_penugasan_id));
         }
 
-        // 3. User internal yang terikat pada unit Irban (Irban, Admin Irban, Auditor, PPUPD, Anggota Tim):
-        // Melihat penugasan di bawah Irban-nya ATAU penugasan di mana ia menjadi anggota tim / pembuat data
-        if ($user->irban_id) {
+        // 3. Pejabat Irban dan Admin Irban: Melihat seluruh penugasan di bawah unit Irban-nya
+        if ($user->hasRole(['irban', 'admin_irban'])) {
             return $query->where(function ($q) use ($user) {
-                $q->where('irban_id', $user->irban_id)
-                  ->orWhereHas('irbans', fn($sub) => $sub->where('irbans.id', $user->irban_id))
-                  ->orWhereHas('tim', fn($sub) => $sub->where('user_id', $user->id))
+                if ($user->irban_id) {
+                    $q->where('irban_id', $user->irban_id)
+                      ->orWhereHas('irbans', fn($sub) => $sub->where('irbans.id', $user->irban_id));
+                }
+                $q->orWhereHas('tim', fn($sub) => $sub->where('user_id', $user->id))
                   ->orWhere('dibuat_oleh', $user->id);
             });
         }
 
-        // 4. Personil internal tanpa irban_id (misal staf lepas):
-        // Hanya penugasan di mana user terdaftar dalam susunan tim atau pembuat data
+        // 4. Auditor / PPUPD / Staf Pelaksana lainnya:
+        // HANYA melihat penugasan di mana ia terdaftar dalam susunan tim ATAU pembuat data
         return $query->where(function ($q) use ($user) {
             $q->whereHas('tim', fn($sub) => $sub->where('user_id', $user->id))
               ->orWhere('dibuat_oleh', $user->id);
@@ -190,11 +191,54 @@ class Penugasan extends Model
             return $this->objekPenugasan()->where('objek_penugasan.id', $user->objek_penugasan_id)->exists();
         }
 
-        if ($user->irban_id && ($this->irban_id == $user->irban_id || $this->irbans()->where('irbans.id', $user->irban_id)->exists())) {
+        // Pejabat Irban dan Admin Irban membawahi seluruh penugasan di bawah unitnya
+        if ($user->hasRole(['irban', 'admin_irban'])) {
+            if ($user->irban_id && ($this->irban_id == $user->irban_id || $this->irbans()->where('irbans.id', $user->irban_id)->exists())) {
+                return true;
+            }
+        }
+
+        // Auditor, PPUPD, dan personil biasa: hanya jika terdaftar dalam tim pemeriksa atau pembuat data
+        if ($this->isAnggotaTim($user) || $this->dibuat_oleh == $user->id) {
             return true;
         }
 
-        if ($this->isAnggotaTim($user) || $this->dibuat_oleh == $user->id) {
+        return false;
+    }
+
+    /**
+     * Memeriksa apakah user adalah Pimpinan Tim (Wakil Penanggung Jawab, Pengendali Teknis, atau Ketua Tim)
+     */
+    public function isPimpinanTim(User $user): bool
+    {
+        return $this->tim()
+            ->where('user_id', $user->id)
+            ->whereIn('peran', ['wakil_penanggung_jawab', 'pengendali_teknis', 'ketua_tim'])
+            ->exists();
+    }
+
+    /**
+     * Otorisasi hak menyelesaikan penugasan (Tandai Selesai 100%)
+     */
+    public function canComplete(User $user): bool
+    {
+        // 1. Admin, Inspektur, Sekretaris
+        if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
+            return true;
+        }
+
+        // 2. Pejabat Irban penanggung jawab
+        if ($user->hasRole('irban') && ($this->irban_id == $user->irban_id || $this->irbans()->where('irbans.id', $user->irban_id)->exists())) {
+            return true;
+        }
+
+        // 3. Admin Irban pada unit terkait
+        if ($user->hasRole('admin_irban') && ($this->irban_id == $user->irban_id || $this->irbans()->where('irbans.id', $user->irban_id)->exists())) {
+            return true;
+        }
+
+        // 4. Pimpinan Tim pada SPT tersebut (Pengendali Teknis / Ketua Tim / Wakil Penanggung Jawab)
+        if ($this->isPimpinanTim($user)) {
             return true;
         }
 

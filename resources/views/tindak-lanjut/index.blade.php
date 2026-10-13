@@ -7,7 +7,14 @@
     <div class="mb-6 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h2 class="text-xl font-black text-slate-900 dark:text-white tracking-tight">Matriks Tindak Lanjut Hasil Pengawasan (LHP)</h2>
+                <div class="flex items-center gap-2.5 flex-wrap">
+                    <h2 class="text-xl font-black text-slate-900 dark:text-white tracking-tight">Matriks Tindak Lanjut Hasil Pengawasan (LHP)</h2>
+                    @if(!empty($scopeBadge))
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-2xs">
+                            🛡️ {{ $scopeBadge }}
+                        </span>
+                    @endif
+                </div>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ringkasan jumlah rekomendasi per LHP pada 4 status penyelesaian tindak lanjut Inspektorat.</p>
             </div>
 
@@ -33,12 +40,14 @@
                     <span>Verifikasi Bukti OPD</span>
                 </a>
 
+                @can('tindak_lanjut.create')
                 <button onclick="document.getElementById('modalTambahTemuanMulti').classList.remove('hidden')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-xs rounded-xl shadow-lg shadow-emerald-600/20 transition-all">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     <span>+ Tambah Temuan & Rekomendasi</span>
                 </button>
+                @endcan
             </div>
         </div>
 

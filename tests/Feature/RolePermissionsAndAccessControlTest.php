@@ -1,0 +1,274 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Irban;
+use App\Models\JenisPenugasan;
+use App\Models\ObjekPenugasan;
+use App\Models\Penugasan;
+use App\Models\PenugasanTim;
+use App\Models\SumberPenugasan;
+use App\Models\TindakLanjut;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class RolePermissionsAndAccessControlTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed([
+            \Database\Seeders\RoleSeeder::class,
+            \Database\Seeders\IrbanSeeder::class,
+            \Database\Seeders\MasterDataSeeder::class,
+        ]);
+    }
+
+    public function test_auditor_cannot_see_or_complete_or_input_lhp_on_other_team_penugasan(): void
+    {
+        $irban3 = Irban::find(3) ?? Irban::create(['nama_irban' => 'Inspektur Pembantu Wilayah III', 'kode_irban' => 'IRBAN-3']);
+
+        // 1. Akun Abyadh (Auditor Irban 3, bukan anggota tim SPT ini)
+        $abyadh = User::create([
+            'nama'         => 'ABYADH NUR ROKHMAN',
+            'email'        => 'abyadh@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'AUDITOR PERTAMA',
+            'status_aktif' => 'aktif',
+            'nip'          => '199601012020011003',
+            'irban_id'     => $irban3->id,
+        ]);
+        $abyadh->assignRole('auditor');
+
+        // 2. Akun Choirunnisa (Auditor Irban 3, Ketua Tim)
+        $choirunnisa = User::create([
+            'nama'         => 'CHOIRUNNISA NURUL AINI',
+            'email'        => 'choirunnisa@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'AUDITOR MUDA',
+            'status_aktif' => 'aktif',
+            'nip'          => '199201012015012001',
+            'irban_id'     => $irban3->id,
+        ]);
+        $choirunnisa->assignRole('auditor');
+
+        $objek = ObjekPenugasan::first() ?? ObjekPenugasan::create(['nama' => 'Dinas Pendidikan', 'kategori' => 'opd', 'is_active' => true]);
+
+        // SPT Tim Choirunnisa
+        $penugasan = Penugasan::create([
+            'no_spt'              => '700/999/406.008/2026',
+            'uraian_penugasan'    => 'Pemeriksaan Kinerja Pengelolaan Dana BOS',
+            'tanggal_mulai'       => now()->subDays(5),
+            'tanggal_selesai'     => now()->addDays(5),
+            'status'              => 'berjalan',
+            'status_persetujuan'  => 'disetujui',
+            'irban_id'            => $irban3->id,
+            'jenis_penugasan_id'  => 1,
+            'sumber_penugasan_id' => 1,
+            'dibuat_oleh'         => 1,
+        ]);
+
+        PenugasanTim::create([
+            'penugasan_id' => $penugasan->id,
+            'user_id'      => $choirunnisa->id,
+            'peran'        => 'ketua_tim',
+        ]);
+
+        // 1. Abyadh tidak melihat penugasan Choirunnisa di halaman indeks
+        $resIndex = $this->actingAs($abyadh)->get(route('penugasan.index'));
+        $resIndex->assertStatus(200);
+        $resIndex->assertDontSee('700/999/406.008/2026');
+        $resIndex->assertDontSee('Pemeriksaan Kinerja Pengelolaan Dana BOS');
+
+        // 2. Abyadh ditolak saat mencoba membuka detail penugasan tim lain (403)
+        $resShow = $this->actingAs($abyadh)->get(route('penugasan.show', $penugasan->id));
+        $resShow->assertStatus(403);
+
+        // 3. Abyadh ditolak saat mencoba menandai penugasan selesai (403)
+        $resComplete = $this->actingAs($abyadh)->patch(route('penugasan.update_status', $penugasan->id), [
+            'status' => 'selesai',
+        ]);
+        $resComplete->assertStatus(403);
+
+        // 4. Abyadh ditolak saat mencoba menginput temuan LHP (403)
+        $resStoreLhp = $this->actingAs($abyadh)->post(route('tindak-lanjut.store'), [
+            'penugasan_id'  => $penugasan->id,
+            'no_lhp'        => '700.1.2.3/999/406.008/2026',
+            'uraian_temuan' => 'Temuan ilegal oleh personil non-tim',
+            'rekomendasi'   => 'Rekomendasi ilegal',
+        ]);
+        $resStoreLhp->assertStatus(403);
+
+        // 5. Sebaliknya, Choirunnisa (Ketua Tim) memiliki wewenang menyelesaikan penugasan
+        $this->assertTrue($penugasan->canComplete($choirunnisa));
+        $resKetuaComplete = $this->actingAs($choirunnisa)->patch(route('penugasan.update_status', $penugasan->id), [
+            'status'           => 'selesai',
+            'progres_persen'   => 100,
+            'keterangan_hasil' => 'Pemeriksaan lapangan telah selesai 100%.',
+        ]);
+        $resKetuaComplete->assertRedirect();
+        $this->assertEquals('selesai', $penugasan->fresh()->status);
+    }
+
+    public function test_admin_irban_and_irban_workflow_and_approval(): void
+    {
+        $irban2 = Irban::find(2) ?? Irban::create(['nama_irban' => 'Inspektur Pembantu Wilayah II', 'kode_irban' => 'IRBAN-2']);
+
+        $adminIrban = User::create([
+            'nama'         => 'ADMIN IRBAN II',
+            'email'        => 'adminirban2@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'ADMINISTRATOR IRBAN II',
+            'status_aktif' => 'aktif',
+            'nip'          => '199401012019011002',
+            'irban_id'     => $irban2->id,
+        ]);
+        $adminIrban->assignRole('admin_irban');
+
+        $pejabatIrban = User::create([
+            'nama'         => 'PEJABAT IRBAN II',
+            'email'        => 'irban2@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'INSPEKTUR PEMBANTU WILAYAH II',
+            'status_aktif' => 'aktif',
+            'nip'          => '197501012000011001',
+            'irban_id'     => $irban2->id,
+        ]);
+        $pejabatIrban->assignRole('irban');
+
+        $objek = ObjekPenugasan::first() ?? ObjekPenugasan::create(['nama' => 'Puskesmas Panggul', 'kategori' => 'opd', 'is_active' => true]);
+
+        // Admin Irban dapat menginput SPT baru
+        $resStoreSpt = $this->actingAs($adminIrban)->post(route('penugasan.store'), [
+            'no_spt'              => '700/888/406.008/2026',
+            'uraian_penugasan'    => 'Audit Operasional Puskesmas',
+            'tanggal_mulai'       => now()->toDateString(),
+            'tanggal_selesai'     => now()->addDays(10)->toDateString(),
+            'is_sesuai_pkppt'     => 0,
+            'irban_ids'           => [$irban2->id],
+            'objek_ids'           => [$objek->id],
+            'jenis_penugasan_id'  => 1,
+            'sumber_penugasan_id' => 1,
+            'tim_wakil_pj'        => [$pejabatIrban->id],
+            'tim_daltek'          => [$pejabatIrban->id],
+            'tim_ketua'           => [$adminIrban->id],
+            'tim_anggota'         => [$adminIrban->id],
+        ]);
+        $resStoreSpt->assertRedirect();
+        $penugasan = Penugasan::where('no_spt', '700/888/406.008/2026')->first();
+        $this->assertNotNull($penugasan);
+
+        // Admin Irban TIDAK berhak memverifikasi/menyetujui SPT-nya sendiri
+        $resVerifByAdmin = $this->actingAs($adminIrban)->patch(route('penugasan.verifikasi', $penugasan->id), [
+            'status_persetujuan' => 'disetujui',
+        ]);
+        $resVerifByAdmin->assertSessionHas('error');
+
+        // Pejabat Irban berhak memverifikasi/menyetujui konsep SPT
+        $resVerifByIrban = $this->actingAs($pejabatIrban)->patch(route('penugasan.verifikasi', $penugasan->id), [
+            'status_persetujuan' => 'disetujui',
+        ]);
+        $resVerifByIrban->assertSessionHas('status');
+        $this->assertEquals('disetujui', $penugasan->fresh()->status_persetujuan);
+
+        // Admin Irban berhak menginput Temuan LHP
+        $resStoreLhp = $this->actingAs($adminIrban)->post(route('tindak-lanjut.store'), [
+            'penugasan_id'         => $penugasan->id,
+            'no_lhp'               => '700.1.2.2/888/406.008/2026',
+            'judul_lhp'            => 'LHP Audit Operasional Puskesmas',
+            'tgl_lhp'              => now()->toDateString(),
+            'uraian_temuan'        => 'Penyimpanan Obat Kadaluarsa',
+            'rekomendasi'          => 'Pemusnahan obat dan revisi SOP',
+            'nilai_rekomendasi_rp' => '5.000.000',
+        ]);
+        $resStoreLhp->assertRedirect();
+        $this->assertDatabaseHas('tindak_lanjut', [
+            'no_lhp' => '700.1.2.2/888/406.008/2026',
+        ]);
+    }
+
+    public function test_matriks_lhp_top_banner_metrics_calculated_from_filtered_records(): void
+    {
+        $irban1 = Irban::find(1);
+        $irbanKhusus = Irban::find(4) ?? Irban::create(['nama_irban' => 'Inspektur Pembantu Khusus', 'kode_irban' => 'IRBAN-KHUSUS']);
+
+        $idham = User::create([
+            'nama'         => 'MUHAMMAD IDHAM FIRDAUS',
+            'email'        => 'idham2@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'AUDITOR TERAMPIL',
+            'status_aktif' => 'aktif',
+            'nip'          => '199501012020011004',
+            'irban_id'     => $irbanKhusus->id,
+        ]);
+        $idham->assignRole('auditor');
+
+        // Penugasan 1 di Irban 1 (bukan tim Idham)
+        $spt1 = Penugasan::create([
+            'no_spt'              => '700/111/406.008/2026',
+            'uraian_penugasan'    => 'Penugasan Irban 1',
+            'tanggal_mulai'       => now(),
+            'tanggal_selesai'     => now()->addDays(5),
+            'status'              => 'berjalan',
+            'status_persetujuan'  => 'disetujui',
+            'irban_id'            => $irban1->id,
+            'jenis_penugasan_id'  => 1,
+            'sumber_penugasan_id' => 1,
+            'dibuat_oleh'         => 1,
+        ]);
+
+        TindakLanjut::create([
+            'penugasan_id'         => $spt1->id,
+            'no_lhp'               => 'LHP-IRBAN-1',
+            'uraian_temuan'        => 'Temuan Irban 1',
+            'rekomendasi'          => 'Rekomendasi 1',
+            'status_tindak_lanjut' => 'selesai',
+            'nilai_rekomendasi_rp' => 10000000,
+            'dibuat_oleh'          => 1,
+        ]);
+
+        // Penugasan 2 di mana Idham terdaftar sebagai anggota tim
+        $spt2 = Penugasan::create([
+            'no_spt'              => '700/444/406.008/2026',
+            'uraian_penugasan'    => 'Penugasan Khusus Tim Idham',
+            'tanggal_mulai'       => now(),
+            'tanggal_selesai'     => now()->addDays(5),
+            'status'              => 'berjalan',
+            'status_persetujuan'  => 'disetujui',
+            'irban_id'            => $irbanKhusus->id,
+            'jenis_penugasan_id'  => 1,
+            'sumber_penugasan_id' => 1,
+            'dibuat_oleh'         => 1,
+        ]);
+
+        PenugasanTim::create([
+            'penugasan_id' => $spt2->id,
+            'user_id'      => $idham->id,
+            'peran'        => 'anggota_tim',
+        ]);
+
+        TindakLanjut::create([
+            'penugasan_id'         => $spt2->id,
+            'no_lhp'               => 'LHP-KHUSUS-IDHAM',
+            'uraian_temuan'        => 'Temuan Khusus',
+            'rekomendasi'          => 'Rekomendasi Khusus',
+            'status_tindak_lanjut' => 'belum',
+            'nilai_rekomendasi_rp' => 2000000,
+            'dibuat_oleh'          => 1,
+        ]);
+
+        // Saat Idham membuka /tindak-lanjut:
+        // Total rekomendasi di banner metrik harus 1 (bukan 2 se-Kabupaten!)
+        // Sesuai = 0, Belum = 1
+        $res = $this->actingAs($idham)->get(route('tindak-lanjut.index'));
+        $res->assertStatus(200);
+        $res->assertViewHas('totalRekomendasi', 1);
+        $res->assertViewHas('countSesuai', 0);
+        $res->assertViewHas('countBelum', 1);
+        $res->assertViewHas('totalNilaiRekomendasi', 2000000.0);
+        $res->assertSee('Penugasan Tim Anda'); // Scope badge
+    }
+}

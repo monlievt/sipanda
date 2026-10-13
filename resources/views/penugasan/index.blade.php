@@ -177,7 +177,7 @@
                                             {{ $item->status === 'berjalan' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }}">
                                             {{ $item->status_label }}
                                         </span>
-                                        @can('penugasan.update_status')
+                                        @if($item->canComplete(auth()->user()))
                                         <button type="button" onclick="openModalSelesaikanPenugasan({
                                              id: {{ $item->id }},
                                              no_spt: '{{ addslashes($item->no_spt) }}',
@@ -185,7 +185,7 @@
                                          })" class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[9px] font-bold shadow-2xs cursor-pointer" title="Klaim Penugasan ini telah Selesai">
                                              <span>✓ Tandai Selesai</span>
                                          </button>
-                                         @endcan
+                                         @endif
                                      </div>
                                  @endif
                              </td>

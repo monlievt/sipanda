@@ -682,8 +682,8 @@ class PenugasanController extends Controller
     public function updateStatus(Request $request, Penugasan $penugasan): RedirectResponse
     {
         $user = auth()->user();
-        if (! $penugasan->canAccess($user)) {
-            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk memperbarui status penugasan ini.');
+        if (! $penugasan->canComplete($user)) {
+            abort(403, 'Akses Ditolak: Anda bukan pimpinan tim pemeriksa (Dalnis/Ketua Tim) atau pejabat Irban yang berwenang menyelesaikan penugasan ini.');
         }
 
         $validated = $request->validate([
@@ -718,9 +718,9 @@ class PenugasanController extends Controller
     {
         $user = auth()->user();
 
-        // Pastikan user berwenang (Irban/Admin Irban wilayah bersangkutan, atau Admin/Inspektur/Sekretaris)
+        // Pastikan user berwenang (Pejabat Irban wilayah bersangkutan, atau Admin/Inspektur/Sekretaris)
         $isAuthorized = $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris']) ||
-            ($user->hasRole(['irban', 'admin_irban']) && ($user->irban_id == $penugasan->irban_id || $penugasan->irbans->pluck('id')->contains($user->irban_id)));
+            ($user->hasRole('irban') && ($user->irban_id == $penugasan->irban_id || $penugasan->irbans->pluck('id')->contains($user->irban_id)));
 
         if (! $isAuthorized) {
             return back()->with('error', 'Anda tidak memiliki wewenang untuk memverifikasi Surat Perintah Tugas ini.');
