@@ -55,6 +55,18 @@ class RolePermissionsAndAccessControlTest extends TestCase
         ]);
         $choirunnisa->assignRole('auditor');
 
+        // 3. Akun Admin Irban 3
+        $adminIrban3 = User::create([
+            'nama'         => 'ADMIN IRBAN III',
+            'email'        => 'adminirban3@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'ADMINISTRATOR IRBAN III',
+            'status_aktif' => 'aktif',
+            'nip'          => '199501012020011013',
+            'irban_id'     => $irban3->id,
+        ]);
+        $adminIrban3->assignRole('admin_irban');
+
         $objek = ObjekPenugasan::first() ?? ObjekPenugasan::create(['nama' => 'Dinas Pendidikan', 'kategori' => 'opd', 'is_active' => true]);
 
         // SPT Tim Choirunnisa
@@ -102,14 +114,21 @@ class RolePermissionsAndAccessControlTest extends TestCase
         ]);
         $resStoreLhp->assertStatus(403);
 
-        // 5. Sebaliknya, Choirunnisa (Ketua Tim) memiliki wewenang menyelesaikan penugasan
-        $this->assertTrue($penugasan->canComplete($choirunnisa));
+        // 5. Choirunnisa (Auditor / Ketua Tim) juga TIDAK berhak menandai selesai (karena hak menandai selesai khusus Admin Irban)
+        $this->assertFalse($penugasan->canComplete($choirunnisa));
         $resKetuaComplete = $this->actingAs($choirunnisa)->patch(route('penugasan.update_status', $penugasan->id), [
+            'status' => 'selesai',
+        ]);
+        $resKetuaComplete->assertStatus(403);
+
+        // 6. Admin Irban 3 memiliki wewenang menyelesaikan penugasan
+        $this->assertTrue($penugasan->canComplete($adminIrban3));
+        $resAdminComplete = $this->actingAs($adminIrban3)->patch(route('penugasan.update_status', $penugasan->id), [
             'status'           => 'selesai',
             'progres_persen'   => 100,
             'keterangan_hasil' => 'Pemeriksaan lapangan telah selesai 100%.',
         ]);
-        $resKetuaComplete->assertRedirect();
+        $resAdminComplete->assertRedirect();
         $this->assertEquals('selesai', $penugasan->fresh()->status);
     }
 
@@ -270,5 +289,94 @@ class RolePermissionsAndAccessControlTest extends TestCase
         $res->assertViewHas('countBelum', 1);
         $res->assertViewHas('totalNilaiRekomendasi', 2000000.0);
         $res->assertSee('Penugasan Tim Anda'); // Scope badge
+    }
+
+    public function test_sekretariat_is_view_only_and_pelaporan_sekretaris_have_global_access(): void
+    {
+        $irban1 = Irban::find(1);
+        $irban3 = Irban::find(3) ?? Irban::create(['nama_irban' => 'Inspektur Pembantu Wilayah III', 'kode_irban' => 'IRBAN-3']);
+
+        // Buat penugasan di Irban 1 dan Irban 3
+        $spt1 = Penugasan::create([
+            'no_spt'              => '700/01/406.008/2026',
+            'uraian_penugasan'    => 'Pengawasan Wilayah Irban 1',
+            'tanggal_mulai'       => now(),
+            'tanggal_selesai'     => now()->addDays(5),
+            'status'              => 'berjalan',
+            'status_persetujuan'  => 'disetujui',
+            'irban_id'            => $irban1->id,
+            'jenis_penugasan_id'  => 1,
+            'sumber_penugasan_id' => 1,
+            'dibuat_oleh'         => 1,
+        ]);
+
+        $spt3 = Penugasan::create([
+            'no_spt'              => '700/03/406.008/2026',
+            'uraian_penugasan'    => 'Pengawasan Wilayah Irban 3',
+            'tanggal_mulai'       => now(),
+            'tanggal_selesai'     => now()->addDays(5),
+            'status'              => 'berjalan',
+            'status_persetujuan'  => 'disetujui',
+            'irban_id'            => $irban3->id,
+            'jenis_penugasan_id'  => 1,
+            'sumber_penugasan_id' => 1,
+            'dibuat_oleh'         => 1,
+        ]);
+
+        // 1. Role Sekretariat (View-Only, tidak dalam tim manapun)
+        $sekretariatUser = User::create([
+            'nama'         => 'STAF SEKRETARIAT UMUM',
+            'email'        => 'sekretariat_staf@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'PENGADMINISTRASI UMUM',
+            'status_aktif' => 'aktif',
+            'nip'          => '199001012015011099',
+            'irban_id'     => 5,
+        ]);
+        $sekretariatUser->assignRole('sekretariat');
+
+        // Sekretariat tidak melihat penugasan tim lain
+        $resSekretariat = $this->actingAs($sekretariatUser)->get(route('penugasan.index'));
+        $resSekretariat->assertStatus(200);
+        $resSekretariat->assertDontSee('700/01/406.008/2026');
+        $resSekretariat->assertDontSee('700/03/406.008/2026');
+
+        // Sekretariat ditolak input SPT (403)
+        $resSekretariatStore = $this->actingAs($sekretariatUser)->post(route('penugasan.store'), []);
+        $resSekretariatStore->assertStatus(403);
+
+        // 2. Role Pelaporan (Melihat seluruh penugasan se-Inspektorat)
+        $pelaporanUser = User::create([
+            'nama'         => 'TIM EVALUASI DAN PELAPORAN',
+            'email'        => 'eval_pelaporan@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'PENELAAH TEKNIS KEBIJAKAN PELAPORAN',
+            'status_aktif' => 'aktif',
+            'nip'          => '198801012012011005',
+            'irban_id'     => 5,
+        ]);
+        $pelaporanUser->assignRole('pelaporan');
+
+        $resPelaporan = $this->actingAs($pelaporanUser)->get(route('penugasan.index'));
+        $resPelaporan->assertStatus(200);
+        $resPelaporan->assertSee('700/01/406.008/2026');
+        $resPelaporan->assertSee('700/03/406.008/2026');
+
+        // 3. Role Sekretaris (Melihat seluruh penugasan se-Inspektorat)
+        $sekretarisUser = User::create([
+            'nama'         => 'SEKRETARIS INSPEKTORAT',
+            'email'        => 'sekretaris_inspektorat@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'SEKRETARIS INSPEKTORAT',
+            'status_aktif' => 'aktif',
+            'nip'          => '197601012000011001',
+            'irban_id'     => 5,
+        ]);
+        $sekretarisUser->assignRole('sekretaris');
+
+        $resSekretaris = $this->actingAs($sekretarisUser)->get(route('penugasan.index'));
+        $resSekretaris->assertStatus(200);
+        $resSekretaris->assertSee('700/01/406.008/2026');
+        $resSekretaris->assertSee('700/03/406.008/2026');
     }
 }

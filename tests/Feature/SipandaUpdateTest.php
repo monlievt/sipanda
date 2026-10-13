@@ -55,13 +55,23 @@ class SipandaUpdateTest extends TestCase
     {
         $this->seed([\Database\Seeders\RoleSeeder::class, \Database\Seeders\IrbanSeeder::class]);
 
-        $sekretariatUser = User::create([
+        $pelaporanUser = User::create([
             'nama' => 'Kasubbag Pelaporan',
             'email' => 'pelaporan@trenggalekkab.go.id',
             'password' => bcrypt('password'),
             'jabatan' => 'KASUBBAG EVALUASI DAN PELAPORAN',
             'status_aktif' => 'aktif',
             'nip' => '198001012005011001',
+        ]);
+        $pelaporanUser->assignRole('pelaporan');
+
+        $sekretariatUser = User::create([
+            'nama' => 'Staf Administrasi',
+            'email' => 'sekretariat@trenggalekkab.go.id',
+            'password' => bcrypt('password'),
+            'jabatan' => 'PENGADMINISTRASI UMUM',
+            'status_aktif' => 'aktif',
+            'nip' => '198801012015011001',
         ]);
         $sekretariatUser->assignRole('sekretariat');
 
@@ -75,9 +85,13 @@ class SipandaUpdateTest extends TestCase
         ]);
         $auditorUser->assignRole('auditor');
 
-        // Sekretariat can access create
-        $response = $this->actingAs($sekretariatUser)->get(route('ikhtisar-laporan.create', ['tahun' => 2026]));
+        // Tim Pelaporan can access create
+        $response = $this->actingAs($pelaporanUser)->get(route('ikhtisar-laporan.create', ['tahun' => 2026]));
         $response->assertStatus(200);
+
+        // Staf Sekretariat cannot access create (403 Forbidden - view only)
+        $responseSekretariat = $this->actingAs($sekretariatUser)->get(route('ikhtisar-laporan.create', ['tahun' => 2026]));
+        $responseSekretariat->assertStatus(403);
 
         // Auditor cannot access create (403 Forbidden)
         $responseAuditor = $this->actingAs($auditorUser)->get(route('ikhtisar-laporan.create', ['tahun' => 2026]));

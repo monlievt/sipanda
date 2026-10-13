@@ -36,7 +36,7 @@ return new class extends Migration
             Permission::firstOrCreate(['name' => $permName, 'guard_name' => 'web']);
         }
 
-        // 1. Auditor & PPUPD (View Only)
+        // 1. Auditor, PPUPD, dan Staf Sekretariat (View Only)
         $viewOnlyPermissions = [
             'pkppt.view',
             'penugasan.view',
@@ -52,7 +52,36 @@ return new class extends Migration
         $ppupd = Role::firstOrCreate(['name' => 'ppupd', 'guard_name' => 'web']);
         $ppupd->syncPermissions($viewOnlyPermissions);
 
-        // 2. Admin Irban (Operasional Input Harian Irban)
+        $sekretariat = Role::firstOrCreate(['name' => 'sekretariat', 'guard_name' => 'web']);
+        $sekretariat->syncPermissions($viewOnlyPermissions);
+
+        // 2. Tim Pelaporan (Subbag Evaluasi & Pelaporan — Penyusunan ILHP & Monitoring Se-Inspektorat)
+        $pelaporan = Role::firstOrCreate(['name' => 'pelaporan', 'guard_name' => 'web']);
+        $pelaporan->syncPermissions([
+            'pkppt.view',
+            'penugasan.view',
+            'tindak_lanjut.view',
+            'arsip.view',
+            'beban_kerja.view',
+            'dashboard.view', 'dashboard.view_all',
+            'evaluasi.view', 'evaluasi.generate',
+        ]);
+
+        // 3. Sekretaris (Pimpinan Administratif — Pengawasan Makro, ILHP, Kapasitas SDM & Evaluasi)
+        $sekretaris = Role::firstOrCreate(['name' => 'sekretaris', 'guard_name' => 'web']);
+        $sekretaris->syncPermissions([
+            'pkppt.view', 'pkppt.usulkan',
+            'penugasan.view',
+            'tindak_lanjut.view',
+            'arsip.view',
+            'beban_kerja.view',
+            'dashboard.view', 'dashboard.view_all',
+            'perencanaan.view', 'perencanaan.hitung_risiko', 'perencanaan.kapasitas_sdm',
+            'evaluasi.view', 'evaluasi.generate',
+            'audit_log.view',
+        ]);
+
+        // 4. Admin Irban (Operasional Input Harian Irban)
         $adminIrban = Role::firstOrCreate(['name' => 'admin_irban', 'guard_name' => 'web']);
         $adminIrban->syncPermissions([
             'master.view',
@@ -65,7 +94,7 @@ return new class extends Migration
             'bukti.verifikasi',
         ]);
 
-        // 3. Pejabat Irban (Supervisi & Verifikasi Unit)
+        // 5. Pejabat Irban (Supervisi & Verifikasi Unit)
         $irban = Role::firstOrCreate(['name' => 'irban', 'guard_name' => 'web']);
         $irban->syncPermissions([
             'master.view',

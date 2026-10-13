@@ -151,8 +151,8 @@ class Penugasan extends Model
 
     public function scopeAccessibleBy($query, User $user)
     {
-        // 1. Super Admin, Inspektur, dan Sekretaris memiliki akses penuh ke seluruh penugasan
-        if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
+        // 1. Super Admin, Inspektur, Sekretaris, dan Tim Pelaporan memiliki akses penuh ke seluruh penugasan se-Kabupaten
+        if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'pelaporan'])) {
             return $query;
         }
 
@@ -173,7 +173,7 @@ class Penugasan extends Model
             });
         }
 
-        // 4. Auditor / PPUPD / Staf Pelaksana lainnya:
+        // 4. Auditor / PPUPD / Sekretariat / Staf Pelaksana lainnya:
         // HANYA melihat penugasan di mana ia terdaftar dalam susunan tim ATAU pembuat data
         return $query->where(function ($q) use ($user) {
             $q->whereHas('tim', fn($sub) => $sub->where('user_id', $user->id))
@@ -183,7 +183,7 @@ class Penugasan extends Model
 
     public function canAccess(User $user): bool
     {
-        if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
+        if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'pelaporan'])) {
             return true;
         }
 
@@ -198,7 +198,7 @@ class Penugasan extends Model
             }
         }
 
-        // Auditor, PPUPD, dan personil biasa: hanya jika terdaftar dalam tim pemeriksa atau pembuat data
+        // Auditor, PPUPD, Sekretariat, dan personil biasa: hanya jika terdaftar dalam tim pemeriksa atau pembuat data
         if ($this->isAnggotaTim($user) || $this->dibuat_oleh == $user->id) {
             return true;
         }
@@ -219,26 +219,17 @@ class Penugasan extends Model
 
     /**
      * Otorisasi hak menyelesaikan penugasan (Tandai Selesai 100%)
+     * Khusus diberikan kepada Admin Irban unit terkait (dan Admin Sistem)
      */
     public function canComplete(User $user): bool
     {
-        // 1. Admin, Inspektur, Sekretaris
-        if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
+        // 1. Super Admin & Administrator Sistem (backup operasional)
+        if ($user->hasRole(['admin', 'administrator'])) {
             return true;
         }
 
-        // 2. Pejabat Irban penanggung jawab
-        if ($user->hasRole('irban') && ($this->irban_id == $user->irban_id || $this->irbans()->where('irbans.id', $user->irban_id)->exists())) {
-            return true;
-        }
-
-        // 3. Admin Irban pada unit terkait
+        // 2. Admin Irban pada unit terkait penugasan
         if ($user->hasRole('admin_irban') && ($this->irban_id == $user->irban_id || $this->irbans()->where('irbans.id', $user->irban_id)->exists())) {
-            return true;
-        }
-
-        // 4. Pimpinan Tim pada SPT tersebut (Pengendali Teknis / Ketua Tim / Wakil Penanggung Jawab)
-        if ($this->isPimpinanTim($user)) {
             return true;
         }
 

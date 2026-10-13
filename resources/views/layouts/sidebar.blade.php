@@ -182,8 +182,8 @@
             </div>
         </div>
 
-        <!-- MASTER DATA (Admin & Sekretariat) -->
-        @hasanyrole('admin|sekretariat')
+        <!-- MASTER DATA (Admin Sistem) -->
+        @hasanyrole('admin|administrator')
         <div>
             <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Master Data & Sistem</p>
             <div class="space-y-1">

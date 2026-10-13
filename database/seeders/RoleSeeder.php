@@ -54,20 +54,41 @@ class RoleSeeder extends Seeder
         $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $admin->syncPermissions(Permission::where('guard_name', 'web')->pluck('name'));
 
-        // 2. Sekretariat — kelola data & PKPPT, tidak bisa hapus penugasan
+        // 2. Sekretaris — Pimpinan Administratif, memantau seluruh PKPPT, seluruh penugasan, ILHP, kapasitas SDM & evaluasi
+        $sekretaris = Role::firstOrCreate(['name' => 'sekretaris', 'guard_name' => 'web']);
+        $sekretaris->syncPermissions([
+            'pkppt.view', 'pkppt.usulkan',
+            'penugasan.view',
+            'tindak_lanjut.view',
+            'arsip.view',
+            'beban_kerja.view',
+            'dashboard.view', 'dashboard.view_all',
+            'perencanaan.view', 'perencanaan.hitung_risiko', 'perencanaan.kapasitas_sdm',
+            'evaluasi.view', 'evaluasi.generate',
+            'audit_log.view',
+        ]);
+
+        // 3. Tim Pelaporan — Subbag Evaluasi & Pelaporan, menyusun & mengelola ILHP, monitoring seluruh PKPPT & penugasan, ekspor data
+        $pelaporan = Role::firstOrCreate(['name' => 'pelaporan', 'guard_name' => 'web']);
+        $pelaporan->syncPermissions([
+            'pkppt.view',
+            'penugasan.view',
+            'tindak_lanjut.view',
+            'arsip.view',
+            'beban_kerja.view',
+            'dashboard.view', 'dashboard.view_all',
+            'evaluasi.view', 'evaluasi.generate',
+        ]);
+
+        // 4. Staf Sekretariat — View-Only (persis sama seperti Auditor & PPUPD)
         $sekretariat = Role::firstOrCreate(['name' => 'sekretariat', 'guard_name' => 'web']);
         $sekretariat->syncPermissions([
-            'master.view','master.create','master.edit',
-            'users.view','users.create','users.edit',
-            'pkppt.view','pkppt.create','pkppt.edit','pkppt.delete',
-            'penugasan.view','penugasan.create','penugasan.edit','penugasan.update_status',
-            'tindak_lanjut.view','tindak_lanjut.create','tindak_lanjut.edit',
-            'arsip.view','arsip.upload',
+            'pkppt.view',
+            'penugasan.view',
+            'tindak_lanjut.view',
+            'arsip.view',
             'beban_kerja.view',
-            'dashboard.view','dashboard.view_all',
-            'perencanaan.view','perencanaan.hitung_risiko','perencanaan.generate_draft','perencanaan.kapasitas_sdm',
-            'evaluasi.view','evaluasi.generate',
-            'opd_users.manage',
+            'dashboard.view',
         ]);
 
         // 3. Inspektur — baca semua, kelola & tetapkan PKPT

@@ -41,13 +41,13 @@ class IkhtisarLaporanController extends Controller
     }
 
     /**
-     * Pastikan hanya Sekretariat / Tim Pelaporan dan Admin yang dapat menyusun / mengedit ILHP.
+     * Pastikan hanya Tim Pelaporan, Sekretaris, Inspektur, dan Admin yang dapat menyusun / mengedit ILHP.
      */
     protected function authorizePenyusun(): void
     {
         $user = auth()->user();
-        if (!$user || !$user->hasAnyRole(['admin', 'administrator', 'sekretariat', 'superadmin', 'inspektur', 'sekretaris'])) {
-            abort(403, 'Akses Terbatas: Penyusunan, pengeditan, dan penghapusan Ikhtisar Laporan Hasil Pengawasan (ILHP) hanya dapat dilakukan oleh Tim Evaluasi dan Pelaporan / Administrator.');
+        if (!$user || !$user->hasAnyRole(['admin', 'administrator', 'pelaporan', 'sekretaris', 'inspektur', 'superadmin'])) {
+            abort(403, 'Akses Terbatas: Penyusunan, pengeditan, dan penghapusan Ikhtisar Laporan Hasil Pengawasan (ILHP) hanya dapat dilakukan oleh Tim Evaluasi dan Pelaporan / Pimpinan / Administrator.');
         }
     }
 

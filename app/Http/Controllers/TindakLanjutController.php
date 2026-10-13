@@ -30,7 +30,7 @@ class TindakLanjutController extends Controller
 
         $query = TindakLanjut::with(['penugasan.irban', 'penugasan.objekPenugasan', 'objekPenugasan', 'buktiTindakLanjut.pengunggah', 'rincianPenyetoran', 'pembuatData']);
 
-        if (! $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
+        if (! $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'pelaporan'])) {
             $query->where(function ($q) use ($user) {
                 $q->whereHas('penugasan', function ($pq) use ($user) {
                     $pq->accessibleBy($user);
@@ -160,7 +160,7 @@ class TindakLanjutController extends Controller
         ];
 
         $scopeBadge = null;
-        if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris'])) {
+        if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'pelaporan'])) {
             $scopeBadge = 'Semua Unit Kerja (Inspektorat Daerah)';
         } elseif ($user->hasRole(['irban', 'admin_irban'])) {
             $scopeBadge = 'Unit: ' . ($user->irban->nama_irban ?? 'Irban Terkait');
@@ -402,17 +402,17 @@ class TindakLanjutController extends Controller
         $penugasan = Penugasan::with(['objekPenugasan', 'irbans'])->findOrFail($request->penugasan_id);
         $user = auth()->user();
 
-        // Otorisasi hak input Temuan & Rekomendasi LHP
+        // Otorisasi hak input Temuan & Rekomendasi LHP: Khusus Admin Irban unit terkait (dan Admin Sistem)
         $isAuthorized = $user && (
-            $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris']) ||
-            ($user->hasRole(['irban', 'admin_irban']) && (
+            $user->hasRole(['admin', 'administrator']) ||
+            ($user->hasRole('admin_irban') && (
                 $user->irban_id == $penugasan->irban_id ||
                 $penugasan->irbans->pluck('id')->contains($user->irban_id)
             ))
         );
 
         if (! $isAuthorized) {
-            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk menambahkan Temuan dan Rekomendasi LHP pada penugasan ini.');
+            abort(403, 'Akses Ditolak: Hanya Admin Irban yang berwenang menambahkan Temuan dan Rekomendasi LHP pada penugasan ini.');
         }
 
         $defaultObjekId  = $penugasan->objekPenugasan->count() === 1 ? $penugasan->objekPenugasan->first()->id : null;

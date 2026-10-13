@@ -40,14 +40,14 @@
                     <span>Verifikasi Bukti OPD</span>
                 </a>
 
-                @can('tindak_lanjut.create')
+                @if(auth()->user()->hasRole(['admin_irban', 'admin', 'administrator']))
                 <button onclick="document.getElementById('modalTambahTemuanMulti').classList.remove('hidden')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-xs rounded-xl shadow-lg shadow-emerald-600/20 transition-all">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     <span>+ Tambah Temuan & Rekomendasi</span>
                 </button>
-                @endcan
+                @endif
             </div>
         </div>
 
