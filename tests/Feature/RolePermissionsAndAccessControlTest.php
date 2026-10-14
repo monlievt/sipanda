@@ -379,4 +379,88 @@ class RolePermissionsAndAccessControlTest extends TestCase
         $resSekretaris->assertSee('700/01/406.008/2026');
         $resSekretaris->assertSee('700/03/406.008/2026');
     }
+
+    public function test_pelaporan_can_generate_ilhp_and_sekretaris_inspektur_can_view_draft(): void
+    {
+        // 1. Akun Sulikah (Role Pelaporan)
+        $sulikah = User::create([
+            'nama'         => 'SULIKAH, S.TP., M.A.P',
+            'email'        => 'sulikah@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'PENYUSUN LAPORAN KEUANGAN & KINERJA',
+            'status_aktif' => 'aktif',
+            'nip'          => '198001012005012001',
+            'irban_id'     => 5,
+        ]);
+        $sulikah->assignRole('pelaporan');
+
+        // Akun Sekretaris
+        $sekretaris = User::create([
+            'nama'         => 'SEKRETARIS INSPEKTORAT',
+            'email'        => 'sekretaris@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'SEKRETARIS',
+            'status_aktif' => 'aktif',
+            'nip'          => '197501012000011001',
+            'irban_id'     => 5,
+        ]);
+        $sekretaris->assignRole('sekretaris');
+
+        // Akun Inspektur
+        $inspektur = User::create([
+            'nama'         => 'INSPEKTUR KABUPATEN TRENGGALEK',
+            'email'        => 'inspektur@trenggalekkab.go.id',
+            'password'     => bcrypt('password'),
+            'jabatan'      => 'INSPEKTUR DAERAH',
+            'status_aktif' => 'aktif',
+            'nip'          => '197001011995011001',
+            'irban_id'     => 5,
+        ]);
+        $inspektur->assignRole('inspektur');
+
+        // Sulikah membuka halaman ikhtisar laporan -> Tombol Generate muncul
+        $resIndex = $this->actingAs($sulikah)->get(route('ikhtisar-laporan.index'));
+        $resIndex->assertStatus(200);
+        $resIndex->assertSee('Generate Ikhtisar Baru');
+
+        // Sulikah membuka form create
+        $resCreate = $this->actingAs($sulikah)->get(route('ikhtisar-laporan.create', ['tahun' => 2026]));
+        $resCreate->assertStatus(200);
+
+        // Sulikah menyimpan Draft ILHP
+        $resStore = $this->actingAs($sulikah)->post(route('ikhtisar-laporan.store'), [
+            'tahun'           => 2026,
+            'periode'         => 'tahunan',
+            'judul'           => 'Ikhtisar Laporan Hasil Pengawasan Tahunan Tahun Anggaran 2026',
+            'nomor_surat'     => '700/ILHP-01/406.008/2026',
+            'tanggal_laporan' => '2026-10-14',
+            'status'          => 'draft',
+        ]);
+        $resStore->assertStatus(302);
+
+        $ilhp = \App\Models\IkhtisarLaporan::where('nomor_surat', '700/ILHP-01/406.008/2026')->first();
+        $this->assertNotNull($ilhp);
+        $this->assertEquals('draft', $ilhp->status);
+
+        // Sekretaris membuka index ILHP -> melihat draft dan label DRAF KONSEP
+        $resSekretarisIndex = $this->actingAs($sekretaris)->get(route('ikhtisar-laporan.index', ['tahun' => 2026]));
+        $resSekretarisIndex->assertStatus(200);
+        $resSekretarisIndex->assertSee('Ikhtisar Laporan Hasil Pengawasan Tahunan Tahun Anggaran 2026');
+        $resSekretarisIndex->assertSee('DRAF KONSEP');
+
+        // Sekretaris membuka detail & cetak draft
+        $this->actingAs($sekretaris)->get(route('ikhtisar-laporan.show', $ilhp))->assertStatus(200);
+        $this->actingAs($sekretaris)->get(route('ikhtisar-laporan.cetak', $ilhp))->assertStatus(200);
+
+        // Inspektur membuka index ILHP -> melihat draft dan label DRAF KONSEP
+        $resInspekturIndex = $this->actingAs($inspektur)->get(route('ikhtisar-laporan.index', ['tahun' => 2026]));
+        $resInspekturIndex->assertStatus(200);
+        $resInspekturIndex->assertSee('Ikhtisar Laporan Hasil Pengawasan Tahunan Tahun Anggaran 2026');
+        $resInspekturIndex->assertSee('DRAF KONSEP');
+
+        // Inspektur membuka detail & cetak draft
+        $this->actingAs($inspektur)->get(route('ikhtisar-laporan.show', $ilhp))->assertStatus(200);
+        $this->actingAs($inspektur)->get(route('ikhtisar-laporan.cetak', $ilhp))->assertStatus(200);
+    }
 }
+

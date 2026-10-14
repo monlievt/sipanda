@@ -22,7 +22,7 @@
                     <span>🖨️ Cetak / Unduh PDF Naskah Eksekutif</span>
                 </a>
 
-                @hasanyrole('admin|administrator|sekretariat|superadmin')
+                @hasanyrole('admin|administrator|pelaporan|sekretaris|inspektur|superadmin')
                 <a href="{{ route('ikhtisar-laporan.edit', $ikhtisarLaporan) }}" class="inline-flex items-center gap-2 px-3.5 py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs rounded-xl transition-all">
                     <span>✏️ Edit Dokumen & Resume</span>
                 </a>
