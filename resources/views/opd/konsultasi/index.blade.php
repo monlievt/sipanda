@@ -21,11 +21,15 @@
                 </div>
 
                 <div class="flex items-center gap-2.5">
-                    <span class="text-xs text-teal-100 hidden sm:inline-block">PIC: <strong>{{ $opdUser->nama }}</strong></span>
+                    <span onclick="document.getElementById('modalEditProfilOpd').classList.remove('hidden')" 
+                        title="Klik untuk ubah profil OPD"
+                        class="text-xs text-teal-100 hover:text-white hidden sm:inline-block cursor-pointer transition-colors bg-teal-800/50 hover:bg-teal-800 px-2.5 py-1.5 rounded-xl border border-teal-600/30">
+                        PIC: <strong class="underline decoration-teal-300 underline-offset-2">{{ $opdUser->nama }}</strong>
+                    </span>
                     <button type="button" onclick="document.getElementById('modalEditProfilOpd').classList.remove('hidden')" 
-                        class="text-xs bg-teal-800/90 hover:bg-teal-600 px-3 py-1.5 rounded-xl text-white font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer border border-teal-600/40">
+                        class="text-xs bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 px-3 py-1.5 rounded-xl text-white font-bold flex items-center gap-1.5 transition-all shadow-md shadow-emerald-950/20 cursor-pointer border border-emerald-400/30">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        <span>Edit Data OPD</span>
+                        <span>✏️ Edit Data OPD</span>
                     </button>
                     <form method="POST" action="{{ route('opd.logout') }}">
                         @csrf
