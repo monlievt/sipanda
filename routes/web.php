@@ -273,6 +273,9 @@ Route::prefix('opd')->name('opd.')->group(function () {
         Route::post('/konsultasi', [\App\Http\Controllers\Opd\OpdKonsultasiController::class, 'store'])->name('konsultasi.store');
         Route::get('/konsultasi/{konsultasi}', [\App\Http\Controllers\Opd\OpdKonsultasiController::class, 'show'])->name('konsultasi.show');
         Route::post('/konsultasi/{konsultasi}/chat', [\App\Http\Controllers\Opd\OpdKonsultasiController::class, 'sendChat'])->name('konsultasi.chat');
+
+        // Edit Profil & Data OPD Mandiri
+        Route::put('/profil', [OpdDashboardController::class, 'updateProfil'])->name('profil.update');
     });
 });
 

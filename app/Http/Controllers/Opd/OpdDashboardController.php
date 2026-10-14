@@ -10,6 +10,7 @@ use App\Models\RincianPenyetoranTl;
 use App\Models\TindakLanjut;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -308,15 +309,57 @@ class OpdDashboardController extends Controller
     }
 
     /**
-     * Helper sanitasi input nominal Rp dari format 15.000.000 ke float 15000000
+     * Update data profil mandiri akun PIC OPD (Nama PIC, Email, No WA, Password).
      */
-    private function parseNominalRp($value): float
-    {
-        if (is_numeric($value)) {
-            return (float) $value;
-        }
-        $clean = preg_replace('/[^\d]/', '', (string) $value);
-        return $clean ? (float) $clean : 0;
-    }
+     public function updateProfil(Request $request): RedirectResponse
+     {
+         $user = auth('opd')->user();
+         if (! $user) {
+             abort(401, 'Sesi OPD telah berakhir.');
+         }
+
+         $validated = $request->validate([
+             'nama'     => ['required', 'string', 'max:150'],
+             'email'    => ['required', 'email', 'unique:users,email,' . $user->id],
+             'no_hp'    => ['nullable', 'string', 'max:20'],
+             'password' => ['nullable', 'string', 'min:6', 'confirmed'],
+         ], [
+             'nama.required'      => 'Nama PIC OPD wajib diisi.',
+             'email.required'     => 'Alamat email resmi wajib diisi.',
+             'email.unique'       => 'Email tersebut sudah digunakan oleh akun lain.',
+             'password.min'       => 'Kata sandi baru minimal 6 karakter.',
+             'password.confirmed' => 'Konfirmasi kata sandi baru tidak cocok.',
+         ]);
+
+         $sebelum = $user->toArray();
+
+         $updateData = [
+             'nama'  => $validated['nama'],
+             'email' => strtolower(trim($validated['email'])),
+             'no_hp' => $validated['no_hp'] ? trim($validated['no_hp']) : null,
+         ];
+
+         if (! empty($validated['password'])) {
+             $updateData['password'] = Hash::make($validated['password']);
+         }
+
+         $user->update($updateData);
+
+         ActivityLog::catat('users', $user->id, 'update', $sebelum, $user->toArray());
+
+         return back()->with('status', '✓ Profil dan data akun OPD berhasil diperbarui!');
+     }
+
+     /**
+      * Helper sanitasi input nominal Rp dari format 15.000.000 ke float 15000000
+      */
+     private function parseNominalRp($value): float
+     {
+         if (is_numeric($value)) {
+             return (float) $value;
+         }
+         $clean = preg_replace('/[^\d]/', '', (string) $value);
+         return $clean ? (float) $clean : 0;
+     }
 }
 

@@ -150,13 +150,29 @@ class OpdAuthController extends Controller
             ]
         );
 
+        $mailSuccess = true;
+        $errorMessage = null;
+
         try {
             $user->notify(new OpdResetPasswordNotification($token));
         } catch (\Throwable $e) {
-            Log::warning("[SIPANDA OPD Reset Password] Gagal kirim email reset password ke {$email}: " . $e->getMessage());
+            $mailSuccess = false;
+            $errorMessage = $e->getMessage();
+            Log::error("[SIPANDA OPD Reset Password] Gagal kirim email reset password ke {$email}: " . $errorMessage);
         }
 
-        return back()->with('status', 'Tautan untuk mengatur ulang kata sandi telah dikirimkan ke email Anda.');
+        if (! $mailSuccess) {
+            return back()->withErrors([
+                'email' => 'Gagal mengirim email reset kata sandi ke ' . $email . ' (' . $errorMessage . '). Pastikan konfigurasi SMTP di server telah aktif, atau hubungi Administrator Inspektorat Trenggalek untuk melakukan reset kata sandi akun Anda secara langsung.',
+            ])->withInput();
+        }
+
+        if (config('mail.default') === 'log') {
+            Log::info("[SIPANDA OPD Reset Password] Mode simulasi (MAIL_MAILER=log). Tautan reset: " . route('opd.password.reset', ['token' => $token, 'email' => $email]));
+            return back()->with('status', 'Permintaan reset berhasil dicatat. Catatan: Server email saat ini berjalan dalam mode log simulasi (MAIL_MAILER=log). Silakan hubungi Administrator Inspektorat atau aktifkan SMTP server pada berkas .env.');
+        }
+
+        return back()->with('status', 'Tautan untuk mengatur ulang kata sandi telah dikirimkan ke email Anda. Silakan periksa folder Masuk (Inbox) atau Spam.');
     }
 
     /**

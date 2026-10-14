@@ -17,8 +17,13 @@
                     </a>
                     <span class="text-sm font-extrabold hidden md:inline-block">SIPANDA <span class="text-xs font-normal opacity-80">| Rincian LHP</span></span>
                 </div>
-                <div class="flex items-center gap-4">
-                    <span class="text-xs text-teal-100">PIC: <strong>{{ $user->nama }}</strong></span>
+                <div class="flex items-center gap-2.5">
+                    <span class="text-xs text-teal-100 hidden sm:inline-block">PIC: <strong>{{ $user->nama }}</strong></span>
+                    <button type="button" onclick="document.getElementById('modalEditProfilOpd').classList.remove('hidden')" 
+                        class="text-xs bg-teal-800/90 hover:bg-teal-600 px-3 py-1.5 rounded-xl text-white font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer border border-teal-600/40">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        <span>Edit Data OPD</span>
+                    </button>
                     <form method="POST" action="{{ route('opd.logout') }}">
                         @csrf
                         <button type="submit" class="text-xs bg-teal-900 hover:bg-teal-950 px-3.5 py-1.5 rounded-xl text-white font-semibold transition-colors cursor-pointer">
@@ -331,5 +336,8 @@
             }
         }
     </script>
+
+    <!-- Modal Edit Data & Profil OPD Mandiri -->
+    @include('opd.partials.modal-edit-profil')
 </body>
 </html>
