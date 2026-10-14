@@ -79,7 +79,7 @@
                     <tr>
                         <th class="py-3.5 px-4 w-10 text-center">No</th>
                         <th class="py-3.5 px-4">Nama PIC & Kontak</th>
-                        <th class="py-3.5 px-4">Username / Email Login OPD</th>
+                        <th class="py-3.5 px-4">Email Objek Pengawasan / Entitas</th>
                         <th class="py-3.5 px-4">Instansi Objek Penugasan</th>
                         <th class="py-3.5 px-4 text-center">Status Akun</th>
                         <th class="py-3.5 px-4">Status Password / Undangan</th>
@@ -216,7 +216,7 @@
                 </div>
 
                 <div>
-                    <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Username / Email Resmi OPD <span class="text-rose-500">*</span></label>
+                    <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Email Objek Pengawasan / Entitas <span class="text-rose-500">*</span></label>
                     <input type="email" name="email" required placeholder="disdik@trenggalek.go.id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
                     <p class="text-[10px] text-slate-400 mt-1">Digunakan sebagai username saat login di Portal OPD.</p>
                 </div>
@@ -316,7 +316,7 @@
         <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-800 text-xs">
             <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
-                    <h3 class="font-bold text-slate-900 dark:text-white text-base">Edit Data & Reset Password OPD</h3>
+                    <h3 class="font-bold text-slate-900 dark:text-white text-base">Edit Data Objek Pengawasan / Entitas</h3>
                     <p class="text-[11px] text-slate-500">Perbarui profil atau ubah kata sandi akun</p>
                 </div>
                 <button onclick="document.getElementById('modalEditOpdUser').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xl font-bold cursor-pointer">&times;</button>
@@ -332,7 +332,7 @@
                 </div>
 
                 <div>
-                    <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Username / Email Resmi OPD <span class="text-rose-500">*</span></label>
+                    <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Email Objek Pengawasan / Entitas <span class="text-rose-500">*</span></label>
                     <input type="email" id="editEmail" name="email" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
                 </div>
 

@@ -41,7 +41,8 @@ class OpdProfileAndForgotPasswordTest extends TestCase
         $response = $this->actingAs($opdUser, 'opd')->get(route('opd.dashboard'));
         $response->assertStatus(200);
         $response->assertSee('Edit Data OPD');
-        $response->assertSee('Edit Data Mandiri OPD');
+        $response->assertSee('Edit Data Objek Pengawasan / Entitas');
+        $response->assertSee('Email Objek Pengawasan / Entitas');
         $response->assertSee('inspektorat.trenggalek@gmail.com');
     }
 

@@ -2,7 +2,7 @@
     $currentOpdUser = auth('opd')->user();
 @endphp
 
-<!-- Modal Edit Data & Profil OPD Mandiri -->
+<!-- Modal Edit Data Objek Pengawasan / Entitas -->
 <div id="modalEditProfilOpd" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-7 border border-slate-200 dark:border-slate-800 text-xs transition-all animate-in fade-in zoom-in-95 duration-150">
         <!-- Header Modal -->
@@ -14,7 +14,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h3 class="font-extrabold text-slate-900 dark:text-white text-base">Edit Data Mandiri OPD</h3>
+                    <h3 class="font-extrabold text-slate-900 dark:text-white text-base">Edit Data Objek Pengawasan / Entitas</h3>
                     <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Perbarui kontak PIC, email resmi, dan kata sandi akun</p>
                 </div>
             </div>
@@ -48,30 +48,20 @@
                 <label class="block font-bold mb-1.5 text-slate-800 dark:text-slate-200">
                     Nama PIC OPD <span class="text-rose-500">*</span>
                 </label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    </span>
-                    <input type="text" name="nama" value="{{ old('nama', $currentOpdUser?->nama) }}" required 
-                        placeholder="Contoh: PIC Inspektorat / Bpk. Fulan"
-                        class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 pl-9 pr-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-xs">
-                </div>
+                <input type="text" name="nama" value="{{ old('nama', $currentOpdUser?->nama) }}" required 
+                    placeholder="Contoh: PIC Inspektorat / Bpk. Fulan"
+                    class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-xs">
                 <p class="text-[10px] text-slate-400 mt-1">Nama lengkap pejabat / staf penghubung tindak lanjut pengawasan.</p>
             </div>
 
-            <!-- Username / Email Resmi Entitas -->
+            <!-- Email Objek Pengawasan / Entitas -->
             <div>
                 <label class="block font-bold mb-1.5 text-slate-800 dark:text-slate-200">
-                    Username / Email Resmi OPD <span class="text-rose-500">*</span>
+                    Email Objek Pengawasan / Entitas <span class="text-rose-500">*</span>
                 </label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                    </span>
-                    <input type="email" name="email" value="{{ old('email', $currentOpdUser?->email) }}" required 
-                        placeholder="dinas@trenggalekkab.go.id"
-                        class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 pl-9 pr-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-xs">
-                </div>
+                <input type="email" name="email" value="{{ old('email', $currentOpdUser?->email) }}" required 
+                    placeholder="dinas@trenggalekkab.go.id"
+                    class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-xs">
                 <p class="text-[10px] text-slate-400 mt-1">Digunakan untuk login ke Portal OPD serta menerima notifikasi & tautan reset kata sandi.</p>
             </div>
 
@@ -80,14 +70,9 @@
                 <label class="block font-bold mb-1.5 text-slate-800 dark:text-slate-200">
                     Nomor WhatsApp / HP Entitas
                 </label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                    </span>
-                    <input type="text" name="no_hp" value="{{ old('no_hp', $currentOpdUser?->no_hp) }}" 
-                        placeholder="Contoh: 081234567890"
-                        class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 pl-9 pr-3.5 py-2.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-xs">
-                </div>
+                <input type="text" name="no_hp" value="{{ old('no_hp', $currentOpdUser?->no_hp) }}" 
+                    placeholder="Contoh: 081234567890"
+                    class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-xs font-mono font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-xs">
                 <p class="text-[10px] text-slate-400 mt-1">Digunakan untuk menerima notifikasi pengawasan & tindak lanjut LHP otomatis via WhatsApp.</p>
             </div>
 
