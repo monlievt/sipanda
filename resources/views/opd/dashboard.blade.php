@@ -15,9 +15,12 @@
                     <a href="{{ route('opd.dashboard') }}" class="font-extrabold text-lg tracking-tight hover:text-teal-200">
                         SINGAWASI <span class="text-xs font-normal opacity-80">| Portal OPD</span>
                     </a>
-                    <a href="{{ route('opd.konsultasi.index') }}" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-teal-800/80 hover:bg-teal-600 text-white flex items-center gap-1.5 transition-all shadow-xs">
-                        💬 E-Consulting (QnA APIP)
-                    </a>
+                    <button type="button" 
+                            onclick="showFeatureUnderDev('Layanan E-Consulting APIP', 'Layanan permohonan konsultasi online Perangkat Daerah sedang dalam tahap perumusan standar operasional prosedur (SOP) dan finalisasi alur advis APIP.')" 
+                            class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-teal-800/50 hover:bg-teal-800 text-teal-100 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer border border-teal-600/30">
+                        <span>💬 E-Consulting</span>
+                        <span class="text-[9px] font-bold bg-amber-400 text-slate-900 px-1.5 py-0.2 rounded-md uppercase tracking-wider">Dev</span>
+                    </button>
                 </div>
                 <div class="flex items-center gap-2.5">
                     <span onclick="document.getElementById('modalEditProfilOpd').classList.remove('hidden')" 
@@ -253,6 +256,9 @@
 
     <!-- Global PDF & Document Preview Modal -->
     <x-pdf-preview-modal />
+
+    <!-- Global Under Development Modal -->
+    <x-under-development-modal />
 
     <!-- Modal Edit Data & Profil OPD Mandiri -->
     @include('opd.partials.modal-edit-profil')

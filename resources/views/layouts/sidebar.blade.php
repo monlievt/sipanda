@@ -125,12 +125,17 @@
                     </svg>
                     <span>Tindak Lanjut Result</span>
                 </a>
-                <a href="/konsultasi" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all {{ request()->is('konsultasi*') ? 'bg-emerald-600 text-white font-semibold shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                    <span>E-Consulting APIP (QnA)</span>
-                </a>
+                <button type="button" 
+                        onclick="showFeatureUnderDev('E-Consulting APIP (QnA)', 'Layanan permohonan konsultasi online, penugasan tim advis APIP, dan penerbitan Berita Acara sedang dalam tahap perumusan standar operasional prosedur (SOP).')" 
+                        class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-slate-100/60 dark:hover:bg-slate-800/60 hover:text-slate-600 dark:hover:text-slate-300 transition-all cursor-pointer group">
+                    <div class="flex items-center gap-3 text-left">
+                        <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <span>E-Consulting APIP</span>
+                    </div>
+                    <span class="text-[9px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-md uppercase tracking-wider">Dev</span>
+                </button>
                 <a href="/arsip" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all {{ request()->is('arsip*') ? 'bg-emerald-600 text-white font-semibold shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 01-2 2M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
@@ -157,19 +162,29 @@
                     <span>Beban Kerja Personil</span>
                 </a>
                 @can('perencanaan.view')
-                <a href="/perencanaan" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all {{ request()->is('perencanaan*') ? 'bg-emerald-600 text-white font-semibold shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                    <span>Perencanaan PKPT (N-1)</span>
-                </a>
+                <button type="button" 
+                        onclick="showFeatureUnderDev('Matriks Penilaian Risiko & Kapasitas SDM', 'Modul perencanaan PKPT berbasis risiko (Siklus N-1) dan kalkulasi kapasitas hari pengawasan SDM sedang dalam tahap sinkronisasi data kuantitatif indikator risiko OPD.')" 
+                        class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-slate-100/60 dark:hover:bg-slate-800/60 hover:text-slate-600 dark:hover:text-slate-300 transition-all cursor-pointer group">
+                    <div class="flex items-center gap-3 text-left">
+                        <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        <span>Penilaian Risiko (N-1)</span>
+                    </div>
+                    <span class="text-[9px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-md uppercase tracking-wider">Dev</span>
+                </button>
                 @endcan
-                <a href="/evaluasi" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all {{ request()->is('evaluasi*') ? 'bg-emerald-600 text-white font-semibold shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span>Evaluasi Tahunan (N+1)</span>
-                </a>
+                <button type="button" 
+                        onclick="showFeatureUnderDev('Evaluasi Tahunan Pengawasan (N+1)', 'Modul komparasi target kinerja vs realisasi pengawasan tahunan serta analisis deviasi penugasan sedang disiapkan untuk siklus evaluasi akhir tahun anggaran.')" 
+                        class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-slate-100/60 dark:hover:bg-slate-800/60 hover:text-slate-600 dark:hover:text-slate-300 transition-all cursor-pointer group">
+                    <div class="flex items-center gap-3 text-left">
+                        <svg class="w-4 h-4 opacity-70 group-hover:opacity-100 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Evaluasi Tahunan (N+1)</span>
+                    </div>
+                    <span class="text-[9px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-md uppercase tracking-wider">Dev</span>
+                </button>
                 <a href="{{ route('ikhtisar-laporan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all {{ request()->is('ikhtisar-laporan*') ? 'bg-emerald-600 text-white font-semibold shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

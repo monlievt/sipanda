@@ -143,9 +143,14 @@
             </div>
 
             <!-- Feature 2 -->
-            <div class="p-6 bg-slate-900/60 rounded-3xl border border-slate-800 space-y-4 hover:border-blue-500/50 transition-all">
-                <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-2xl font-black">
-                    💬
+            <div class="p-6 bg-slate-900/60 rounded-3xl border border-slate-800 space-y-4 hover:border-blue-500/50 transition-all relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-2xl font-black">
+                        💬
+                    </div>
+                    <span class="text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        Tahap Pengembangan
+                    </span>
                 </div>
                 <div class="space-y-1">
                     <h3 class="font-bold text-white text-base">Consulting & E-Consulting QnA</h3>

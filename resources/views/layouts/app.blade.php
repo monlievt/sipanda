@@ -252,6 +252,9 @@
 
     <!-- Global PDF & Document Preview Modal -->
     <x-pdf-preview-modal />
+
+    <!-- Global Under Development Modal -->
+    <x-under-development-modal />
 </body>
 </html>
 
