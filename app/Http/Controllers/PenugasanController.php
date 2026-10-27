@@ -15,6 +15,7 @@ use App\Models\SumberPenugasan;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class PenugasanController extends Controller
@@ -213,7 +214,7 @@ class PenugasanController extends Controller
 
         if ($isPerpanjangan) {
             $validated = $request->validate([
-                'no_spt'                 => ['required', 'string', 'max:60', 'unique:penugasan,no_spt'],
+                'no_spt'                 => ['required', 'string', 'max:60', Rule::unique('penugasan', 'no_spt')->whereNull('deleted_at')],
                 'penugasan_induk_id'     => ['required', 'exists:penugasan,id'],
                 'kelompok_pengawasan_id' => ['nullable', 'exists:kelompok_pengawasan,id'],
                 'uraian_penugasan'       => ['required', 'string'],
@@ -280,7 +281,7 @@ class PenugasanController extends Controller
             }
         } else {
             $validated = $request->validate([
-                'no_spt'                 => ['required', 'string', 'max:60', 'unique:penugasan,no_spt'],
+                'no_spt'                 => ['required', 'string', 'max:60', Rule::unique('penugasan', 'no_spt')->whereNull('deleted_at')],
                 'uraian_penugasan'       => ['required', 'string'],
                 'dasar_penugasan'        => ['nullable', 'string'],
                 'sumber_penugasan_id'    => ['required', 'exists:sumber_penugasan,id'],
@@ -507,7 +508,7 @@ class PenugasanController extends Controller
 
         if ($isPerpanjangan) {
             $validated = $request->validate([
-                'no_spt'                 => ['required', 'string', 'max:60', 'unique:penugasan,no_spt,' . $penugasan->id],
+                'no_spt'                 => ['required', 'string', 'max:60', Rule::unique('penugasan', 'no_spt')->ignore($penugasan->id)->whereNull('deleted_at')],
                 'penugasan_induk_id'     => ['required', 'exists:penugasan,id'],
                 'kelompok_pengawasan_id' => ['nullable', 'exists:kelompok_pengawasan,id'],
                 'uraian_penugasan'       => ['required', 'string'],
@@ -561,7 +562,7 @@ class PenugasanController extends Controller
             }
         } else {
             $validated = $request->validate([
-                'no_spt'                 => ['required', 'string', 'max:60', 'unique:penugasan,no_spt,' . $penugasan->id],
+                'no_spt'                 => ['required', 'string', 'max:60', Rule::unique('penugasan', 'no_spt')->ignore($penugasan->id)->whereNull('deleted_at')],
                 'uraian_penugasan'       => ['required', 'string'],
                 'dasar_penugasan'        => ['nullable', 'string'],
                 'sumber_penugasan_id'    => ['required', 'exists:sumber_penugasan,id'],
@@ -668,7 +669,8 @@ class PenugasanController extends Controller
         $noSpt = $penugasan->no_spt;
         $sebelum = $penugasan->toArray();
 
-        $penugasan->delete();
+        // Hapus permanen agar nomor SPT bebas dan dapat digunakan kembali tanpa terhalang zombie soft-delete
+        $penugasan->forceDelete();
 
         ActivityLog::catat('penugasan', $penugasan->id, 'delete', $sebelum, null);
 
