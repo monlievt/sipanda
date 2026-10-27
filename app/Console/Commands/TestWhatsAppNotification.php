@@ -30,8 +30,8 @@ class TestWhatsAppNotification extends Command
     {
         $nomor = $this->argument('nomor');
         $pesan = $this->argument('pesan') ?: (
-            "🔔 *UJI COBA NOTIFIKASI WHATSAPP SIPANDA*\n\n" .
-            "Halo! Pesan ini adalah uji coba koneksi gateway WhatsApp (WAHA) dari Sistem Informasi Pengawasan Terintegrasi (SIPANDA) Inspektorat Kabupaten Trenggalek.\n\n" .
+            "🔔 *UJI COBA NOTIFIKASI WHATSAPP SINGAWASI*\n\n" .
+            "Halo! Pesan ini adalah uji coba koneksi gateway WhatsApp (WAHA) dari Sistem Informasi PeNGAWAsan TerintegraSI (SINGAWASI) Inspektorat Kabupaten Trenggalek.\n\n" .
             "⏱️ Waktu Uji: " . now()->translatedFormat('d F Y H:i:s') . " WIB\n" .
             "✓ Status: Terhubung dan Siap Digunakan."
         );

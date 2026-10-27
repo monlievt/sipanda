@@ -30,7 +30,7 @@ class DatabaseBackupService
     public function createBackup(): array
     {
         $timestamp = date('Y-m-d_His');
-        $filename = "sipanda_backup_{$timestamp}.sql";
+        $filename = "singawasi_backup_{$timestamp}.sql";
         $filepath = "{$this->backupDir}/{$filename}";
 
         $connection = config('database.default');
@@ -59,7 +59,7 @@ class DatabaseBackupService
                 'timestamp' => now()->format('d/m/Y H:i:s'),
             ];
         } catch (\Throwable $e) {
-            Log::error('[SIPANDA Backup Error] ' . $e->getMessage());
+            Log::error('[SINGAWASI Backup Error] ' . $e->getMessage());
             return [
                 'success' => false,
                 'error'   => $e->getMessage(),
@@ -96,7 +96,7 @@ class DatabaseBackupService
                 'email'    => $email,
             ];
         } catch (\Throwable $e) {
-            Log::error('[SIPANDA Backup Mail Error] ' . $e->getMessage());
+            Log::error('[SINGAWASI Backup Mail Error] ' . $e->getMessage());
             return [
                 'success' => false,
                 'error'   => "Gagal mengirimkan email ke {$email}: " . $e->getMessage(),
@@ -264,7 +264,7 @@ class DatabaseBackupService
             ];
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('[SIPANDA Purge Error] ' . $e->getMessage());
+            Log::error('[SINGAWASI Purge Error] ' . $e->getMessage());
             return [
                 'success' => false,
                 'error'   => 'Gagal membersihkan data percobaan: ' . $e->getMessage(),
@@ -279,7 +279,7 @@ class DatabaseBackupService
     {
         $tables = DB::select('SHOW TABLES');
         $output = "-- ========================================================\n";
-        $output .= "-- SIPANDA KABUPATEN TRENGGALEK DATABASE BACKUP (MYSQL)\n";
+        $output .= "-- SINGAWASI KABUPATEN TRENGGALEK DATABASE BACKUP (MYSQL)\n";
         $output .= "-- Tanggal: " . now()->format('Y-m-d H:i:s') . "\n";
         $output .= "-- ========================================================\n\n";
         $output .= "SET FOREIGN_KEY_CHECKS=0;\nSET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n\n";
@@ -328,7 +328,7 @@ class DatabaseBackupService
     {
         $tables = DB::select('SELECT name, sql FROM sqlite_master WHERE type="table" AND name NOT LIKE "sqlite_%"');
         $output = "-- ========================================================\n";
-        $output .= "-- SIPANDA KABUPATEN TRENGGALEK DATABASE BACKUP (SQLITE)\n";
+        $output .= "-- SINGAWASI KABUPATEN TRENGGALEK DATABASE BACKUP (SQLITE)\n";
         $output .= "-- Tanggal: " . now()->format('Y-m-d H:i:s') . "\n";
         $output .= "-- ========================================================\n\n";
 

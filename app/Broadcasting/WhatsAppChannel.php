@@ -29,7 +29,7 @@ class WhatsAppChannel
             ?? null;
 
         if (! $to) {
-            Log::info("[SIPANDA WhatsAppChannel] Pengguna ID {$notifiable->id} tidak memiliki nomor telepon/WA.");
+            Log::info("[SINGAWASI WhatsAppChannel] Pengguna ID {$notifiable->id} tidak memiliki nomor telepon/WA.");
             return;
         }
 

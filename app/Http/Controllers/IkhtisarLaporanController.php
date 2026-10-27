@@ -303,7 +303,7 @@ class IkhtisarLaporanController extends Controller
         // BAGIAN 1: SUMBER DAYA MANUSIA (SDM) BERDASARKAN JABATAN DEFINITIF
         // ══════════════════════════════════════════════════════════════════════════
         // Perhitungan:
-        // - Data diambil dari jumlah pegawai aktif internal SIPANDA
+        // - Data diambil dari jumlah pegawai aktif internal SINGAWASI
         // - Didasarkan pada jabatan definitif yang diduduki
         // - Formula Unsur Kesekretariatan = Total Pegawai - Inspektur - Sekretaris - Irban - Auditor - PPUPD
         $usersAktif = User::where('is_active', true)->where('tipe_akun', 'internal')->get();

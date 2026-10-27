@@ -26,7 +26,7 @@ class BackupController extends Controller
             'email_destination'  => AppSetting::get('backup_email_destination', auth()->user()?->email ?? 'nugrahenisetya72@gmail.com'),
             'email_frequency'    => AppSetting::get('backup_email_frequency', 'daily'),
             'gdrive_enabled'     => AppSetting::get('backup_gdrive_enabled', '0') === '1',
-            'gdrive_folder'      => AppSetting::get('backup_gdrive_folder', 'SIPANDA_TRENGGALEK_BACKUP'),
+            'gdrive_folder'      => AppSetting::get('backup_gdrive_folder', 'SINGAWASI_TRENGGALEK_BACKUP'),
             'last_run'           => AppSetting::get('backup_last_run'),
         ];
 
@@ -60,7 +60,7 @@ class BackupController extends Controller
         $clean = basename($filename);
 
         // Security Hardening: Validasi format nama file cadangan secara ketat
-        if (! preg_match('/^sipanda_backup_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{6}\.(sql|sql\.gz|zip)$/', $clean)) {
+        if (! preg_match('/^(singawasi|sipanda)_backup_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{6}\.(sql|sql\.gz|zip)$/', $clean)) {
             abort(400, 'Format nama berkas cadangan tidak valid.');
         }
 
@@ -83,7 +83,7 @@ class BackupController extends Controller
         $clean = basename($filename);
 
         // Security Hardening: Validasi format nama file cadangan secara ketat
-        if (! preg_match('/^sipanda_backup_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{6}\.(sql|sql\.gz|zip)$/', $clean)) {
+        if (! preg_match('/^(singawasi|sipanda)_backup_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{6}\.(sql|sql\.gz|zip)$/', $clean)) {
             abort(400, 'Format nama berkas cadangan tidak valid.');
         }
 

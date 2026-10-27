@@ -165,7 +165,7 @@ class ApipAiService
 
         // Jika tidak ada dokumen sama sekali yang cocok di database
         if (empty($contextText)) {
-            $contextText = "(Tidak ada dokumen regulasi yang secara spesifik memuat kata kunci pertanyaan ini di database SIPANDA).";
+            $contextText = "(Tidak ada dokumen regulasi yang secara spesifik memuat kata kunci pertanyaan ini di database SINGAWASI).";
         }
 
         $systemInstruction = "Anda adalah Asisten Penasihat Virtual APIP (Aparat Pengawasan Intern Pemerintah) Inspektorat Kabupaten Trenggalek. " .
@@ -174,9 +174,9 @@ class ApipAiService
             "1. Anda HANYA BOLEH menjawab berdasarkan informasi dari DOKUMEN REGULASI dan BANK ARTIKEL FAQ yang dilampirkan di bawah.\n" .
             "2. DILARANG MENGARANG atau berspekulasi di luar dokumen yang disediakan.\n" .
             "3. Selalu sebutkan secara eksplisit rujukan nama regulasi, nomor, tahun, dan pasalnya di dalam jawaban Anda.\n" .
-            "4. Jika informasi TIDAK DITEMUKAN atau tidak cukup lengkap dalam dokumen terlampir, sampaikan secara jujur: 'Mohon maaf, ketentuan perihal hal tersebut belum tercantum secara lengkap dalam basis data regulasi kami saat ini. Silakan mengajukan permohonan konsultasi resmi melalui portal e-Consulting SIPANDA agar dapat ditelaah langsung oleh Tim Auditor Irban terkait.'\n" .
+            "4. Jika informasi TIDAK DITEMUKAN atau tidak cukup lengkap dalam dokumen terlampir, sampaikan secara jujur: 'Mohon maaf, ketentuan perihal hal tersebut belum tercantum secara lengkap dalam basis data regulasi kami saat ini. Silakan mengajukan permohonan konsultasi resmi melalui portal e-Consulting SINGAWASI agar dapat ditelaah langsung oleh Tim Auditor Irban terkait.'\n" .
             "5. Gunakan format Markdown yang rapi (gunakan bold, bullet points, dan sub-judul).\n\n" .
-            "BERIKUT ADALAH DOKUMEN BASIS DATA REGULASI SIPANDA:\n" . $contextText;
+            "BERIKUT ADALAH DOKUMEN BASIS DATA REGULASI SINGAWASI:\n" . $contextText;
 
         try {
             $url = "https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent?key={$this->apiKey}";
@@ -214,11 +214,11 @@ class ApipAiService
                     }
                 }
             } else {
-                Log::warning("[SIPANDA AI] Gemini API Error status {$response->status()}: " . $response->body());
+                Log::warning("[SINGAWASI AI] Gemini API Error status {$response->status()}: " . $response->body());
             }
 
         } catch (\Throwable $e) {
-            Log::error("[SIPANDA AI] Exception saat memanggil Gemini API: " . $e->getMessage());
+            Log::error("[SINGAWASI AI] Exception saat memanggil Gemini API: " . $e->getMessage());
         }
 
         return null;
@@ -356,10 +356,10 @@ class ApipAiService
                         }
                     }
                 } else {
-                    Log::warning("[SIPANDA AI] Gemini API Error status {$response->status()}: " . $response->body());
+                    Log::warning("[SINGAWASI AI] Gemini API Error status {$response->status()}: " . $response->body());
                 }
             } catch (\Throwable $e) {
-                Log::error("[SIPANDA AI] Exception saat generate resume ILHP: " . $e->getMessage());
+                Log::error("[SINGAWASI AI] Exception saat generate resume ILHP: " . $e->getMessage());
             }
         }
 

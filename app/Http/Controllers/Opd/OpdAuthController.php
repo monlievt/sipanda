@@ -158,7 +158,7 @@ class OpdAuthController extends Controller
         } catch (\Throwable $e) {
             $mailSuccess = false;
             $errorMessage = $e->getMessage();
-            Log::error("[SIPANDA OPD Reset Password] Gagal kirim email reset password ke {$email}: " . $errorMessage);
+            Log::error("[SINGAWASI OPD Reset Password] Gagal kirim email reset password ke {$email}: " . $errorMessage);
         }
 
         if (! $mailSuccess) {
@@ -168,7 +168,7 @@ class OpdAuthController extends Controller
         }
 
         if (config('mail.default') === 'log') {
-            Log::info("[SIPANDA OPD Reset Password] Mode simulasi (MAIL_MAILER=log). Tautan reset: " . route('opd.password.reset', ['token' => $token, 'email' => $email]));
+            Log::info("[SINGAWASI OPD Reset Password] Mode simulasi (MAIL_MAILER=log). Tautan reset: " . route('opd.password.reset', ['token' => $token, 'email' => $email]));
             return back()->with('status', 'Permintaan reset berhasil dicatat. Catatan: Server email saat ini berjalan dalam mode log simulasi (MAIL_MAILER=log). Silakan hubungi Administrator Inspektorat atau aktifkan SMTP server pada berkas .env.');
         }
 

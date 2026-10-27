@@ -22,14 +22,14 @@ class BackupDatabase extends Command
      *
      * @var string
      */
-    protected $description = 'Otomatisasi Backup Database SIPANDA Web (MySQL & SQLite) dengan Pembersihan Retensi';
+    protected $description = 'Otomatisasi Backup Database SINGAWASI Web (MySQL & SQLite) dengan Pembersihan Retensi';
 
     /**
      * Execute the console command.
      */
     public function handle(): int
     {
-        $this->info('Memulai proses backup database SIPANDA...');
+        $this->info('Memulai proses backup database SINGAWASI...');
 
         $backupDir = storage_path('backups');
         if (! File::exists($backupDir)) {
@@ -47,7 +47,7 @@ class BackupDatabase extends Command
                     return self::FAILURE;
                 }
 
-                $targetFile = "{$backupDir}/sipanda_sqlite_backup_{$timestamp}.sqlite";
+                $targetFile = "{$backupDir}/singawasi_sqlite_backup_{$timestamp}.sqlite";
                 File::copy($dbPath, $targetFile);
 
                 $this->info("✓ Backup SQLite berhasil: {$targetFile}");
@@ -58,7 +58,7 @@ class BackupDatabase extends Command
                 $username = config('database.connections.mysql.username');
                 $password = config('database.connections.mysql.password');
 
-                $targetSql = "{$backupDir}/sipanda_mysql_{$timestamp}.sql";
+                $targetSql = "{$backupDir}/singawasi_mysql_{$timestamp}.sql";
                 $targetGz  = "{$targetSql}.gz";
 
                 $command = sprintf(
@@ -107,7 +107,7 @@ class BackupDatabase extends Command
 
         } catch (\Throwable $e) {
             $this->error("Gagal melakukan backup: " . $e->getMessage());
-            Log::error("[SIPANDA Backup] Gagal: " . $e->getMessage());
+            Log::error("[SINGAWASI Backup] Gagal: " . $e->getMessage());
 
             ActivityLog::catat('system', 0, 'backup_database', null, [
                 'connection' => $connection,

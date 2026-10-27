@@ -417,7 +417,7 @@ class PenugasanController extends Controller
                 try {
                     $member->user->notify(new \App\Notifications\PenugasanBaruNotification($penugasan, $peranTitle));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif SPT baru ke user {$member->user_id}: " . $e->getMessage());
+                    \Illuminate\Support\Facades\Log::warning("[SINGAWASI Notification] Gagal kirim notif SPT baru ke user {$member->user_id}: " . $e->getMessage());
                 }
             }
         }

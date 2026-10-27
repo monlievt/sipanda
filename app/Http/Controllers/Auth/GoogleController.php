@@ -37,7 +37,7 @@ class GoogleController extends Controller
 
         if (! $user) {
             return redirect()->route('login')->withErrors([
-                'email' => 'Email (' . $googleUser->getEmail() . ') belum terdaftar di SIPANDA. Silakan hubungi Sekretariat.',
+                'email' => 'Email (' . $googleUser->getEmail() . ') belum terdaftar di SINGAWASI. Silakan hubungi Sekretariat.',
             ]);
         }
 

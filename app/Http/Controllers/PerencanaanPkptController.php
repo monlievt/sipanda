@@ -205,7 +205,7 @@ class PerencanaanPkptController extends Controller
             try {
                 $p->notify(new \App\Notifications\PkpptStatusNotification($pkppt, 'diusulkan', auth()->user()->nama_display));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif PKPT usulkan ke {$p->id}: " . $e->getMessage());
+                \Illuminate\Support\Facades\Log::warning("[SINGAWASI Notification] Gagal kirim notif PKPT usulkan ke {$p->id}: " . $e->getMessage());
             }
         }
 
@@ -241,7 +241,7 @@ class PerencanaanPkptController extends Controller
             try {
                 $r->notify(new \App\Notifications\PkpptStatusNotification($pkppt, 'direviu', auth()->user()->nama_display));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif PKPT reviu ke {$r->id}: " . $e->getMessage());
+                \Illuminate\Support\Facades\Log::warning("[SINGAWASI Notification] Gagal kirim notif PKPT reviu ke {$r->id}: " . $e->getMessage());
             }
         }
 
@@ -265,7 +265,7 @@ class PerencanaanPkptController extends Controller
             try {
                 $u->notify(new \App\Notifications\PkpptStatusNotification($pkppt, 'ditetapkan', auth()->user()->nama_display));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif PKPT tetapkan ke {$u->id}: " . $e->getMessage());
+                \Illuminate\Support\Facades\Log::warning("[SINGAWASI Notification] Gagal kirim notif PKPT tetapkan ke {$u->id}: " . $e->getMessage());
             }
         }
 

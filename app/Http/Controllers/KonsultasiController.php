@@ -164,7 +164,7 @@ class KonsultasiController extends Controller
                     $request->catatan_disposisi_inspektur
                 ));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif disposisi inspektur ke {$uIrban->id}: " . $e->getMessage());
+                \Illuminate\Support\Facades\Log::warning("[SINGAWASI Notification] Gagal kirim notif disposisi inspektur ke {$uIrban->id}: " . $e->getMessage());
             }
         }
 
@@ -264,7 +264,7 @@ class KonsultasiController extends Controller
             try {
                 $auditor->notify(new \App\Notifications\KonsultasiNotifikasiNotification($konsultasi, 'disposisi_irban'));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif penugasan tim ke {$auditor->id}: " . $e->getMessage());
+                \Illuminate\Support\Facades\Log::warning("[SINGAWASI Notification] Gagal kirim notif penugasan tim ke {$auditor->id}: " . $e->getMessage());
             }
         }
 
@@ -339,7 +339,7 @@ class KonsultasiController extends Controller
                     $request->pesan
                 ));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif chat ke OPD: " . $e->getMessage());
+                \Illuminate\Support\Facades\Log::warning("[SINGAWASI Notification] Gagal kirim notif chat ke OPD: " . $e->getMessage());
             }
         }
 
@@ -379,7 +379,7 @@ class KonsultasiController extends Controller
                     'ba_terbit'
                 ));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("[SIPANDA Notification] Gagal kirim notif BA ke OPD: " . $e->getMessage());
+                \Illuminate\Support\Facades\Log::warning("[SINGAWASI Notification] Gagal kirim notif BA ke OPD: " . $e->getMessage());
             }
         }
 

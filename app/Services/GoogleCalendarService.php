@@ -55,7 +55,7 @@ class GoogleCalendarService
             ]);
 
             if ($response->failed()) {
-                Log::error('[SIPANDA Google OAuth] Gagal tukar token:', $response->json() ?? []);
+                Log::error('[SINGAWASI Google OAuth] Gagal tukar token:', $response->json() ?? []);
                 return false;
             }
 
@@ -72,7 +72,7 @@ class GoogleCalendarService
             return true;
 
         } catch (\Throwable $e) {
-            Log::error('[SIPANDA Google OAuth] Exception: ' . $e->getMessage());
+            Log::error('[SINGAWASI Google OAuth] Exception: ' . $e->getMessage());
             return false;
         }
     }
@@ -107,7 +107,7 @@ class GoogleCalendarService
                 return $data['access_token'];
             }
         } catch (\Throwable $e) {
-            Log::error('[SIPANDA Google Token Refresh] Gagal: ' . $e->getMessage());
+            Log::error('[SINGAWASI Google Token Refresh] Gagal: ' . $e->getMessage());
         }
 
         return $user->google_access_token;
@@ -129,7 +129,7 @@ class GoogleCalendarService
         ]);
 
         $eventData = [
-            'summary'     => "[SIPANDA] {$penugasan->no_spt} - {$penugasan->uraian_penugasan}",
+            'summary'     => "[SINGAWASI] {$penugasan->no_spt} - {$penugasan->uraian_penugasan}",
             'description' => "Penugasan Inspektorat Trenggalek\nSPT: {$penugasan->no_spt}\nIrban: " . ($penugasan->irban?->nama_irban ?? '-') . "\nObjek: " . $penugasan->objekPenugasan->pluck('nama')->implode(', '),
             'start'       => [
                 'date' => $penugasan->tanggal_mulai->format('Y-m-d'),
@@ -169,7 +169,7 @@ class GoogleCalendarService
             return false;
 
         } catch (\Throwable $e) {
-            Log::error('[SIPANDA Google Calendar Sync] Gagal: ' . $e->getMessage());
+            Log::error('[SINGAWASI Google Calendar Sync] Gagal: ' . $e->getMessage());
             return false;
         }
     }

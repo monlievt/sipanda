@@ -43,7 +43,7 @@ class WhatsAppWebhookController extends Controller
         $cleanPhone = preg_replace('/[^\d]/', '', explode('@', $from)[0]);
         $localPhone = str_starts_with($cleanPhone, '62') ? ('0' . substr($cleanPhone, 2)) : $cleanPhone;
 
-        Log::info("[SIPANDA WA Webhook] Pesan masuk dari {$cleanPhone} ({$localPhone}): {$body}");
+        Log::info("[SINGAWASI WA Webhook] Pesan masuk dari {$cleanPhone} ({$localPhone}): {$body}");
 
         // Cari pengguna berdasarkan nomor telepon / no_hp
         $user = User::where('no_hp', 'like', "%{$cleanPhone}%")
@@ -68,7 +68,7 @@ class WhatsAppWebhookController extends Controller
 
                 $konsultasiAktif->touch();
 
-                Log::info("[SIPANDA WA Webhook] Pesan WhatsApp diteruskan ke Thread Konsultasi #{$konsultasiAktif->id}");
+                Log::info("[SINGAWASI WA Webhook] Pesan WhatsApp diteruskan ke Thread Konsultasi #{$konsultasiAktif->id}");
             }
 
             ActivityLog::catat('whatsapp_inbound', $user->id, 'receive', null, [

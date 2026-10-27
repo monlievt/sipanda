@@ -10,7 +10,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// ─── SIPANDA: Jadwal Otomatis ────────────────────────────────────────
+// ─── SINGAWASI: Jadwal Otomatis ──────────────────────────────────────
 
 /**
  * Reminder H-3 & H-1 penugasan + peringatan TL mandek >14 hari.

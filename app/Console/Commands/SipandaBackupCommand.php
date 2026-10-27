@@ -22,14 +22,14 @@ class SipandaBackupCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Cadangkan database SIPANDA secara otomatis dan kirim salinan ke email / cloud';
+    protected $description = 'Cadangkan database SINGAWASI secara otomatis dan kirim salinan ke email / cloud';
 
     /**
      * Execute the console command.
      */
     public function handle(DatabaseBackupService $backupService): int
     {
-        $this->info('Memulai pencadangan database SIPANDA...');
+        $this->info('Memulai pencadangan database SINGAWASI...');
 
         $backup = $backupService->createBackup();
 

@@ -809,7 +809,7 @@ class ExportController extends Controller
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $filename = "SIPANDA_Penugasan_{$tahun}.xlsx";
+        $filename = "SINGAWASI_Penugasan_{$tahun}.xlsx";
 
         return response()->stream(function () use ($spreadsheet) {
             $writer = new XlsxWriter($spreadsheet);
@@ -889,7 +889,7 @@ class ExportController extends Controller
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $filename = "SIPANDA_PKPPT_{$tahun}.xlsx";
+        $filename = "SINGAWASI_PKPPT_{$tahun}.xlsx";
 
         return response()->stream(function () use ($spreadsheet) {
             $writer = new XlsxWriter($spreadsheet);

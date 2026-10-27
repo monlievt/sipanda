@@ -23,7 +23,7 @@ class DatabaseBackupMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "[SIPANDA Trenggalek] Salinan Cadangan Database Otomatis - {$this->backupDate}"
+            subject: "[SINGAWASI Trenggalek] Salinan Cadangan Database Otomatis - {$this->backupDate}"
         );
     }
 

@@ -13,7 +13,7 @@ use Illuminate\View\View;
 class DashboardController extends Controller
 {
     /**
-     * Dashboard Realtime SIPANDA Web dengan Query Optimization & Cache Agregasi.
+     * Dashboard Realtime SINGAWASI Web dengan Query Optimization & Cache Agregasi.
      */
     public function index(Request $request): View
     {

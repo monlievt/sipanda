@@ -35,7 +35,7 @@ class GoogleCalendarController extends Controller
         $success = $this->calendarService->handleCallback($code, auth()->user());
 
         if ($success) {
-            return redirect()->route('profile.edit')->with('status', '✓ Akun Google Calendar berhasil ditautkan ke SIPANDA.');
+            return redirect()->route('profile.edit')->with('status', '✓ Akun Google Calendar berhasil ditautkan ke SINGAWASI.');
         }
 
         return redirect()->route('profile.edit')->with('error', 'Gagal menghubungkan Google Calendar. Periksa kredensial OAuth.');

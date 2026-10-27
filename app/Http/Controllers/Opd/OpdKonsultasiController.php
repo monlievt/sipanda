@@ -139,7 +139,7 @@ class OpdKonsultasiController extends Controller
                     $opdUser->nama_display ?? $objek?->nama ?? 'OPD'
                 ));
             } catch (\Throwable $e) {
-                Log::warning("[SIPANDA Notification] Gagal kirim notif konsultasi baru ke Inspektur {$inspektur->id}: " . $e->getMessage());
+                Log::warning("[SINGAWASI Notification] Gagal kirim notif konsultasi baru ke Inspektur {$inspektur->id}: " . $e->getMessage());
             }
         }
 

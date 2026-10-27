@@ -390,7 +390,7 @@
                         <p class="font-bold text-slate-900 dark:text-white pt-2">Langkah 2: Pasang Jadwal Cron Job Otomatis di VPS</p>
                         <span class="text-slate-400 block mb-1">Buka crontab server via <code class="text-blue-500">crontab -e</code> lalu tambahkan:</span>
                         <code class="block font-mono bg-slate-900 text-emerald-400 p-2.5 rounded-xl text-[10px]">
-                            0 2 * * * rclone sync /home/inspektorat/domains/sipanda.inspektorat.trenggalekkab.go.id/public_html/storage/app/backups gdrive:SIPANDA_TRENGGALEK_BACKUP
+                            0 2 * * * rclone sync /home/inspektorat/domains/singawasi.inspektorat.trenggalekkab.go.id/public_html/storage/app/backups gdrive:SINGAWASI_TRENGGALEK_BACKUP
                         </code>
                         <span class="text-slate-400 block mt-1">Setiap pukul 02.00 dini hari, seluruh berkas cadangan otomatis tersinkron ke Google Drive.</span>
                     </div>

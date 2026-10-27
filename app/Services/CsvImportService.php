@@ -55,7 +55,7 @@ class CsvImportService
                     return $rows;
                 }
             } catch (\Throwable $e) {
-                Log::warning('[SIPANDA Import] Gagal membaca Excel: ' . $e->getMessage() . ', mencoba fallback CSV...');
+                Log::warning('[SINGAWASI Import] Gagal membaca Excel: ' . $e->getMessage() . ', mencoba fallback CSV...');
             }
         }
 
@@ -215,7 +215,7 @@ class CsvImportService
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('[SIPANDA Import SPT] Error: ' . $e->getMessage());
+            Log::error('[SINGAWASI Import SPT] Error: ' . $e->getMessage());
             return ['success' => 0, 'errors' => ['Gagal memproses import data penugasan: ' . $e->getMessage()]];
         }
 
@@ -330,7 +330,7 @@ class CsvImportService
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('[SIPANDA Import TL] Error: ' . $e->getMessage());
+            Log::error('[SINGAWASI Import TL] Error: ' . $e->getMessage());
             return ['success' => 0, 'errors' => ['Gagal memproses import data tindak lanjut: ' . $e->getMessage()]];
         }
 
@@ -393,7 +393,7 @@ class CsvImportService
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('[SIPANDA Import Objek] Error: ' . $e->getMessage());
+            Log::error('[SINGAWASI Import Objek] Error: ' . $e->getMessage());
             return ['success' => 0, 'errors' => ['Gagal memproses import data objek pengawasan: ' . $e->getMessage()]];
         }
 
