@@ -6,7 +6,7 @@
                     &larr; Kembali ke Daftar Pegawai Internal
                 </a>
                 <h1 class="text-xl font-bold text-slate-900 dark:text-white">Tambah Pegawai Internal APIP Baru</h1>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Daftarkan data auditor, PPUPD, pimpinan, atau pejabat pengawasan ke dalam database SIPANDA</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Daftarkan data auditor, PPUPD, pimpinan, atau pejabat pengawasan ke dalam database SINGAWASI</p>
             </div>
         </div>
     </x-slot>

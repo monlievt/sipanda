@@ -39,7 +39,7 @@ class TindakLanjutMandekNotification extends Notification
         };
 
         return (new MailMessage)
-            ->subject("[SIPANDA] Peringatan: Rekomendasi Mandek {$this->hariMandek} Hari — SPT {$noSpt}")
+            ->subject("[SINGAWASI] Peringatan: Rekomendasi Mandek {$this->hariMandek} Hari — SPT {$noSpt}")
             ->greeting("Yth. Bapak/Ibu {$namaSapaan},")
             ->line("Rekomendasi tindak lanjut berikut **belum mendapat respons OPD selama lebih dari {$this->hariMandek} hari:**")
             ->line('')
@@ -49,7 +49,7 @@ class TindakLanjutMandekNotification extends Notification
             ->line('')
             ->action('Lihat Detail Tindak Lanjut', route('tindak-lanjut.show', $this->tindakLanjut->id))
             ->line('Mohon ditindaklanjuti agar tidak menghambat proses pengawasan.')
-            ->salutation('Hormat kami, SIPANDA — Inspektorat Kabupaten Trenggalek');
+            ->salutation('Hormat kami, SINGAWASI — Inspektorat Kabupaten Trenggalek');
     }
 
     public function toWhatsApp(object $notifiable): string
@@ -61,7 +61,7 @@ class TindakLanjutMandekNotification extends Notification
         $opdNames    = $this->tindakLanjut->penugasan?->objekPenugasan->pluck('nama')->implode(', ') ?: '-';
         $url         = route('tindak-lanjut.show', $this->tindakLanjut->id);
 
-        return "⚠️ *PERINGATAN TLHP MANDEK (> {$this->hariMandek} HARI) — SIPANDA*\n\n" .
+        return "⚠️ *PERINGATAN TLHP MANDEK (> {$this->hariMandek} HARI) — SINGAWASI*\n\n" .
                "Halo Bpk/Ibu *{$namaSapaan}*,\n" .
                "Terdapat rekomendasi tindak lanjut LHP yang belum ada progres penyelesaian dari OPD:\n\n" .
                "📄 *No. Dokumen:* {$noLhp}\n" .
@@ -69,6 +69,6 @@ class TindakLanjutMandekNotification extends Notification
                "🎯 *Rekomendasi:* {$rekomendasi}\n\n" .
                "Buka rincian matriks tindak lanjut:\n" .
                "🔗 {$url}\n\n" .
-               "_Pesan otomatis dari SIPANDA Inspektorat Kab. Trenggalek._";
+               "_Pesan otomatis dari SINGAWASI Inspektorat Kab. Trenggalek._";
     }
 }

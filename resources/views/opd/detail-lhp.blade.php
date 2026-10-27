@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Rincian LHP — Portal OPD SIPANDA</title>
+    <title>Rincian LHP — Portal OPD SINGAWASI</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased font-sans min-h-screen flex flex-col">
@@ -15,7 +15,7 @@
                     <a href="{{ route('opd.dashboard') }}" class="text-xs font-bold text-teal-100 hover:text-white flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-800/60 hover:bg-teal-800 transition-all">
                         <span>&larr; Kembali ke Daftar LHP</span>
                     </a>
-                    <span class="text-sm font-extrabold hidden md:inline-block">SIPANDA <span class="text-xs font-normal opacity-80">| Rincian LHP</span></span>
+                    <span class="text-sm font-extrabold hidden md:inline-block">SINGAWASI <span class="text-xs font-normal opacity-80">| Rincian LHP</span></span>
                 </div>
                 <div class="flex items-center gap-2.5">
                     <span onclick="document.getElementById('modalEditProfilOpd').classList.remove('hidden')" 

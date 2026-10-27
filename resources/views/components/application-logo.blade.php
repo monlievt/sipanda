@@ -5,7 +5,7 @@
         </svg>
     </div>
     <span class="text-xl font-black bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-800 dark:from-white dark:to-slate-200 bg-clip-text text-transparent">
-        SIPANDA
+        SINGAWASI
     </span>
 </div>
 

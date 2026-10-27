@@ -56,7 +56,7 @@ class WhatsAppService
     public function sendText(string $to, string $message): array
     {
         if (! $this->enabled) {
-            Log::info("[SIPANDA WhatsApp] Pengiriman dinonaktifkan (WAHA_ENABLED=false). Ke: {$to}");
+            Log::info("[SINGAWASI WhatsApp] Pengiriman dinonaktifkan (WAHA_ENABLED=false). Ke: {$to}");
             return ['success' => false, 'message' => 'WhatsApp gateway dinonaktifkan.'];
         }
 
@@ -75,18 +75,18 @@ class WhatsAppService
                 ]);
 
             if ($response->successful()) {
-                Log::info("[SIPANDA WhatsApp] Berhasil kirim pesan ke {$chatId}");
+                Log::info("[SINGAWASI WhatsApp] Berhasil kirim pesan ke {$chatId}");
                 return ['success' => true, 'data' => $response->json()];
             }
 
-            Log::warning("[SIPANDA WhatsApp] Gagal kirim pesan ke {$chatId}. Status: {$response->status()}", [
+            Log::warning("[SINGAWASI WhatsApp] Gagal kirim pesan ke {$chatId}. Status: {$response->status()}", [
                 'body' => $response->body()
             ]);
 
             return ['success' => false, 'error' => $response->body()];
 
         } catch (\Throwable $e) {
-            Log::error("[SIPANDA WhatsApp] Exception: " . $e->getMessage());
+            Log::error("[SINGAWASI WhatsApp] Exception: " . $e->getMessage());
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
@@ -125,7 +125,7 @@ class WhatsAppService
             return ['success' => false, 'error' => $response->body()];
 
         } catch (\Throwable $e) {
-            Log::error("[SIPANDA WhatsApp sendFile] Exception: " . $e->getMessage());
+            Log::error("[SINGAWASI WhatsApp sendFile] Exception: " . $e->getMessage());
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }

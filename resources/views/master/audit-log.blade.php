@@ -7,7 +7,7 @@
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h2 class="text-xl font-black text-slate-900 dark:text-white tracking-tight">Catatan Perubahan Data (Audit Log)</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Jejak aktivitas pencatatan, pembaruan, dan penghapusan data di seluruh sistem SIPANDA Web.</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Jejak aktivitas pencatatan, pembaruan, dan penghapusan data di seluruh sistem SINGAWASI Web.</p>
         </div>
     </div>
 

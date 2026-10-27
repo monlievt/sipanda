@@ -31,7 +31,7 @@ class PenugasanReminderNotification extends Notification
         $tglSelesai = $this->penugasan->tanggal_selesai?->translatedFormat('d F Y') ?? '-';
 
         return (new MailMessage)
-            ->subject("[SIPANDA] Reminder {$label}: {$this->penugasan->no_spt}")
+            ->subject("[SINGAWASI] Reminder {$label}: {$this->penugasan->no_spt}")
             ->greeting("Yth. Bapak/Ibu {$namaSapaan},")
             ->line("Ini adalah pengingat otomatis **{$label}** untuk kegiatan penugasan berikut:")
             ->line('')
@@ -42,7 +42,7 @@ class PenugasanReminderNotification extends Notification
             ->line('')
             ->action('Lihat Detail Penugasan', route('penugasan.show', $this->penugasan->id))
             ->line('Harap mempersiapkan diri dan berkoordinasi dengan anggota tim.')
-            ->salutation('Hormat kami, SIPANDA — Inspektorat Kabupaten Trenggalek');
+            ->salutation('Hormat kami, SINGAWASI — Inspektorat Kabupaten Trenggalek');
     }
 
     public function toWhatsApp(object $notifiable): string
@@ -54,7 +54,7 @@ class PenugasanReminderNotification extends Notification
         $url        = route('penugasan.show', $this->penugasan->id);
         $objekNames = $this->penugasan->objekPenugasan?->pluck('nama')->implode(', ') ?: '-';
 
-        return "🔔 *PENGINGAT PENUGASAN (SPT) — SIPANDA*\n\n" .
+        return "🔔 *PENGINGAT PENUGASAN (SPT) — SINGAWASI*\n\n" .
                "Halo Bpk/Ibu *{$namaSapaan}*,\n" .
                "Ini adalah pengingat otomatis *{$label}* untuk jadwal penugasan berikut:\n\n" .
                "📄 *No. SPT:* {$this->penugasan->no_spt}\n" .
@@ -63,6 +63,6 @@ class PenugasanReminderNotification extends Notification
                "📅 *Jadwal:* {$tglMulai} s.d. {$tglSelesai}\n\n" .
                "Silakan buka tautan berikut untuk detail dan lembar kerja:\n" .
                "🔗 {$url}\n\n" .
-               "_Pesan otomatis dari SIPANDA Inspektorat Kab. Trenggalek._";
+               "_Pesan otomatis dari SINGAWASI Inspektorat Kab. Trenggalek._";
     }
 }

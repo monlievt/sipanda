@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Pusat Regulasi & Pedoman Pengawasan — SIPANDA Inspektorat Kab. Trenggalek</title>
+    <title>Pusat Regulasi & Pedoman Pengawasan — SINGAWASI Inspektorat Kab. Trenggalek</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
@@ -16,10 +16,10 @@
             <div class="flex items-center gap-3">
                 <a href="/" class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-extrabold text-lg">
-                        SP
+                        SW
                     </div>
                     <div>
-                        <span class="font-black text-lg tracking-tight text-white block leading-none">SIPANDA</span>
+                        <span class="font-black text-lg tracking-tight text-white block leading-none">SINGAWASI</span>
                         <span class="text-[10px] text-emerald-400 font-medium tracking-wide uppercase">Inspektorat Trenggalek</span>
                     </div>
                 </a>
@@ -142,7 +142,7 @@
     </main>
 
     <footer class="border-t border-slate-800 bg-slate-950 py-8 text-center text-xs text-slate-400">
-        <p>&copy; {{ date('Y') }} Inspektorat Kabupaten Trenggalek &bull; Sistem Informasi Pengawasan Terintegrasi (SIPANDA)</p>
+        <p>&copy; {{ date('Y') }} Inspektorat Kabupaten Trenggalek &bull; Sistem Informasi PeNGAWAsan TerintegraSI (SINGAWASI)</p>
     </footer>
 
     <!-- Global UAT Feedback & Bug Report Widget -->

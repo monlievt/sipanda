@@ -125,7 +125,7 @@ class UserSeeder extends Seeder
         $adminUser = User::firstOrCreate(
             ['email' => 'admin@inspektorat.trenggalek.go.id'],
             [
-                'nama'            => 'Administrator SIPANDA',
+                'nama'            => 'Administrator SINGAWASI',
                 'nama_tanpa_gelar'=> 'Administrator',
                 'password'        => Hash::make('Admin@sipanda2025!'),
                 'is_active'       => true,

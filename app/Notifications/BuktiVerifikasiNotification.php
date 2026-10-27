@@ -33,19 +33,19 @@ class BuktiVerifikasiNotification extends Notification
 
         [$subjek, $headline, $keterangan, $warna] = match($this->statusVerifikasi) {
             'diterima' => [
-                "[SIPANDA] ✅ Bukti Tindak Lanjut DITERIMA — SPT {$noSpt}",
+                "[SINGAWASI] ✅ Bukti Tindak Lanjut DITERIMA — SPT {$noSpt}",
                 '✅ Bukti Tindak Lanjut Anda DITERIMA',
                 'Selamat! Bukti yang Anda unggah telah diverifikasi dan diterima oleh Inspektorat. Rekomendasi ini kini berstatus **SESUAI**.',
                 'success',
             ],
             'tdt' => [
-                "[SIPANDA] ℹ️ Rekomendasi Ditetapkan TDT — SPT {$noSpt}",
+                "[SINGAWASI] ℹ️ Rekomendasi Ditetapkan TDT — SPT {$noSpt}",
                 'ℹ️ Rekomendasi Ditetapkan Tidak Dapat Ditindaklanjuti (TDT)',
                 'Rekomendasi ini telah ditetapkan dengan status **Tidak Dapat Ditindaklanjuti (TDT)** oleh Inspektorat.',
                 'info',
             ],
             default => [  // 'ditolak'
-                "[SIPANDA] ⚠️ Bukti Tindak Lanjut Memerlukan Revisi — SPT {$noSpt}",
+                "[SINGAWASI] ⚠️ Bukti Tindak Lanjut Memerlukan Revisi — SPT {$noSpt}",
                 '⚠️ Bukti Tindak Lanjut Memerlukan Revisi',
                 'Bukti yang Anda unggah belum memenuhi persyaratan. Silakan perbaiki dan unggah ulang sesuai catatan dari Inspektorat.',
                 'warning',
@@ -67,7 +67,7 @@ class BuktiVerifikasiNotification extends Notification
             ->line('')
             ->action('Lihat Detail Rekomendasi', route('opd.tindak-lanjut.show', $this->bukti->tindak_lanjut_id))
             ->line($keterangan)
-            ->salutation('Hormat kami, SIPANDA — Inspektorat Kabupaten Trenggalek');
+            ->salutation('Hormat kami, SINGAWASI — Inspektorat Kabupaten Trenggalek');
     }
 
     public function toWhatsApp(object $notifiable): string
@@ -82,7 +82,7 @@ class BuktiVerifikasiNotification extends Notification
             default    => '⚠️ PERLU REVISI / PERBAIKAN',
         };
 
-        $msg = "📑 *HASIL VERIFIKASI BUKTI TLHP — SIPANDA*\n\n" .
+        $msg = "📑 *HASIL VERIFIKASI BUKTI TLHP — SINGAWASI*\n\n" .
                "Yth. Bpk/Ibu *{$namaSapaan}*,\n" .
                "Bukti tindak lanjut yang Anda unggah telah diverifikasi oleh Tim Auditor Inspektorat:\n\n" .
                "📄 *No. Dokumen:* {$noLhp}\n" .

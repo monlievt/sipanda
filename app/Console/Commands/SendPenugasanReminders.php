@@ -18,7 +18,7 @@ class SendPenugasanReminders extends Command
 
     public function handle(): int
     {
-        $this->info('Memulai pengecekan reminder penugasan SIPANDA...');
+        $this->info('Memulai pengecekan reminder penugasan SINGAWASI...');
 
         $in3Days = now()->addDays(3)->toDateString();
         $in1Day  = now()->addDays(1)->toDateString();
@@ -49,7 +49,7 @@ class SendPenugasanReminders extends Command
                     $countH3++;
                 } catch (\Throwable $e) {
                     $countError++;
-                    Log::warning("[SIPANDA Reminder] Gagal kirim email H-3 ke {$user->email}: " . $e->getMessage());
+                    Log::warning("[SINGAWASI Reminder] Gagal kirim email H-3 ke {$user->email}: " . $e->getMessage());
                 }
             }
         }
@@ -76,7 +76,7 @@ class SendPenugasanReminders extends Command
                     $countH1++;
                 } catch (\Throwable $e) {
                     $countError++;
-                    Log::warning("[SIPANDA Reminder] Gagal kirim email H-1 ke {$user->email}: " . $e->getMessage());
+                    Log::warning("[SINGAWASI Reminder] Gagal kirim email H-1 ke {$user->email}: " . $e->getMessage());
                 }
             }
         }
@@ -121,7 +121,7 @@ class SendPenugasanReminders extends Command
                     $countOpd++;
                 } catch (\Throwable $e) {
                     $countError++;
-                    Log::warning("[SIPANDA Reminder] Gagal kirim email mandek ke {$u->email}: " . $e->getMessage());
+                    Log::warning("[SINGAWASI Reminder] Gagal kirim email mandek ke {$u->email}: " . $e->getMessage());
                 }
             }
         }
@@ -154,7 +154,7 @@ class SendPenugasanReminders extends Command
                         $opdUser->notify(new \App\Notifications\JatuhTempoTlhpNotification($tl, $sisaHari));
                         $countJatuhTempo++;
                     } catch (\Throwable $e) {
-                        Log::warning("[SIPANDA Reminder] Gagal kirim reminder jatuh tempo ke OPD {$opdUser->email}: " . $e->getMessage());
+                        Log::warning("[SINGAWASI Reminder] Gagal kirim reminder jatuh tempo ke OPD {$opdUser->email}: " . $e->getMessage());
                     }
                 }
             }

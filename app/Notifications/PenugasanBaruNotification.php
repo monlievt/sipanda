@@ -31,7 +31,7 @@ class PenugasanBaruNotification extends Notification
         $objekNames = $this->penugasan->objekPenugasan->pluck('nama')->implode(', ') ?: '-';
 
         return (new MailMessage)
-            ->subject("[SIPANDA] Penerbitan SPT Baru: {$this->penugasan->no_spt}")
+            ->subject("[SINGAWASI] Penerbitan SPT Baru: {$this->penugasan->no_spt}")
             ->greeting("Yth. Bapak/Ibu {$namaSapaan},")
             ->line("Anda telah ditugaskan sebagai **{$this->peranTim}** dalam Surat Perintah Tugas (SPT) berikut:")
             ->line('')
@@ -42,7 +42,7 @@ class PenugasanBaruNotification extends Notification
             ->line('')
             ->action('Buka SPT & Lembar Kerja', route('penugasan.show', $this->penugasan->id))
             ->line('Harap mempelajari fokus pengawasan dan berkoordinasi dengan tim.')
-            ->salutation('Hormat kami, SIPANDA — Inspektorat Kabupaten Trenggalek');
+            ->salutation('Hormat kami, SINGAWASI — Inspektorat Kabupaten Trenggalek');
     }
 
     public function toWhatsApp(object $notifiable): string
@@ -53,7 +53,7 @@ class PenugasanBaruNotification extends Notification
         $objekNames = $this->penugasan->objekPenugasan->pluck('nama')->implode(', ') ?: '-';
         $url        = route('penugasan.show', $this->penugasan->id);
 
-        return "📋 *PENERBITAN PENUGASAN (SPT) BARU — SIPANDA*\n\n" .
+        return "📋 *PENERBITAN PENUGASAN (SPT) BARU — SINGAWASI*\n\n" .
                "Halo Bpk/Ibu *{$namaSapaan}*,\n" .
                "Anda telah ditugaskan sebagai *{$this->peranTim}* pada penugasan berikut:\n\n" .
                "📄 *No. SPT:* {$this->penugasan->no_spt}\n" .
@@ -62,6 +62,6 @@ class PenugasanBaruNotification extends Notification
                "📅 *Jadwal:* {$tglMulai} s.d. {$tglSelesai}\n\n" .
                "Silakan buka tautan berikut untuk melihat lembar kerja dan detail tim:\n" .
                "🔗 {$url}\n\n" .
-               "_SIPANDA — Inspektorat Kabupaten Trenggalek_";
+               "_SINGAWASI — Inspektorat Kabupaten Trenggalek_";
     }
 }

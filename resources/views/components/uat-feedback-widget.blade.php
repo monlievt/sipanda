@@ -58,7 +58,7 @@
                     🤖
                 </div>
                 <div style="background-color: #1e293b !important;" class="p-3 rounded-2xl rounded-tl-sm border border-slate-700 text-[11px] text-slate-200 leading-relaxed shadow-sm">
-                    Halo! Tim pengembang siap menampung laporan kendala, pertanyaan alur, atau ide saran perbaikan Anda saat mencoba SIPANDA.
+                    Halo! Tim pengembang siap menampung laporan kendala, pertanyaan alur, atau ide saran perbaikan Anda saat mencoba SINGAWASI.
                 </div>
             </div>
 

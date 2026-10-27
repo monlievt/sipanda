@@ -31,7 +31,7 @@ class BuktiBaruDiunggahNotification extends Notification
         $rekomendasi = Str::limit($this->bukti->tindakLanjut?->rekomendasi, 120);
 
         return (new MailMessage)
-            ->subject("[SIPANDA] Bukti Tindak Lanjut Baru dari {$this->namaOpd}")
+            ->subject("[SINGAWASI] Bukti Tindak Lanjut Baru dari {$this->namaOpd}")
             ->greeting("Yth. Bapak/Ibu {$namaSapaan},")
             ->line("PIC dari **{$this->namaOpd}** baru saja mengunggah bukti tindak lanjut baru untuk diverifikasi:")
             ->line('')
@@ -41,7 +41,7 @@ class BuktiBaruDiunggahNotification extends Notification
             ->line('')
             ->action('Verifikasi Bukti Sekarang', route('tindak-lanjut.show', $this->bukti->tindak_lanjut_id))
             ->line('Silakan periksa dokumen lampiran dan berikan status verifikasi (Diterima/Ditolak/TDT).')
-            ->salutation('Hormat kami, SIPANDA — Inspektorat Kabupaten Trenggalek');
+            ->salutation('Hormat kami, SINGAWASI — Inspektorat Kabupaten Trenggalek');
     }
 
     public function toWhatsApp(object $notifiable): string
@@ -51,13 +51,13 @@ class BuktiBaruDiunggahNotification extends Notification
         $rekomendasi = Str::limit($this->bukti->tindakLanjut?->rekomendasi, 120);
         $url         = route('tindak-lanjut.show', $this->bukti->tindak_lanjut_id);
 
-        return "📥 *BUKTI TINDAK LANJUT BARU MASUK — SIPANDA*\n\n" .
+        return "📥 *BUKTI TINDAK LANJUT BARU MASUK — SINGAWASI*\n\n" .
                "Halo Bpk/Ibu *{$namaSapaan}*,\n" .
                "PIC dari *{$this->namaOpd}* baru saja mengunggah bukti perbaikan tindak lanjut:\n\n" .
                "📄 *No. Dokumen:* {$noLhp}\n" .
                "🎯 *Rekomendasi:* {$rekomendasi}\n\n" .
-               "Silakan buka SIPANDA untuk meneliti berkas dan memverifikasi:\n" .
+               "Silakan buka SINGAWASI untuk meneliti berkas dan memverifikasi:\n" .
                "🔗 {$url}\n\n" .
-               "_SIPANDA — Inspektorat Kabupaten Trenggalek_";
+               "_SINGAWASI — Inspektorat Kabupaten Trenggalek_";
     }
 }

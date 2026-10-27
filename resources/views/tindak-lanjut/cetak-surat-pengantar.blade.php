@@ -154,11 +154,11 @@
             </div>
 
             <p class="indent-8">
-                Berdasarkan hasil verifikasi dan telaah bukti pendukung yang telah disampaikan melalui Sistem Informasi Pengawasan Daerah (SIPANDA), kami mengapresiasi rekomendasi yang telah selesai ditindaklanjuti sesuai ketentuan yang berlaku.
+                Berdasarkan hasil verifikasi dan telaah bukti pendukung yang telah disampaikan melalui Sistem Informasi PeNGAWAsan TerintegraSI (SINGAWASI), kami mengapresiasi rekomendasi yang telah selesai ditindaklanjuti sesuai ketentuan yang berlaku.
             </p>
 
             <p class="indent-8">
-                Adapun terhadap rekomendasi yang statusnya masih dinyatakan <em>Belum Sesuai (Dalam Proses)</em> atau <em>Belum Ditindaklanjuti</em> sebagaimana tercantum dalam lampiran matriks, diminta kepada Saudara untuk segera menyelesaikan dan mengunggah bukti perbaikan/penyetoran kas daerah melalui aplikasi SIPANDA sebelum batas waktu yang telah ditentukan.
+                Adapun terhadap rekomendasi yang statusnya masih dinyatakan <em>Belum Sesuai (Dalam Proses)</em> atau <em>Belum Ditindaklanjuti</em> sebagaimana tercantum dalam lampiran matriks, diminta kepada Saudara untuk segera menyelesaikan dan mengunggah bukti perbaikan/penyetoran kas daerah melalui aplikasi SINGAWASI sebelum batas waktu yang telah ditentukan.
             </p>
 
         <div class="closing-signature-group">

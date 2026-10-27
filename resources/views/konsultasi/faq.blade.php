@@ -20,11 +20,11 @@
                 <!-- Logo Brand -->
                 <a href="{{ route('welcome') }}" class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center font-black text-white text-xl shadow-md shadow-emerald-500/20">
-                        SP
+                        SW
                     </div>
                     <div>
                         <span class="font-black text-lg text-white tracking-tight block leading-tight hover:text-emerald-400 transition-colors">
-                            SIPANDA <span class="text-emerald-400 font-bold">WEB</span>
+                            SINGAWASI <span class="text-emerald-400 font-bold">WEB</span>
                         </span>
                         <span class="text-[10px] text-slate-400 font-semibold block uppercase tracking-wide">Inspektorat Trenggalek</span>
                     </div>
@@ -413,7 +413,7 @@
             </div>
 
             <div class="text-center sm:text-right">
-                <span>&copy; {{ date('Y') }} SIPANDA Web. Hak Cipta Dilindungi.</span>
+                <span>&copy; {{ date('Y') }} SINGAWASI Web. Hak Cipta Dilindungi.</span>
             </div>
         </div>
     </footer>

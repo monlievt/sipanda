@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Portal OPD — SIPANDA Inspektorat Trenggalek</title>
+    <title>Portal OPD — SINGAWASI Inspektorat Trenggalek</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 min-h-screen flex items-center justify-center p-4">
@@ -69,7 +69,7 @@
         <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
             <p class="text-xs text-slate-500">Bukan pengguna OPD? / Staf Inspektorat?</p>
             <a href="{{ route('login') }}" class="inline-block mt-1 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-600 underline">
-                &larr; Masuk ke Aplikasi Internal SIPANDA
+                &larr; Masuk ke Aplikasi Internal SINGAWASI
             </a>
         </div>
     </div>

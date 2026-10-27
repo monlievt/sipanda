@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
 
         $this->command->info('');
         $this->command->info('═══════════════════════════════════════════');
-        $this->command->info('  SIPANDA — Database Seeder Selesai ✓');
+        $this->command->info('  SINGAWASI — Database Seeder Selesai ✓');
         $this->command->info('═══════════════════════════════════════════');
     }
 }

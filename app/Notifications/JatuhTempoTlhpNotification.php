@@ -33,7 +33,7 @@ class JatuhTempoTlhpNotification extends Notification
         $rekomendasi = Str::limit($this->tindakLanjut->rekomendasi, 120);
 
         return (new MailMessage)
-            ->subject("[SIPANDA] Peringatan Batas Waktu Tindak Lanjut: {$label} — {$noLhp}")
+            ->subject("[SINGAWASI] Peringatan Batas Waktu Tindak Lanjut: {$label} — {$noLhp}")
             ->greeting("Yth. Bapak/Ibu {$namaSapaan},")
             ->line("Mengingatkan batas waktu penyelesaian tindak lanjut hasil pengawasan (**{$label}**):")
             ->line('')
@@ -43,7 +43,7 @@ class JatuhTempoTlhpNotification extends Notification
             ->line('')
             ->action('Unggah / Cek Bukti Tindak Lanjut', route('opd.tindak-lanjut.show', $this->tindakLanjut->id))
             ->line('Mohon segera menyelesaikan dan mengunggah dokumen pertanggungjawaban sebelum batas waktu berakhir.')
-            ->salutation('Hormat kami, SIPANDA — Inspektorat Kabupaten Trenggalek');
+            ->salutation('Hormat kami, SINGAWASI — Inspektorat Kabupaten Trenggalek');
     }
 
     public function toWhatsApp(object $notifiable): string
@@ -55,7 +55,7 @@ class JatuhTempoTlhpNotification extends Notification
         $rekomendasi = Str::limit($this->tindakLanjut->rekomendasi, 140);
         $url        = route('opd.tindak-lanjut.show', $this->tindakLanjut->id);
 
-        return "⚠️ *PERINGATAN BATAS WAKTU TINDAK LANJUT — SIPANDA*\n\n" .
+        return "⚠️ *PERINGATAN BATAS WAKTU TINDAK LANJUT — SINGAWASI*\n\n" .
                "Yth. Bpk/Ibu *{$namaSapaan}*,\n" .
                "Batas waktu penyelesaian rekomendasi tindak lanjut LHP (*{$label}*):\n\n" .
                "📄 *No. Dokumen:* {$noLhp}\n" .
@@ -63,6 +63,6 @@ class JatuhTempoTlhpNotification extends Notification
                "🎯 *Rekomendasi:* {$rekomendasi}\n\n" .
                "Mohon segera unggah dokumen bukti perbaikan:\n" .
                "🔗 {$url}\n\n" .
-               "_SIPANDA — Inspektorat Kabupaten Trenggalek_";
+               "_SINGAWASI — Inspektorat Kabupaten Trenggalek_";
     }
 }

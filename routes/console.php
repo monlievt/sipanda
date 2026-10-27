@@ -23,7 +23,7 @@ Schedule::command('sipanda:send-reminders')
     ->name('sipanda-send-reminders')
     ->withoutOverlapping()
     ->onFailure(function () {
-        \Illuminate\Support\Facades\Log::error('[SIPANDA Scheduler] Command sipanda:send-reminders GAGAL dijalankan.');
+        \Illuminate\Support\Facades\Log::error('[SINGAWASI Scheduler] Command sipanda:send-reminders GAGAL dijalankan.');
     });
 
 /**
@@ -38,7 +38,7 @@ Schedule::call(function () {
         ->update(['status' => 'berjalan']);
 
     if ($jumlah > 0) {
-        \Illuminate\Support\Facades\Log::info("[SIPANDA Scheduler] Auto-sync status: {$jumlah} penugasan diubah menjadi 'berjalan'.");
+        \Illuminate\Support\Facades\Log::info("[SINGAWASI Scheduler] Auto-sync status: {$jumlah} penugasan diubah menjadi 'berjalan'.");
     }
 })
 ->dailyAt('00:05')

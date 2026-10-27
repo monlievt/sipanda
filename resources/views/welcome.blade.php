@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SIPANDA - Sistem Informasi Pengawasan Terintegrasi | Inspektorat Kabupaten Trenggalek</title>
+    <title>SINGAWASI - Sistem Informasi PeNGAWAsan TerintegraSI | Inspektorat Kabupaten Trenggalek</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex flex-col min-h-screen">
@@ -19,7 +19,7 @@
                     </div>
                     <div>
                         <a href="{{ route('welcome') }}" class="font-black text-lg text-white tracking-tight block leading-tight hover:text-emerald-400 transition-colors">
-                            SIPANDA <span class="text-emerald-400 font-bold">WEB</span>
+                            SINGAWASI <span class="text-emerald-400 font-bold">WEB</span>
                         </a>
                         <span class="text-[11px] text-slate-400 font-semibold block">Inspektorat Daerah Kabupaten Trenggalek</span>
                     </div>
@@ -61,7 +61,7 @@
             </div>
 
             <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight max-w-4xl mx-auto leading-tight">
-                Sistem Informasi Pengawasan Terintegrasi (<span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-400">SIPANDA</span>)
+                Sistem Informasi PeNGAWAsan TerintegraSI (<span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-400">SINGAWASI</span>)
             </h1>
 
             <p class="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
@@ -123,7 +123,7 @@
         </div>
     </section>
 
-    <!-- SECTION 3: MODUL & FITUR UTAMA SIPANDA -->
+    <!-- SECTION 3: MODUL & FITUR UTAMA SINGAWASI -->
     <section class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div class="text-center space-y-2">
             <h2 class="text-2xl font-black text-white tracking-tight">Cakupan Layanan Pengawasan & Consulting APIP</h2>
@@ -213,7 +213,7 @@
             </div>
 
             <div class="text-center sm:text-right">
-                <span>&copy; {{ date('Y') }} SIPANDA Web. Hak Cipta Dilindungi Undang-Undang.</span>
+                <span>&copy; {{ date('Y') }} SINGAWASI Web. Hak Cipta Dilindungi Undang-Undang.</span>
             </div>
         </div>
     </footer>

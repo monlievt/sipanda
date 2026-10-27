@@ -69,7 +69,7 @@
                 </div>
 
                 <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Jumlah Sumber Daya Manusia (SDM) yang ada di Inspektorat Kabupaten Trenggalek berdasarkan data pengguna internal aplikasi SIPANDA yang aktif dan menduduki jabatan definitif:
+                    Jumlah Sumber Daya Manusia (SDM) yang ada di Inspektorat Kabupaten Trenggalek berdasarkan data pengguna internal aplikasi SINGAWASI yang aktif dan menduduki jabatan definitif:
                 </p>
 
                 <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">

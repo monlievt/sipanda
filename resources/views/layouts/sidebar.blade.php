@@ -30,7 +30,7 @@
                 </svg>
             </div>
             <div>
-                <h1 class="font-bold text-white text-base leading-tight tracking-wide">SIPANDA</h1>
+                <h1 class="font-bold text-white text-base leading-tight tracking-wide">SINGAWASI</h1>
                 <p class="text-[10px] text-emerald-400 font-bold tracking-wider uppercase">Inspektorat Trenggalek</p>
             </div>
         </a>

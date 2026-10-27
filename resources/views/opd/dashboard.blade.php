@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard Tindak Lanjut LHP — Portal OPD SIPANDA</title>
+    <title>Dashboard Tindak Lanjut LHP — Portal OPD SINGAWASI</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased font-sans min-h-screen flex flex-col">
@@ -13,7 +13,7 @@
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center gap-6">
                     <a href="{{ route('opd.dashboard') }}" class="font-extrabold text-lg tracking-tight hover:text-teal-200">
-                        SIPANDA <span class="text-xs font-normal opacity-80">| Portal OPD</span>
+                        SINGAWASI <span class="text-xs font-normal opacity-80">| Portal OPD</span>
                     </a>
                     <a href="{{ route('opd.konsultasi.index') }}" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-teal-800/80 hover:bg-teal-600 text-white flex items-center gap-1.5 transition-all shadow-xs">
                         💬 E-Consulting (QnA APIP)

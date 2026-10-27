@@ -31,7 +31,7 @@ class PkpptStatusNotification extends Notification
         $statusText = strtoupper($this->aksi);
 
         return (new MailMessage)
-            ->subject("[SIPANDA] Pembaruan Status PKPT {$this->pkppt->tahun}: {$statusText}")
+            ->subject("[SINGAWASI] Pembaruan Status PKPT {$this->pkppt->tahun}: {$statusText}")
             ->greeting("Yth. Bapak/Ibu {$namaSapaan},")
             ->line("Draf Perencanaan PKPT Tahun **{$this->pkppt->tahun}** (Versi {$this->pkppt->versi_revisi}) telah diperbarui statusnya menjadi **{$statusText}** oleh {$this->pelakuNama}.")
             ->line('')
@@ -39,7 +39,7 @@ class PkpptStatusNotification extends Notification
             ->line("**Jenis Pengawasan :** {$this->pkppt->jenis_pengawasan}")
             ->line('')
             ->action('Lihat Draf PKPT', route('pkppt.index', ['tahun' => $this->pkppt->tahun]))
-            ->salutation('Hormat kami, SIPANDA — Inspektorat Kabupaten Trenggalek');
+            ->salutation('Hormat kami, SINGAWASI — Inspektorat Kabupaten Trenggalek');
     }
 
     public function toWhatsApp(object $notifiable): string
@@ -53,7 +53,7 @@ class PkpptStatusNotification extends Notification
         };
         $url = route('pkppt.index', ['tahun' => $this->pkppt->tahun]);
 
-        return "🏛️ *STATUS PERENCANAAN PKPT — SIPANDA*\n\n" .
+        return "🏛️ *STATUS PERENCANAAN PKPT — SINGAWASI*\n\n" .
                "Halo Bpk/Ibu *{$namaSapaan}*,\n" .
                "Draf PKPT Tahun *{$this->pkppt->tahun}* (v{$this->pkppt->versi_revisi}):\n\n" .
                "📌 *Area:* {$this->pkppt->area_pengawasan}\n" .

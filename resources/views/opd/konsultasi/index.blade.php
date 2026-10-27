@@ -13,7 +13,7 @@
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center gap-6">
                     <a href="{{ route('opd.dashboard') }}" class="font-extrabold text-lg tracking-tight hover:text-teal-200">
-                        SIPANDA <span class="text-xs font-normal opacity-80">| Portal OPD</span>
+                        SINGAWASI <span class="text-xs font-normal opacity-80">| Portal OPD</span>
                     </a>
                     <a href="{{ route('opd.konsultasi.index') }}" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-teal-800 text-white flex items-center gap-1.5 transition-all shadow-xs border border-teal-500">
                         💬 E-Consulting (QnA APIP)

@@ -186,7 +186,7 @@ class IlhpAndRollingTest extends TestCase
     public function test_ilhp_new_sections_compilation_and_gemini_settings()
     {
         $admin = User::factory()->create([
-            'nama'      => 'Admin Sipanda',
+            'nama'      => 'Admin Singawasi',
             'tipe_akun' => 'internal',
             'is_active' => true,
         ]);

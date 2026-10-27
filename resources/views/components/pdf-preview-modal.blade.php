@@ -106,7 +106,7 @@
             <!-- Modal Footer Note -->
             <div class="px-4 py-2 bg-slate-900 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between shrink-0">
                 <span>💡 Tips: Tekan <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-200 rounded font-mono text-[10px]">ESC</kbd> untuk menutup pratinjau.</span>
-                <span class="text-slate-500">SIPANDA Dokumen Viewer</span>
+                <span class="text-slate-500">SINGAWASI Dokumen Viewer</span>
             </div>
         </div>
     </div>
