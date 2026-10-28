@@ -18,6 +18,14 @@
                 </svg>
                 <span>Tambah Kelompok Baru</span>
             </button>
+            @else
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Mode Pratinjau (Read-Only)
+            </span>
             @endcan
         </div>
     </div>
@@ -75,7 +83,9 @@
                         <th class="py-3.5 px-4">Deskripsi Singkat & Bentuk Pengawasan</th>
                         <th class="py-3.5 px-4 text-center w-28">Penggunaan</th>
                         <th class="py-3.5 px-4 text-center w-24">Status</th>
+                        @canany(['master.edit', 'master.delete'])
                         <th class="py-3.5 px-4 text-center w-28">Aksi</th>
+                        @endcanany
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
@@ -124,6 +134,7 @@
                                     <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">Nonaktif</span>
                                 @endif
                             </td>
+                            @canany(['master.edit', 'master.delete'])
                             <td class="py-3.5 px-4 text-center whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-1.5">
                                     @can('master.edit')
@@ -150,10 +161,11 @@
                                     @endcan
                                 </div>
                             </td>
+                            @endcanany
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-8 text-center text-slate-400 dark:text-slate-500">
+                            <td colspan="{{ auth()->user()->canany(['master.edit', 'master.delete']) ? 6 : 5 }}" class="py-8 text-center text-slate-400 dark:text-slate-500">
                                 Tidak ada data kelompok pengawasan ditemukan.
                             </td>
                         </tr>
@@ -170,6 +182,7 @@
     </div>
 
     <!-- Modal Tambah Kelompok -->
+    @can('master.create')
     <div id="modalTambahKelompok" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 text-xs">
             <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
@@ -217,8 +230,10 @@
             </form>
         </div>
     </div>
+    @endcan
 
     <!-- Modal Edit Kelompok -->
+    @can('master.edit')
     <div id="modalEditKelompok" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 text-xs">
             <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
@@ -281,4 +296,5 @@
             document.getElementById('modalEditKelompok').classList.remove('hidden');
         }
     </script>
+    @endcan
 </x-app-layout>

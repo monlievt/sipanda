@@ -171,7 +171,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/master/irbans/{irban}', [MasterDataController::class, 'destroyIrban'])->middleware('can:master.delete')->name('master.irbans.destroy');
     
     // Master Kelompok / Kluster Pengawasan (ILHP & PKPPT)
-    Route::get('/master/kelompok-pengawasan', [MasterDataController::class, 'kelompokPengawasan'])->middleware('can:master.view')->name('master.kelompok-pengawasan.index');
+    Route::get('/master/kelompok-pengawasan', [MasterDataController::class, 'kelompokPengawasan'])->name('master.kelompok-pengawasan.index');
     Route::post('/master/kelompok-pengawasan', [MasterDataController::class, 'storeKelompokPengawasan'])->middleware('can:master.create')->name('master.kelompok-pengawasan.store');
     Route::put('/master/kelompok-pengawasan/{kelompok}', [MasterDataController::class, 'updateKelompokPengawasan'])->middleware('can:master.edit')->name('master.kelompok-pengawasan.update');
     Route::delete('/master/kelompok-pengawasan/{kelompok}', [MasterDataController::class, 'destroyKelompokPengawasan'])->middleware('can:master.delete')->name('master.kelompok-pengawasan.destroy');
