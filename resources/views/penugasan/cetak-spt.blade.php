@@ -168,24 +168,28 @@
                                 $inspekturPangkat = $inspektur?->pangkat ?? ($inspektur?->golongan ? 'Pembina Utama Muda (' . $inspektur->golongan . ')' : 'Pembina Utama Muda (IV/c)');
 
                                 $timList = [];
-                                $hasPj = $sortedTim->contains(fn($m) => $m->peran === 'penanggung_jawab');
-                                if (!$hasPj) {
-                                    $timList[] = [
-                                        'nama'  => $inspekturNama,
-                                        'nip'   => $inspekturNip,
-                                        'peran' => 'Penanggung Jawab',
-                                    ];
-                                }
 
-                                $hasWpj = $sortedTim->contains(fn($m) => $m->peran === 'wakil_penanggung_jawab');
-                                if (!$hasWpj && $penugasan->irban) {
-                                    $irbanUser = $penugasan->irban->users()->whereHas('roles', fn($q) => $q->where('name', 'irban'))->first();
-                                    if ($irbanUser) {
+                                // Pada ST Bantuan, susunan tim HANYA berisi Anggota Tim (tanpa Penanggung Jawab dan Wakil PJ)
+                                if (! $penugasan->isBantuan()) {
+                                    $hasPj = $sortedTim->contains(fn($m) => $m->peran === 'penanggung_jawab');
+                                    if (!$hasPj) {
                                         $timList[] = [
-                                            'nama'  => $irbanUser->nama,
-                                            'nip'   => $irbanUser->nip,
-                                            'peran' => 'Wakil Penanggungjawab',
+                                            'nama'  => $inspekturNama,
+                                            'nip'   => $inspekturNip,
+                                            'peran' => 'Penanggung Jawab',
                                         ];
+                                    }
+
+                                    $hasWpj = $sortedTim->contains(fn($m) => $m->peran === 'wakil_penanggung_jawab');
+                                    if (!$hasWpj && $penugasan->irban) {
+                                        $irbanUser = $penugasan->irban->users()->whereHas('roles', fn($q) => $q->where('name', 'irban'))->first();
+                                        if ($irbanUser) {
+                                            $timList[] = [
+                                                'nama'  => $irbanUser->nama,
+                                                'nip'   => $irbanUser->nip,
+                                                'peran' => 'Wakil Penanggungjawab',
+                                            ];
+                                        }
                                     }
                                 }
 
@@ -265,7 +269,7 @@
             <div class="mt-6 text-sm signature-block">
                 <div class="flex justify-end">
                     <div class="w-72 text-left space-y-1">
-                        <p>Trenggalek, {{ $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->translatedFormat('d F Y') : date('d F Y') }}</p>
+                        <p>Trenggalek, {{ ($penugasan->tanggal_st ?? $penugasan->tanggal_mulai ?? now())->translatedFormat('d F Y') }}</p>
                         
                         @php
                             $prefixInspektur = match(strtolower($inspektur?->status_jabatan ?? 'plt')) {

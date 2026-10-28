@@ -21,7 +21,7 @@
 
     <div class="max-w-4xl mx-auto"
         x-data="{
-            isPerpanjangan: '{{ old('is_perpanjangan', $penugasan->penugasan_induk_id ? '1' : '0') }}',
+            jenisSt: '{{ old('jenis_st', $penugasan->jenis_st ?? ($penugasan->penugasan_induk_id ? 'perpanjangan' : 'reguler')) }}',
             isPkppt: '{{ old('is_sesuai_pkppt', $penugasan->is_sesuai_pkppt ? '1' : '0') }}',
             selectedParentId: '{{ old('penugasan_induk_id', $penugasan->penugasan_induk_id) }}',
             parentOptions: {{ Js::from($parentStOptions) }},
@@ -34,25 +34,37 @@
             @csrf
             @method('PUT')
 
-            <!-- Banner Mode ST Perpanjangan vs ST Standar -->
+            <!-- Banner Mode ST Reguler vs ST Perpanjangan vs ST Bantuan -->
             <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-800">
                 <label class="block font-bold text-slate-900 dark:text-white text-sm mb-2">Status Klasifikasi Penugasan</label>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all"
-                        :class="isPerpanjangan == '0' ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 shadow-xs font-bold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'">
-                        <input type="radio" name="is_perpanjangan" value="0" x-model="isPerpanjangan" class="text-emerald-600 focus:ring-emerald-500">
+                <input type="hidden" name="jenis_st" :value="jenisSt">
+                <input type="hidden" name="is_perpanjangan" :value="jenisSt === 'perpanjangan' ? '1' : '0'">
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <label class="flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all"
+                        :class="jenisSt === 'reguler' ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 shadow-xs font-bold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'">
+                        <input type="radio" name="jenis_st_radio" value="reguler" x-model="jenisSt" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
                         <div>
                             <p class="text-xs font-bold">📄 Surat Tugas Standar (Reguler)</p>
                             <p class="text-[11px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">Penugasan mandiri dengan susunan objek dan tim kustom.</p>
                         </div>
                     </label>
 
-                    <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all"
-                        :class="isPerpanjangan == '1' ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 text-blue-950 dark:text-blue-200 shadow-xs font-bold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'">
-                        <input type="radio" name="is_perpanjangan" value="1" x-model="isPerpanjangan" class="text-blue-600 focus:ring-blue-500">
+                    <label class="flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all"
+                        :class="jenisSt === 'perpanjangan' ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 text-blue-950 dark:text-blue-200 shadow-xs font-bold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'">
+                        <input type="radio" name="jenis_st_radio" value="perpanjangan" x-model="jenisSt" class="mt-0.5 text-blue-600 focus:ring-blue-500">
                         <div>
                             <p class="text-xs font-bold">🔄 Surat Tugas Perpanjangan</p>
                             <p class="text-[11px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">Mewarisi data Objek, Tim, PKPPT & Irban otomatis dari ST Induk.</p>
+                        </div>
+                    </label>
+
+                    <label class="flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all"
+                        :class="jenisSt === 'bantuan' ? 'border-cyan-500 bg-cyan-50/60 dark:bg-cyan-950/40 text-cyan-950 dark:text-cyan-200 shadow-xs font-bold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'">
+                        <input type="radio" name="jenis_st_radio" value="bantuan" x-model="jenisSt" class="mt-0.5 text-cyan-600 focus:ring-cyan-500">
+                        <div>
+                            <p class="text-xs font-bold">🤝 Surat Tugas Bantuan</p>
+                            <p class="text-[11px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">Menginduk ke ST Utama. Hanya berisi personil Anggota Tim.</p>
                         </div>
                     </label>
                 </div>
@@ -74,11 +86,14 @@
                     </div>
                 @endif
 
-                <!-- Pilihan ST Induk (Hanya jika ST Perpanjangan) -->
-                <div x-show="isPerpanjangan == '1'" x-transition class="p-4 bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-2xl space-y-3">
-                    <label class="block font-bold text-blue-900 dark:text-blue-300 text-xs">Pilih Surat Tugas Induk (ST yang Diperpanjang) <span class="text-rose-500">*</span></label>
+                <!-- Pilihan ST Induk (Jika ST Perpanjangan atau ST Bantuan) -->
+                <div x-show="jenisSt === 'perpanjangan' || jenisSt === 'bantuan'" x-transition class="p-4 bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-2xl space-y-3">
+                    <label class="block font-bold text-blue-900 dark:text-blue-300 text-xs">
+                        <span x-text="jenisSt === 'bantuan' ? 'Pilih Surat Tugas Utama (ST Induk yang Dibantu)' : 'Pilih Surat Tugas Induk (ST yang Diperpanjang)'"></span>
+                        <span class="text-rose-500">*</span>
+                    </label>
                     <select name="penugasan_induk_id" x-model="selectedParentId" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold focus:ring-blue-500">
-                        <option value="">-- Pilih ST Induk --</option>
+                        <option value="">-- Pilih ST Induk / Utama --</option>
                         @foreach($parentStList as $parentSt)
                             <option value="{{ $parentSt->id }}" {{ old('penugasan_induk_id', $penugasan->penugasan_induk_id) == $parentSt->id ? 'selected' : '' }}>
                                 {{ $parentSt->no_spt }} — {{ Str::limit($parentSt->uraian_penugasan, 60) }}
@@ -90,39 +105,45 @@
                     <template x-if="selectedParent">
                         <div class="p-3.5 bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl space-y-2.5">
                             <div class="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5 text-xs">
-                                <span>✨ Data yang Otomatis Diwarisi dari ST Induk:</span>
+                                <span>✨ Data yang Otomatis Terhubung dari ST Induk:</span>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-700 dark:text-slate-300">
                                 <div><strong>🏢 Objek Sasaran:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.objek"></span></div>
                                 <div><strong>🏛️ Irban:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.irban"></span></div>
                                 <div><strong>📑 Jenis Pengawasan:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.jenis"></span></div>
                                 <div><strong>📌 Sumber:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.sumber"></span></div>
-                                <div class="sm:col-span-2"><strong>👥 Susunan Tim:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.tim"></span></div>
+                                <div class="sm:col-span-2" x-show="jenisSt === 'perpanjangan'"><strong>👥 Susunan Tim Induk:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.tim"></span></div>
                             </div>
-                            <p class="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">💡 Data Objek dan Tim otomatis disinkronkan dari ST Induk.</p>
+                            <p class="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">💡 Data Objek dan Pengawasan otomatis disinkronkan dari ST Induk.</p>
                         </div>
                     </template>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2">
                         <label class="block font-semibold mb-1">Nomor SPT <span class="text-rose-500">*</span></label>
                         <input type="text" name="no_spt" value="{{ old('no_spt', $penugasan->no_spt) }}" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
                     </div>
 
-                    <!-- Multi-Irban Penanggung Jawab (Hanya jika BUKAN ST Perpanjangan) -->
-                    <div x-show="isPerpanjangan == '0'" x-transition>
-                        <label class="block font-semibold mb-1">Irban Penanggung Jawab <span class="text-rose-500">*</span> (Dapat memilih lebih dari 1)</label>
-                        <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1 max-h-36 overflow-y-auto">
-                            @foreach($irbans as $irban)
-                                <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
-                                    <input type="checkbox" name="irban_ids[]" value="{{ $irban->id }}"
-                                        {{ (is_array(old('irban_ids')) && in_array($irban->id, old('irban_ids'))) || in_array($irban->id, $selectedIrbanIds) ? 'checked' : '' }}
-                                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-                                    <span>{{ $irban->nama_irban }}</span>
-                                </label>
-                            @endforeach
-                        </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Tanggal Naskah SPT <span class="text-rose-500">*</span></label>
+                        <input type="date" name="tanggal_st" value="{{ old('tanggal_st', $penugasan->tanggal_st?->format('Y-m-d') ?? $penugasan->created_at?->format('Y-m-d')) }}" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
+                        <p class="text-[10px] text-slate-400 mt-1">Dapat diisi tanggal mundur jika diperlukan.</p>
+                    </div>
+                </div>
+
+                <!-- Multi-Irban Penanggung Jawab (Hanya jika ST Standar / Reguler) -->
+                <div x-show="jenisSt === 'reguler'" x-transition>
+                    <label class="block font-semibold mb-1">Irban Penanggung Jawab <span class="text-rose-500">*</span> (Dapat memilih lebih dari 1)</label>
+                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1 max-h-36 overflow-y-auto">
+                        @foreach($irbans as $irban)
+                            <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                                <input type="checkbox" name="irban_ids[]" value="{{ $irban->id }}"
+                                    {{ (is_array(old('irban_ids')) && in_array($irban->id, old('irban_ids'))) || in_array($irban->id, $selectedIrbanIds) ? 'checked' : '' }}
+                                    class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                <span>{{ $irban->nama_irban }}</span>
+                            </label>
+                        @endforeach
                     </div>
                 </div>
 
@@ -347,7 +368,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div x-show="isPerpanjangan == '0'" x-transition>
                         <label class="block font-semibold mb-1">Jenis Penugasan <span class="text-rose-500">*</span></label>
-                        <select name="jenis_penugasan_id" :required="isPerpanjangan == '0'" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
+                        <select name="jenis_penugasan_id" :required="jenisSt === 'reguler'" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
                             @foreach($jenisList as $j)
                                 <option value="{{ $j->id }}" {{ old('jenis_penugasan_id', $penugasan->jenis_penugasan_id) == $j->id ? 'selected' : '' }}>
                                     [{{ ucfirst($j->kategori) }}] {{ $j->nama }}
@@ -356,16 +377,16 @@
                         </select>
                     </div>
 
-                    <div x-show="isPerpanjangan == '0'" x-transition>
+                    <div x-show="jenisSt === 'reguler'" x-transition>
                         <label class="block font-semibold mb-1">Sumber Penugasan <span class="text-rose-500">*</span></label>
-                        <select name="sumber_penugasan_id" :required="isPerpanjangan == '0'" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
+                        <select name="sumber_penugasan_id" :required="jenisSt === 'reguler'" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
                             @foreach($sumberList as $s)
                                 <option value="{{ $s->id }}" {{ old('sumber_penugasan_id', $penugasan->sumber_penugasan_id) == $s->id ? 'selected' : '' }}>{{ $s->nama }}</option>
                             @endforeach
                         </select>
                     </div>
 
-                    <div :class="isPerpanjangan == '1' ? 'sm:col-span-3' : ''">
+                    <div :class="jenisSt !== 'reguler' ? 'sm:col-span-2' : ''">
                         <label class="block font-semibold mb-1">Status Penugasan <span class="text-rose-500">*</span></label>
                         <select name="status" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
                             <option value="belum_berjalan" {{ old('status', $penugasan->status) == 'belum_berjalan' ? 'selected' : '' }}>Belum Berjalan</option>
@@ -376,7 +397,7 @@
                 </div>
 
                 <!-- Kelompok / Kluster Pengawasan (Bahan ILHP) -->
-                <div x-show="isPerpanjangan == '0'" x-transition>
+                <div x-show="jenisSt === 'reguler'" x-transition>
                     <label class="block font-semibold mb-1">Kelompok / Kluster Pengawasan (Bahan ILHP)</label>
                     <select name="kelompok_pengawasan_id" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500 font-semibold text-slate-800 dark:text-slate-200">
                         <option value="">-- Pilih Kelompok Pengawasan (Opsional) --</option>
@@ -400,8 +421,8 @@
                 </div>
             </div>
 
-            <!-- Card 2: Objek Penugasan & PKPPT Match (Hanya jika BUKAN ST Perpanjangan) -->
-            <div x-show="isPerpanjangan == '0'" x-transition class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 text-xs">
+            <!-- Card 2: Objek Penugasan & PKPPT Match (Hanya jika ST Standar / Reguler) -->
+            <div x-show="jenisSt === 'reguler'" x-transition class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 text-xs">
                 
                 <h3 class="font-bold text-slate-900 dark:text-white text-base mb-4 flex items-center gap-2">
                     <span class="w-3 h-3 bg-emerald-500 rounded-full"></span>
@@ -422,7 +443,7 @@
                     </div>
                 </div>
 
-                <!-- PKPPT Selection (Hanya jika BUKAN ST Perpanjangan) -->
+                <!-- PKPPT Selection (Hanya jika ST Standar / Reguler) -->
                 <div>
                     <label class="block font-semibold mb-2">Kategori Perencanaan PKPPT</label>
                     <div class="flex items-center gap-6">
@@ -450,64 +471,80 @@
                 </div>
             </div>
 
-            <!-- Card 3: Susunan Personil Tim Pengawasan (Hanya jika BUKAN ST Perpanjangan) -->
-            <div x-show="isPerpanjangan == '0'" x-transition class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 text-xs space-y-4">
+            <!-- Card 3: Susunan Personil Tim Pengawasan (Tampil jika ST Reguler atau ST Bantuan) -->
+            <div x-show="jenisSt === 'reguler' || jenisSt === 'bantuan'" x-transition class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 text-xs space-y-4">
                 <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
                     <span class="w-3 h-3 bg-emerald-500 rounded-full"></span>
-                    3. Susunan Personil Tim Pengawasan
+                    <span x-text="jenisSt === 'bantuan' ? '3. Susunan Personil Tim Bantuan' : '3. Susunan Personil Tim Pengawasan'"></span>
                 </h3>
 
-                <!-- Wakil PJ -->
-                <div>
-                    <label class="block font-semibold mb-1">Wakil Penanggung Jawab <span class="text-rose-500">*</span></label>
-                    <input type="text" onkeyup="filterPersonil(this, 'containerWakilPjEdit')" placeholder="🔍 Cari nama / NIP Wakil Penanggung Jawab..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
-                    <div id="containerWakilPjEdit" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
-                        @foreach($usersList as $u)
-                            <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
-                                <input type="checkbox" name="tim_wakil_pj[]" value="{{ $u->id }}"
-                                    {{ (is_array(old('tim_wakil_pj')) && in_array($u->id, old('tim_wakil_pj'))) || in_array($u->id, $selectedTim['tim_wakil_pj']) ? 'checked' : '' }}
-                                    class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-                                <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
-                            </label>
-                        @endforeach
-                    </div>
+                <!-- Info Khusus ST Bantuan -->
+                <div x-show="jenisSt === 'bantuan'" class="p-3.5 bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/60 rounded-xl text-cyan-950 dark:text-cyan-200">
+                    <p class="font-bold flex items-center gap-1.5 text-xs">
+                        <span>🤝 Ketentuan Format Tim ST Bantuan:</span>
+                    </p>
+                    <p class="text-[11px] mt-1 leading-relaxed">
+                        Pada Surat Tugas Bantuan, struktur Penanggung Jawab, Wakil PJ, Pengendali Teknis, dan Ketua Tim <strong>menginduk pada Surat Tugas Utama</strong>. Anda hanya perlu menentukan <strong>Anggota Tim Bantuan</strong> di bawah ini.
+                    </p>
                 </div>
 
-                <!-- Daltek -->
-                <div>
-                    <label class="block font-semibold mb-1">Pengendali Teknis <span class="text-rose-500">*</span></label>
-                    <input type="text" onkeyup="filterPersonil(this, 'containerDaltekEdit')" placeholder="🔍 Cari nama / NIP Pengendali Teknis (Dalnis)..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
-                    <div id="containerDaltekEdit" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
-                        @foreach($usersList as $u)
-                            <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
-                                <input type="checkbox" name="tim_daltek[]" value="{{ $u->id }}"
-                                    {{ (is_array(old('tim_daltek')) && in_array($u->id, old('tim_daltek'))) || in_array($u->id, $selectedTim['tim_daltek']) ? 'checked' : '' }}
-                                    class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-                                <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
-                            </label>
-                        @endforeach
+                <!-- Bagian Wakil PJ, Dalnis, Ketua Tim (Hanya untuk ST Reguler) -->
+                <div x-show="jenisSt === 'reguler'" x-transition class="space-y-4">
+                    <!-- Wakil PJ -->
+                    <div>
+                        <label class="block font-semibold mb-1">Wakil Penanggung Jawab <span class="text-rose-500">*</span></label>
+                        <input type="text" onkeyup="filterPersonil(this, 'containerWakilPjEdit')" placeholder="🔍 Cari nama / NIP Wakil Penanggung Jawab..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
+                        <div id="containerWakilPjEdit" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
+                            @foreach($usersList as $u)
+                                <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                                    <input type="checkbox" name="tim_wakil_pj[]" value="{{ $u->id }}"
+                                        {{ (is_array(old('tim_wakil_pj')) && in_array($u->id, old('tim_wakil_pj'))) || in_array($u->id, $selectedTim['tim_wakil_pj']) ? 'checked' : '' }}
+                                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                    <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
+                                </label>
+                            @endforeach
+                        </div>
                     </div>
-                </div>
 
-                <!-- Ketua Tim -->
-                <div>
-                    <label class="block font-semibold mb-1">Ketua Tim <span class="text-rose-500">*</span></label>
-                    <input type="text" onkeyup="filterPersonil(this, 'containerKetuaEdit')" placeholder="🔍 Cari nama / NIP Ketua Tim..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
-                    <div id="containerKetuaEdit" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
-                        @foreach($usersList as $u)
-                            <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
-                                <input type="checkbox" name="tim_ketua[]" value="{{ $u->id }}"
-                                    {{ (is_array(old('tim_ketua')) && in_array($u->id, old('tim_ketua'))) || in_array($u->id, $selectedTim['tim_ketua']) ? 'checked' : '' }}
-                                    class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-                                <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
-                            </label>
-                        @endforeach
+                    <!-- Daltek -->
+                    <div>
+                        <label class="block font-semibold mb-1">Pengendali Teknis <span class="text-rose-500">*</span></label>
+                        <input type="text" onkeyup="filterPersonil(this, 'containerDaltekEdit')" placeholder="🔍 Cari nama / NIP Pengendali Teknis (Dalnis)..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
+                        <div id="containerDaltekEdit" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
+                            @foreach($usersList as $u)
+                                <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                                    <input type="checkbox" name="tim_daltek[]" value="{{ $u->id }}"
+                                        {{ (is_array(old('tim_daltek')) && in_array($u->id, old('tim_daltek'))) || in_array($u->id, $selectedTim['tim_daltek']) ? 'checked' : '' }}
+                                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                    <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Ketua Tim -->
+                    <div>
+                        <label class="block font-semibold mb-1">Ketua Tim <span class="text-rose-500">*</span></label>
+                        <input type="text" onkeyup="filterPersonil(this, 'containerKetuaEdit')" placeholder="🔍 Cari nama / NIP Ketua Tim..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
+                        <div id="containerKetuaEdit" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
+                            @foreach($usersList as $u)
+                                <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                                    <input type="checkbox" name="tim_ketua[]" value="{{ $u->id }}"
+                                        {{ (is_array(old('tim_ketua')) && in_array($u->id, old('tim_ketua'))) || in_array($u->id, $selectedTim['tim_ketua']) ? 'checked' : '' }}
+                                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                    <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
+                                </label>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
 
                 <!-- Anggota Tim -->
                 <div>
-                    <label class="block font-semibold mb-1">Anggota Tim <span class="text-rose-500">*</span></label>
+                    <label class="block font-semibold mb-1">
+                        <span x-text="jenisSt === 'bantuan' ? 'Anggota Tim Bantuan' : 'Anggota Tim'"></span>
+                        <span class="text-rose-500">*</span>
+                    </label>
                     <input type="text" onkeyup="filterPersonil(this, 'containerAnggotaEdit')" placeholder="🔍 Cari nama / NIP Anggota Tim..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
                     <div id="containerAnggotaEdit" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-40 overflow-y-auto space-y-1">
                         @foreach($usersList as $u)

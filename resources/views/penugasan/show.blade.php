@@ -15,6 +15,11 @@
                 <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">Rincian Surat Tugas (SPT)</span>
                 <h2 class="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                     <span>No. SPT: {{ $penugasan->no_spt }}</span>
+                    @if($penugasan->isBantuan())
+                        <span class="px-2 py-0.5 bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 text-xs font-bold rounded-lg border border-cyan-200">🤝 ST Bantuan</span>
+                    @elseif($penugasan->isPerpanjangan())
+                        <span class="px-2 py-0.5 bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-xs font-bold rounded-lg border border-purple-200">🔄 ST Perpanjangan</span>
+                    @endif
                     @if($penugasan->is_sesuai_pkppt)
                         <span class="px-2 py-0.5 bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 text-xs font-bold rounded-lg border border-blue-200">✓ PKPPT</span>
                     @else
@@ -207,12 +212,27 @@
                     </div>
 
                     <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+                        <span class="text-[10px] font-bold text-slate-400 block uppercase">Tanggal Naskah SPT:</span>
+                        <p class="font-bold text-slate-800 dark:text-slate-200">{{ ($penugasan->tanggal_st ?? $penugasan->tanggal_mulai)->format('d F Y') }}</p>
+                    </div>
+
+                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
                         <span class="text-[10px] font-bold text-slate-400 block uppercase">Dibuat Oleh:</span>
                         <p class="font-bold text-slate-800 dark:text-slate-200">{{ $penugasan->pembuatData?->nama ?? 'Administrator' }}</p>
                     </div>
                 </div>
 
-                @if($penugasan->penugasan_induk_id)
+                @if($penugasan->isBantuan())
+                <div class="p-3.5 bg-cyan-50 dark:bg-cyan-950/40 rounded-2xl border border-cyan-200 dark:border-cyan-800 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold text-cyan-700 dark:text-cyan-300 uppercase block">Informasi ST Bantuan:</span>
+                        <p class="font-bold text-cyan-900 dark:text-cyan-200">Merupakan ST Bantuan dari Tim Utama (Induk: {{ $penugasan->penugasanInduk?->no_spt }})</p>
+                    </div>
+                    <a href="{{ route('penugasan.show', $penugasan->penugasan_induk_id) }}" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-xl text-xs">
+                        Lihat ST Utama
+                    </a>
+                </div>
+                @elseif($penugasan->isPerpanjangan())
                 <div class="p-3.5 bg-purple-50 dark:bg-purple-950/40 rounded-2xl border border-purple-200 dark:border-purple-800 flex items-center justify-between">
                     <div>
                         <span class="text-[10px] font-bold text-purple-600 uppercase block">Informasi ST Perpanjangan:</span>
@@ -317,6 +337,60 @@
                         Durasi: {{ $penugasan->tanggal_mulai->diffInDays($penugasan->tanggal_selesai) + 1 }} Hari Kerja
                     </span>
                 </div>
+            </div>
+
+            <!-- Card Berkas ST Resmi Bertanda Tangan -->
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
+                <h3 class="font-black text-slate-900 dark:text-white text-base border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center justify-between">
+                    <span>📎 Berkas ST Resmi (TTD)</span>
+                    @if($penugasan->file_st)
+                        <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-bold rounded-md">Tersedia</span>
+                    @else
+                        <span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-semibold rounded-md">Belum Ada</span>
+                    @endif
+                </h3>
+
+                @if($penugasan->file_st)
+                    <div class="p-3.5 bg-teal-50 dark:bg-teal-950/40 rounded-2xl border border-teal-200 dark:border-teal-800 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">📄</span>
+                            <div class="min-w-0 flex-1">
+                                <p class="font-bold text-teal-900 dark:text-teal-200 text-xs truncate">{{ $penugasan->file_st_nama ?? basename($penugasan->file_st) }}</p>
+                                <span class="text-[10px] text-teal-700 dark:text-teal-400 block">
+                                    Diunggah: {{ $penugasan->file_st_diunggah_pada?->format('d/m/Y H:i') ?? '-' }}
+                                    @if($penugasan->fileStDiunggahOleh)
+                                        oleh {{ $penugasan->fileStDiunggahOleh->nama }}
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+
+                        <a href="{{ route('penugasan.berkas-st', $penugasan->id) }}" target="_blank" class="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            <span>Unduh / Lihat Berkas ST (TTD)</span>
+                        </a>
+                    </div>
+                @else
+                    <p class="text-slate-500 text-[11px] leading-relaxed">
+                        Belum ada berkas fisik / digital ST bertanda tangan Inspektur yang diunggah untuk penugasan ini.
+                    </p>
+                @endif
+
+                <!-- Form Upload / Revisi Berkas ST -->
+                <form method="POST" action="{{ route('penugasan.upload-berkas', $penugasan->id) }}" enctype="multipart/form-data" class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    @csrf
+                    <div>
+                        <label class="block font-bold text-slate-800 dark:text-slate-200 mb-1 text-[11px]">
+                            {{ $penugasan->file_st ? 'Unggah Berkas Revisi (Ganti File Lama)' : 'Unggah Berkas ST TTD Baru' }}
+                        </label>
+                        <input type="file" name="berkas_st" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 border border-slate-300 dark:border-slate-700 rounded-xl p-1 bg-white dark:bg-slate-800">
+                        <p class="text-[10px] text-slate-400 mt-1">Maks. 20 MB (PDF/Gambar/Doc). Nomor ST tetap sama.</p>
+                    </div>
+
+                    <button type="submit" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-700 dark:hover:bg-slate-600 font-bold rounded-xl text-xs flex items-center justify-center gap-1 shadow-xs transition-all cursor-pointer">
+                        <span>{{ $penugasan->file_st ? '🔄 Simpan Revisi Berkas ST' : '📤 Simpan Berkas ST' }}</span>
+                    </button>
+                </form>
             </div>
 
             <!-- Dokumen LHP Hasil Pengawasan Card -->

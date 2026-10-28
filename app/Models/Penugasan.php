@@ -12,17 +12,20 @@ class Penugasan extends Model
     protected $table = 'penugasan';
 
     protected $fillable = [
-        'no_spt', 'pkppt_id', 'penugasan_induk_id', 'is_sesuai_pkppt', 'uraian_penugasan', 'dasar_penugasan',
+        'no_spt', 'tanggal_st', 'pkppt_id', 'penugasan_induk_id', 'jenis_st', 'is_sesuai_pkppt', 'uraian_penugasan', 'dasar_penugasan',
         'sumber_penugasan_id', 'jenis_penugasan_id', 'kelompok_pengawasan_id', 'jenis_pengawasan_spt', 'tanggal_mulai',
         'tanggal_selesai', 'status', 'status_persetujuan', 'catatan_revisi_spt', 'diverifikasi_oleh',
         'diverifikasi_pada', 'progres_persen', 'keterangan_hasil',
+        'file_st', 'file_st_nama', 'file_st_diunggah_pada', 'file_st_diunggah_oleh',
         'irban_id', 'dibuat_oleh', 'diperbarui_oleh',
     ];
 
     protected $casts = [
+        'tanggal_st'         => 'date',
         'tanggal_mulai'      => 'date',
         'tanggal_selesai'    => 'date',
         'diverifikasi_pada'  => 'datetime',
+        'file_st_diunggah_pada' => 'datetime',
         'is_sesuai_pkppt'    => 'boolean',
         'progres_persen'     => 'integer',
     ];
@@ -60,7 +63,29 @@ class Penugasan extends Model
     /** List ST Perpanjangan yang menginduk ke ST ini */
     public function stPerpanjangan()
     {
-        return $this->hasMany(Penugasan::class, 'penugasan_induk_id');
+        return $this->hasMany(Penugasan::class, 'penugasan_induk_id')->where('jenis_st', '!=', 'bantuan');
+    }
+
+    /** List ST Bantuan yang menginduk ke ST ini */
+    public function stBantuan()
+    {
+        return $this->hasMany(Penugasan::class, 'penugasan_induk_id')->where('jenis_st', 'bantuan');
+    }
+
+    /** User yang mengunggah berkas ST resmi bertanda tangan */
+    public function fileStDiunggahOleh()
+    {
+        return $this->belongsTo(User::class, 'file_st_diunggah_oleh');
+    }
+
+    public function isBantuan(): bool
+    {
+        return $this->jenis_st === 'bantuan';
+    }
+
+    public function isPerpanjangan(): bool
+    {
+        return $this->jenis_st === 'perpanjangan' || (!empty($this->penugasan_induk_id) && $this->jenis_st !== 'bantuan');
     }
 
     public function sumberPenugasan()

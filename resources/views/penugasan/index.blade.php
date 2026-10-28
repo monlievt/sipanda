@@ -113,15 +113,31 @@
                                 <a href="{{ route('penugasan.show', $item->id) }}" class="text-blue-600 dark:text-blue-400 hover:underline block" title="Klik untuk membuka Rincian Lengkap Surat Tugas ini">
                                     📄 {{ $item->no_spt }}
                                 </a>
-                                @if($item->penugasan_induk_id)
-                                    <span class="block text-[9px] font-sans font-extrabold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60 px-1.5 py-0.5 rounded border border-purple-200 mt-0.5">
+
+                                <span class="block text-[10px] text-slate-500 font-sans mt-0.5">
+                                    📅 Tgl ST: {{ ($item->tanggal_st ?? $item->created_at)->format('d/m/Y') }}
+                                </span>
+
+                                @if($item->isBantuan())
+                                    <span class="inline-block text-[9px] font-sans font-extrabold text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-200 dark:border-cyan-800 mt-0.5">
+                                        🤝 ST Bantuan (Induk: {{ $item->penugasanInduk?->no_spt }})
+                                    </span>
+                                @elseif($item->isPerpanjangan())
+                                    <span class="inline-block text-[9px] font-sans font-extrabold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60 px-1.5 py-0.5 rounded border border-purple-200 mt-0.5">
                                         🔄 ST Perpanjangan (Induk: {{ $item->penugasanInduk?->no_spt }})
                                     </span>
                                 @endif
+
                                 @if($item->is_sesuai_pkppt)
                                     <span class="block text-[9px] font-sans font-bold text-blue-600 dark:text-blue-400 mt-0.5">✓ PKPPT</span>
                                 @else
                                     <span class="block text-[9px] font-sans font-semibold text-slate-400 mt-0.5">Non-PKPPT</span>
+                                @endif
+
+                                @if($item->file_st)
+                                    <a href="{{ route('penugasan.berkas-st', $item->id) }}" target="_blank" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-50 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300 border border-teal-200 dark:border-teal-800 mt-1 hover:underline" title="Buka Berkas SPT Resmi Bertanda Tangan Inspektur">
+                                        📎 Berkas TTD
+                                    </a>
                                 @endif
 
                                 @if($item->status_persetujuan === 'disetujui')
@@ -203,6 +219,17 @@
                                              🔒 Cetak
                                          </button>
                                      @endif
+                                    <!-- Tombol Upload / Ganti Berkas ST Bertanda Tangan Inspektur -->
+                                    <button type="button" onclick="openModalUploadBerkasSt({
+                                        id: {{ $item->id }},
+                                        no_spt: '{{ addslashes($item->no_spt) }}',
+                                        uraian: '{{ addslashes($item->uraian_penugasan) }}',
+                                        has_file: {{ $item->file_st ? 'true' : 'false' }},
+                                        file_name: '{{ addslashes($item->file_st_nama ?? '') }}'
+                                    })" class="px-2.5 py-1 {{ $item->file_st ? 'bg-cyan-50 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 border-cyan-300' : 'bg-teal-50 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border-teal-300' }} hover:bg-opacity-80 rounded-lg text-[10px] font-bold border shadow-xs cursor-pointer flex items-center gap-1" title="{{ $item->file_st ? 'Unggah Ulang / Revisi Berkas ST TTD' : 'Unggah Berkas ST yang telah ditandatangani Inspektur' }}">
+                                        <span>{{ $item->file_st ? '🔄 Revisi ST' : '📤 Upload ST' }}</span>
+                                    </button>
+
                                     @can('penugasan.edit')
                                     <a href="{{ route('penugasan.edit', $item->id) }}" class="px-2.5 py-1 bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300 hover:bg-amber-100 rounded-lg text-[10px] font-bold border border-amber-300 shadow-xs" title="Edit Surat Tugas">
                                         ✏️ Edit
@@ -284,6 +311,54 @@
         </div>
     </div>
 
+    <!-- Modal Unggah / Revisi Berkas ST Resmi Bertanda Tangan -->
+    <div id="modalUploadBerkasSt" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-800 text-xs">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 flex items-center justify-center font-bold text-sm">
+                        📎
+                    </span>
+                    <div>
+                        <h3 id="modalUploadTitle" class="font-bold text-slate-900 dark:text-white text-base">Unggah Berkas ST Resmi</h3>
+                        <p class="text-[11px] text-slate-500">Berkas Surat Tugas yang telah ditandatangani Inspektur</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modalUploadBerkasSt').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xl font-bold cursor-pointer">&times;</button>
+            </div>
+
+            <form id="formUploadBerkasSt" method="POST" action="" enctype="multipart/form-data" class="space-y-4 mt-4">
+                @csrf
+
+                <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+                    <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block">Nomor Surat Tugas (SPT)</span>
+                    <p id="labelUploadNoSpt" class="font-mono font-bold text-slate-900 dark:text-white text-sm"></p>
+                    <p id="labelUploadUraian" class="text-slate-600 dark:text-slate-300 text-xs mt-1"></p>
+                </div>
+
+                <div id="infoBerkasLama" class="hidden p-3 bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 rounded-xl text-cyan-900 dark:text-cyan-200">
+                    <span class="font-bold text-[11px] block">ℹ️ Berkas Saat Ini:</span>
+                    <p id="labelNamaBerkasLama" class="text-xs font-semibold truncate mt-0.5"></p>
+                    <p class="text-[10px] text-cyan-700 dark:text-cyan-400 mt-1">Mengunggah file baru akan menggantikan berkas lama untuk nomor ST ini (bila terdapat revisi ST).</p>
+                </div>
+
+                <div>
+                    <label class="block font-bold mb-1 text-slate-800 dark:text-slate-200">Pilih Berkas ST (PDF, JPG, PNG, DOCX) <span class="text-rose-500">*</span></label>
+                    <input type="file" name="berkas_st" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 dark:file:bg-slate-800 dark:file:text-teal-300 border border-slate-300 dark:border-slate-700 rounded-xl p-1 bg-white dark:bg-slate-800">
+                    <p class="text-[10px] text-slate-400 mt-1">Ukuran file maksimal 20 MB. Pastikan stempel dan tanda tangan elektronik/basah terlihat jelas.</p>
+                </div>
+
+                <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('modalUploadBerkasSt').classList.add('hidden')" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold rounded-xl cursor-pointer">Batal</button>
+                    <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md cursor-pointer flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        <span id="btnSubmitUploadText">Simpan Berkas ST</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         function openModalSelesaikanPenugasan(data) {
             const form = document.getElementById('formSelesaikanPenugasan');
@@ -291,6 +366,30 @@
             document.getElementById('labelNoSpt').innerText = data.no_spt;
             document.getElementById('labelUraian').innerText = data.uraian;
             document.getElementById('modalSelesaikanPenugasan').classList.remove('hidden');
+        }
+
+        function openModalUploadBerkasSt(data) {
+            const form = document.getElementById('formUploadBerkasSt');
+            form.action = '/penugasan/' + data.id + '/upload-berkas';
+            document.getElementById('labelUploadNoSpt').innerText = data.no_spt;
+            document.getElementById('labelUploadUraian').innerText = data.uraian;
+
+            const infoLama = document.getElementById('infoBerkasLama');
+            const title = document.getElementById('modalUploadTitle');
+            const btnText = document.getElementById('btnSubmitUploadText');
+
+            if (data.has_file) {
+                infoLama.classList.remove('hidden');
+                document.getElementById('labelNamaBerkasLama').innerText = data.file_name || 'Berkas Terlampir';
+                title.innerText = 'Unggah Ulang / Revisi Berkas ST';
+                btnText.innerText = 'Perbarui Berkas ST';
+            } else {
+                infoLama.classList.add('hidden');
+                title.innerText = 'Unggah Berkas ST Resmi';
+                btnText.innerText = 'Simpan Berkas ST';
+            }
+
+            document.getElementById('modalUploadBerkasSt').classList.remove('hidden');
         }
     </script>
 </x-app-layout>

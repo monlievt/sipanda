@@ -101,24 +101,27 @@ class SuratTugasDocxService
             return $order[$m->peran] ?? 6;
         });
 
-        $hasPj = $sortedTim->contains(fn($m) => $m->peran === 'penanggung_jawab');
-        if (!$hasPj) {
-            $timList[] = [
-                'nama'  => $inspekturNama,
-                'nip'   => $inspekturNip,
-                'peran' => 'Penanggung Jawab',
-            ];
-        }
-
-        $hasWpj = $sortedTim->contains(fn($m) => $m->peran === 'wakil_penanggung_jawab');
-        if (!$hasWpj && $penugasan->irban) {
-            $irbanUser = $penugasan->irban->users()->whereHas('roles', fn($q) => $q->where('name', 'irban'))->first();
-            if ($irbanUser) {
+        // Pada ST Bantuan, susunan tim HANYA berisi Anggota Tim (tanpa Penanggung Jawab dan Wakil PJ)
+        if (! $penugasan->isBantuan()) {
+            $hasPj = $sortedTim->contains(fn($m) => $m->peran === 'penanggung_jawab');
+            if (!$hasPj) {
                 $timList[] = [
-                    'nama'  => $irbanUser->nama,
-                    'nip'   => $irbanUser->nip,
-                    'peran' => 'Wakil Penanggungjawab',
+                    'nama'  => $inspekturNama,
+                    'nip'   => $inspekturNip,
+                    'peran' => 'Penanggung Jawab',
                 ];
+            }
+
+            $hasWpj = $sortedTim->contains(fn($m) => $m->peran === 'wakil_penanggung_jawab');
+            if (!$hasWpj && $penugasan->irban) {
+                $irbanUser = $penugasan->irban->users()->whereHas('roles', fn($q) => $q->where('name', 'irban'))->first();
+                if ($irbanUser) {
+                    $timList[] = [
+                        'nama'  => $irbanUser->nama,
+                        'nip'   => $irbanUser->nip,
+                        'peran' => 'Wakil Penanggungjawab',
+                    ];
+                }
             }
         }
 
@@ -168,7 +171,7 @@ class SuratTugasDocxService
         $tglMulai   = $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->translatedFormat('d F Y') : '-';
         $tglSelesai = $penugasan->tanggal_selesai ? $penugasan->tanggal_selesai->translatedFormat('d F Y') : '-';
         $tahunAnggaran = $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->format('Y') : date('Y');
-        $tglPenetapan  = $penugasan->tanggal_mulai ? $penugasan->tanggal_mulai->translatedFormat('d F Y') : Carbon::now()->translatedFormat('d F Y');
+        $tglPenetapan  = ($penugasan->tanggal_st ?? $penugasan->tanggal_mulai ?? Carbon::now())->translatedFormat('d F Y');
 
         $map = [
             'nomor'        => $penugasan->no_spt ?? '800.1.11.1 / ... / 406.050 / ' . date('Y'),

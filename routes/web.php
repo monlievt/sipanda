@@ -78,6 +78,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/penugasan/{penugasan}', [PenugasanController::class, 'update'])->middleware('can:penugasan.edit')->name('penugasan.update');
     Route::delete('/penugasan/{penugasan}', [PenugasanController::class, 'destroy'])->middleware('can:penugasan.delete')->name('penugasan.destroy');
     Route::patch('/penugasan/{penugasan}/status', [PenugasanController::class, 'updateStatus'])->name('penugasan.update_status');
+    Route::post('/penugasan/{penugasan}/upload-berkas', [PenugasanController::class, 'uploadBerkasSt'])->name('penugasan.upload-berkas');
+    Route::get('/penugasan/{penugasan}/berkas-st', [PenugasanController::class, 'downloadBerkasSt'])->name('penugasan.berkas-st');
 
     // Kegiatan Pengawasan (Monitoring Realisasi)
     Route::get('/kegiatan-pengawasan', [KegiatanPengawasanController::class, 'index'])->name('kegiatan-pengawasan.index');

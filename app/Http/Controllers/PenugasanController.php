@@ -15,6 +15,7 @@ use App\Models\SumberPenugasan;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -210,11 +211,93 @@ class PenugasanController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = auth()->user();
-        $isPerpanjangan = (bool) $request->input('is_perpanjangan', 0);
+        $rawJenis = $request->input('jenis_st');
+        if (!in_array($rawJenis, ['reguler', 'perpanjangan', 'bantuan'])) {
+            $rawJenis = $request->boolean('is_perpanjangan') ? 'perpanjangan' : 'reguler';
+        }
+        $jenisSt = $rawJenis;
 
-        if ($isPerpanjangan) {
+        // Status persetujuan: Irban, Inspektur, Sekretaris, Admin langsung 'disetujui'.
+        // Operator Admin Irban dan lainnya berstatus 'diajukan' agar diverifikasi Pejabat Irban.
+        $statusPersetujuan = $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban']) ? 'disetujui' : 'diajukan';
+
+        if ($jenisSt === 'bantuan') {
             $validated = $request->validate([
                 'no_spt'                 => ['required', 'string', 'max:60', Rule::unique('penugasan', 'no_spt')->whereNull('deleted_at')],
+                'tanggal_st'             => ['nullable', 'date'],
+                'penugasan_induk_id'     => ['required', 'exists:penugasan,id'],
+                'kelompok_pengawasan_id' => ['nullable', 'exists:kelompok_pengawasan,id'],
+                'uraian_penugasan'       => ['required', 'string'],
+                'dasar_penugasan'        => ['nullable', 'string'],
+                'tanggal_mulai'          => ['required', 'date'],
+                'tanggal_selesai'        => ['required', 'date', 'after_or_equal:tanggal_mulai'],
+                'tim_anggota'            => ['required', 'array', 'min:1'],
+                'tim_anggota.*'          => ['exists:users,id'],
+            ], [
+                'no_spt.required'               => 'Nomor SPT Bantuan wajib diisi.',
+                'no_spt.unique'                 => 'Nomor SPT ini sudah terdaftar. Mohon gunakan nomor yang lain.',
+                'penugasan_induk_id.required'   => 'Anda wajib memilih Surat Tugas Utama (ST Induk) yang dibantu.',
+                'uraian_penugasan.required'     => 'Uraian penugasan wajib diisi.',
+                'tanggal_mulai.required'        => 'Tanggal mulai pelaksanaan penugasan bantuan wajib diisi.',
+                'tanggal_selesai.required'      => 'Tanggal selesai pelaksanaan penugasan bantuan wajib diisi.',
+                'tanggal_selesai.after_or_equal' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.',
+                'tim_anggota.required'          => 'Minimal 1 orang Anggota Tim Bantuan wajib dipilih.',
+            ]);
+
+            $parentSt = Penugasan::with(['irbans', 'objekPenugasan'])->findOrFail($validated['penugasan_induk_id']);
+
+            $tglMulai = \Carbon\Carbon::parse($validated['tanggal_mulai'])->startOfDay();
+            $statusOtomatis = now()->startOfDay()->gte($tglMulai) ? 'berjalan' : 'belum_berjalan';
+
+            $dasarBantuan = $validated['dasar_penugasan'] ?? null;
+            if (empty($dasarBantuan)) {
+                $dasarBantuan = ($parentSt->dasar_penugasan ? $parentSt->dasar_penugasan . "\n" : '') . "Surat Perintah Tugas Utama Nomor: " . $parentSt->no_spt . ".";
+            }
+
+            $penugasan = Penugasan::create([
+                'no_spt'                 => $validated['no_spt'],
+                'tanggal_st'             => $validated['tanggal_st'] ?? now()->toDateString(),
+                'jenis_st'               => 'bantuan',
+                'uraian_penugasan'       => $validated['uraian_penugasan'],
+                'dasar_penugasan'        => $dasarBantuan,
+                'sumber_penugasan_id'    => $parentSt->sumber_penugasan_id,
+                'jenis_penugasan_id'     => $parentSt->jenis_penugasan_id,
+                'kelompok_pengawasan_id' => $validated['kelompok_pengawasan_id'] ?? $parentSt->kelompok_pengawasan_id,
+                'tanggal_mulai'          => $validated['tanggal_mulai'],
+                'tanggal_selesai'        => $validated['tanggal_selesai'],
+                'status'                 => $statusOtomatis,
+                'status_persetujuan'     => $statusPersetujuan,
+                'diverifikasi_oleh'      => ($statusPersetujuan === 'disetujui') ? $user->id : null,
+                'diverifikasi_pada'      => ($statusPersetujuan === 'disetujui') ? now() : null,
+                'progres_persen'         => 0,
+                'is_sesuai_pkppt'        => (bool) $parentSt->is_sesuai_pkppt,
+                'pkppt_id'               => $parentSt->pkppt_id,
+                'penugasan_induk_id'     => $parentSt->id,
+                'irban_id'               => $parentSt->irban_id,
+                'dibuat_oleh'            => $user->id,
+            ]);
+
+            // Sinkronkan Irban dan Objek dari ST Induk
+            $penugasan->irbans()->sync($parentSt->irbans->pluck('id'));
+            $penugasan->objekPenugasan()->sync($parentSt->objekPenugasan->pluck('id'));
+
+            // Pada ST Bantuan, hanya ada Anggota Tim
+            $timData = [];
+            foreach ($validated['tim_anggota'] as $userId) {
+                $timData[] = [
+                    'penugasan_id' => $penugasan->id,
+                    'user_id'      => $userId,
+                    'peran'        => 'anggota_tim',
+                ];
+            }
+            if (!empty($timData)) {
+                PenugasanTim::insertOrIgnore($timData);
+            }
+
+        } elseif ($jenisSt === 'perpanjangan') {
+            $validated = $request->validate([
+                'no_spt'                 => ['required', 'string', 'max:60', Rule::unique('penugasan', 'no_spt')->whereNull('deleted_at')],
+                'tanggal_st'             => ['nullable', 'date'],
                 'penugasan_induk_id'     => ['required', 'exists:penugasan,id'],
                 'kelompok_pengawasan_id' => ['nullable', 'exists:kelompok_pengawasan,id'],
                 'uraian_penugasan'       => ['required', 'string'],
@@ -240,10 +323,11 @@ class PenugasanController extends Controller
             if (empty($dasarPerpanjangan)) {
                 $dasarPerpanjangan = ($parentSt->dasar_penugasan ? $parentSt->dasar_penugasan . "\n" : '') . "Surat Perintah Tugas Induk Nomor: " . $parentSt->no_spt . ".";
             }
-            $statusPersetujuan = $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban', 'admin_irban']) ? 'disetujui' : 'diajukan';
 
             $penugasan = Penugasan::create([
                 'no_spt'                 => $validated['no_spt'],
+                'tanggal_st'             => $validated['tanggal_st'] ?? now()->toDateString(),
+                'jenis_st'               => 'perpanjangan',
                 'uraian_penugasan'       => $validated['uraian_penugasan'],
                 'dasar_penugasan'        => $dasarPerpanjangan,
                 'sumber_penugasan_id'    => $parentSt->sumber_penugasan_id,
@@ -282,6 +366,7 @@ class PenugasanController extends Controller
         } else {
             $validated = $request->validate([
                 'no_spt'                 => ['required', 'string', 'max:60', Rule::unique('penugasan', 'no_spt')->whereNull('deleted_at')],
+                'tanggal_st'             => ['nullable', 'date'],
                 'uraian_penugasan'       => ['required', 'string'],
                 'dasar_penugasan'        => ['nullable', 'string'],
                 'sumber_penugasan_id'    => ['required', 'exists:sumber_penugasan,id'],
@@ -335,7 +420,6 @@ class PenugasanController extends Controller
 
             $tglMulai = \Carbon\Carbon::parse($validated['tanggal_mulai'])->startOfDay();
             $statusOtomatis = now()->startOfDay()->gte($tglMulai) ? 'berjalan' : 'belum_berjalan';
-            $statusPersetujuan = $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'irban', 'admin_irban']) ? 'disetujui' : 'diajukan';
 
             $isSesuaiPkppt = (bool) ($validated['is_sesuai_pkppt'] ?? false);
             $pkpptId = $isSesuaiPkppt ? ($validated['pkppt_id'] ?? null) : null;
@@ -347,6 +431,8 @@ class PenugasanController extends Controller
 
             $penugasan = Penugasan::create([
                 'no_spt'                 => $validated['no_spt'],
+                'tanggal_st'             => $validated['tanggal_st'] ?? now()->toDateString(),
+                'jenis_st'               => 'reguler',
                 'uraian_penugasan'       => $validated['uraian_penugasan'],
                 'dasar_penugasan'        => $validated['dasar_penugasan'] ?? null,
                 'sumber_penugasan_id'    => $validated['sumber_penugasan_id'],
@@ -391,6 +477,27 @@ class PenugasanController extends Controller
 
         ActivityLog::catat('penugasan', $penugasan->id, 'create', null, $penugasan->toArray());
 
+        // Jika statusnya 'diajukan' (diinput Admin Irban), kirim notifikasi permohonan verifikasi ke Pejabat Irban
+        if ($statusPersetujuan === 'diajukan') {
+            $irbanApprovers = User::aktif()->role('irban')
+                ->where(function($q) use ($penugasan) {
+                    $q->where('irban_id', $penugasan->irban_id)
+                      ->orWhereIn('irban_id', $penugasan->irbans->pluck('id'));
+                })->get();
+
+            foreach ($irbanApprovers as $irbanUser) {
+                \App\Models\Notifikasi::create([
+                    'user_id'      => $irbanUser->id,
+                    'penugasan_id' => $penugasan->id,
+                    'jenis'        => 'info_lain',
+                    'judul'        => "Permohonan Verifikasi SPT: {$penugasan->no_spt}",
+                    'pesan'        => "Surat Perintah Tugas {$penugasan->no_spt} telah diajukan oleh {$user->nama} dan menunggu persetujuan Anda.",
+                    'status'       => 'terkirim',
+                    'dikirim_pada' => now(),
+                ]);
+            }
+        }
+
         // Kirim Notifikasi (Email + WhatsApp + In-App) ke Seluruh Anggota Tim
         $penugasan->load(['objekPenugasan', 'tim.user']);
         foreach ($penugasan->tim as $member) {
@@ -422,10 +529,18 @@ class PenugasanController extends Controller
             }
         }
 
-        $pesanPerpanjangan = $penugasan->penugasan_induk_id ? " (Merupakan ST Perpanjangan dari No. SPT {$penugasan->penugasanInduk?->no_spt})" : "";
+        $pesanTipe = match($penugasan->jenis_st) {
+            'bantuan'      => " (Merupakan ST Bantuan dari No. SPT {$penugasan->penugasanInduk?->no_spt})",
+            'perpanjangan' => " (Merupakan ST Perpanjangan dari No. SPT {$penugasan->penugasanInduk?->no_spt})",
+            default        => "",
+        };
+
+        $pesanStatus = ($statusPersetujuan === 'diajukan')
+            ? " Pengajuan ST telah diteruskan ke Pejabat Inspektur Pembantu (Irban) untuk diverifikasi."
+            : "";
 
         return redirect()->route('penugasan.index')
-            ->with('status', "Penugasan dengan No. SPT {$penugasan->no_spt} berhasil ditambahkan!{$pesanPerpanjangan}");
+            ->with('status', "Penugasan dengan No. SPT {$penugasan->no_spt} berhasil ditambahkan!{$pesanTipe}{$pesanStatus}");
     }
 
     /**
@@ -504,11 +619,79 @@ class PenugasanController extends Controller
             abort(403, 'Akses Ditolak: Anda tidak memiliki hak akses untuk mengubah penugasan ini.');
         }
 
-        $isPerpanjangan = (bool) $request->input('is_perpanjangan', 0);
+        $sebelum = $penugasan->toArray();
 
-        if ($isPerpanjangan) {
+        // Tentukan jenis ST
+        $jenisSt = $request->input('jenis_st');
+        if (! $jenisSt) {
+            $isPerpanjangan = (bool) $request->input('is_perpanjangan', 0);
+            $jenisSt = $isPerpanjangan ? 'perpanjangan' : ($penugasan->jenis_st ?? 'reguler');
+        }
+
+        if ($jenisSt === 'bantuan') {
             $validated = $request->validate([
                 'no_spt'                 => ['required', 'string', 'max:60', Rule::unique('penugasan', 'no_spt')->ignore($penugasan->id)->whereNull('deleted_at')],
+                'tanggal_st'             => ['nullable', 'date'],
+                'penugasan_induk_id'     => ['required', 'exists:penugasan,id'],
+                'uraian_penugasan'       => ['required', 'string'],
+                'dasar_penugasan'        => ['nullable', 'string'],
+                'tanggal_mulai'          => ['required', 'date'],
+                'tanggal_selesai'        => ['required', 'date', 'after_or_equal:tanggal_mulai'],
+                'status'                 => ['required', 'in:belum_berjalan,berjalan,selesai'],
+                'tim_anggota'            => ['required', 'array', 'min:1'],
+                'tim_anggota.*'          => ['exists:users,id'],
+            ], [
+                'no_spt.required'               => 'Nomor SPT Bantuan wajib diisi.',
+                'penugasan_induk_id.required'   => 'Anda wajib memilih Surat Tugas Induk (ST Utama) yang dibantu.',
+                'uraian_penugasan.required'     => 'Uraian penugasan wajib diisi.',
+                'tanggal_mulai.required'        => 'Tanggal mulai wajib diisi.',
+                'tanggal_selesai.required'      => 'Tanggal selesai wajib diisi.',
+                'tanggal_selesai.after_or_equal' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.',
+                'tim_anggota.required'          => 'Anggota Tim Bantuan wajib dipilih (minimal 1 personil).',
+            ]);
+
+            $parentSt = Penugasan::with(['irbans', 'objekPenugasan'])->findOrFail($validated['penugasan_induk_id']);
+
+            $penugasan->update([
+                'no_spt'                 => $validated['no_spt'],
+                'tanggal_st'             => $validated['tanggal_st'] ?? ($penugasan->tanggal_st ?? now()->toDateString()),
+                'jenis_st'               => 'bantuan',
+                'uraian_penugasan'       => $validated['uraian_penugasan'],
+                'dasar_penugasan'        => $validated['dasar_penugasan'] ?? null,
+                'sumber_penugasan_id'    => $parentSt->sumber_penugasan_id,
+                'jenis_penugasan_id'     => $parentSt->jenis_penugasan_id,
+                'kelompok_pengawasan_id' => $parentSt->kelompok_pengawasan_id,
+                'tanggal_mulai'          => $validated['tanggal_mulai'],
+                'tanggal_selesai'        => $validated['tanggal_selesai'],
+                'status'                 => $validated['status'],
+                'is_sesuai_pkppt'        => (bool) $parentSt->is_sesuai_pkppt,
+                'pkppt_id'               => $parentSt->pkppt_id,
+                'penugasan_induk_id'     => $parentSt->id,
+                'irban_id'               => $parentSt->irban_id,
+                'diperbarui_oleh'        => $user->id,
+            ]);
+
+            $penugasan->irbans()->sync($parentSt->irbans->pluck('id'));
+            $penugasan->objekPenugasan()->sync($parentSt->objekPenugasan->pluck('id'));
+
+            // Pada ST Bantuan hanya susun Anggota Tim
+            PenugasanTim::where('penugasan_id', $penugasan->id)->delete();
+            $timData = [];
+            foreach ($validated['tim_anggota'] as $userId) {
+                $timData[] = [
+                    'penugasan_id' => $penugasan->id,
+                    'user_id'      => $userId,
+                    'peran'        => 'anggota_tim',
+                ];
+            }
+            if (!empty($timData)) {
+                PenugasanTim::insertOrIgnore($timData);
+            }
+
+        } elseif ($jenisSt === 'perpanjangan') {
+            $validated = $request->validate([
+                'no_spt'                 => ['required', 'string', 'max:60', Rule::unique('penugasan', 'no_spt')->ignore($penugasan->id)->whereNull('deleted_at')],
+                'tanggal_st'             => ['nullable', 'date'],
                 'penugasan_induk_id'     => ['required', 'exists:penugasan,id'],
                 'kelompok_pengawasan_id' => ['nullable', 'exists:kelompok_pengawasan,id'],
                 'uraian_penugasan'       => ['required', 'string'],
@@ -518,7 +701,7 @@ class PenugasanController extends Controller
                 'status'                 => ['required', 'in:belum_berjalan,berjalan,selesai'],
             ], [
                 'no_spt.required'               => 'Nomor SPT perpanjangan wajib diisi.',
-                'penugasan_induk_id.required'   => 'Anda wajib memilih Surat Tugas Indikator (ST Induk) yang diperpanjang.',
+                'penugasan_induk_id.required'   => 'Anda wajib memilih Surat Tugas Induk yang diperpanjang.',
                 'uraian_penugasan.required'     => 'Uraian penugasan wajib diisi.',
                 'tanggal_mulai.required'        => 'Tanggal mulai perpanjangan wajib diisi.',
                 'tanggal_selesai.required'      => 'Tanggal selesai perpanjangan wajib diisi.',
@@ -529,6 +712,8 @@ class PenugasanController extends Controller
 
             $penugasan->update([
                 'no_spt'                 => $validated['no_spt'],
+                'tanggal_st'             => $validated['tanggal_st'] ?? ($penugasan->tanggal_st ?? now()->toDateString()),
+                'jenis_st'               => 'perpanjangan',
                 'uraian_penugasan'       => $validated['uraian_penugasan'],
                 'dasar_penugasan'        => $validated['dasar_penugasan'] ?? null,
                 'sumber_penugasan_id'    => $parentSt->sumber_penugasan_id,
@@ -563,6 +748,7 @@ class PenugasanController extends Controller
         } else {
             $validated = $request->validate([
                 'no_spt'                 => ['required', 'string', 'max:60', Rule::unique('penugasan', 'no_spt')->ignore($penugasan->id)->whereNull('deleted_at')],
+                'tanggal_st'             => ['nullable', 'date'],
                 'uraian_penugasan'       => ['required', 'string'],
                 'dasar_penugasan'        => ['nullable', 'string'],
                 'sumber_penugasan_id'    => ['required', 'exists:sumber_penugasan,id'],
@@ -598,6 +784,8 @@ class PenugasanController extends Controller
 
             $penugasan->update([
                 'no_spt'                 => $validated['no_spt'],
+                'tanggal_st'             => $validated['tanggal_st'] ?? ($penugasan->tanggal_st ?? now()->toDateString()),
+                'jenis_st'               => 'reguler',
                 'uraian_penugasan'       => $validated['uraian_penugasan'],
                 'dasar_penugasan'        => $validated['dasar_penugasan'] ?? null,
                 'sumber_penugasan_id'    => $validated['sumber_penugasan_id'],
@@ -638,17 +826,6 @@ class PenugasanController extends Controller
             }
             PenugasanTim::insertOrIgnore($timData);
         }
-
-        foreach ($peranMap as $field => $peran) {
-            foreach ($validated[$field] as $userId) {
-                $timData[] = [
-                    'penugasan_id' => $penugasan->id,
-                    'user_id'      => $userId,
-                    'peran'        => $peran,
-                ];
-            }
-        }
-        PenugasanTim::insertOrIgnore($timData);
 
         ActivityLog::catat('penugasan', $penugasan->id, 'update', $sebelum, $penugasan->toArray());
 
@@ -773,6 +950,76 @@ class PenugasanController extends Controller
             : 'Surat Perintah Tugas ditolak dan dikembalikan ke pengusul dengan catatan revisi.';
 
         return back()->with('status', $msg);
+    }
+
+    /**
+     * Unggah berkas fisik / digital Surat Tugas resmi yang sudah ditandatangani.
+     */
+    public function uploadBerkasSt(Request $request, Penugasan $penugasan): RedirectResponse
+    {
+        $user = auth()->user();
+        if (! $penugasan->canAccess($user)) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk mengunggah berkas pada penugasan ini.');
+        }
+
+        $request->validate([
+            'berkas_st' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx', 'max:20480'], // max 20MB
+        ], [
+            'berkas_st.required' => 'File berkas Surat Tugas wajib dipilih.',
+            'berkas_st.mimes'    => 'Format file yang diperbolehkan adalah PDF, JPG, PNG, atau DOC/DOCX.',
+            'berkas_st.max'      => 'Ukuran file berkas Surat Tugas maksimal 20 MB.',
+        ]);
+
+        $file = $request->file('berkas_st');
+        $namaAsli = $file->getClientOriginalName();
+        $safeNoSpt = str_replace(['/', '\\', ' '], '_', $penugasan->no_spt);
+        $fileName = 'ST_' . $safeNoSpt . '_' . date('Ymd_His') . '_' . \Illuminate\Support\Str::random(6) . '.' . $file->getClientOriginalExtension();
+
+        // Hapus file lama jika ada (agar tetap rapi dan bisa ditimpa saat revisi ST)
+        if ($penugasan->file_st && Storage::disk('public')->exists($penugasan->file_st)) {
+            Storage::disk('public')->delete($penugasan->file_st);
+        }
+
+        $path = $file->storeAs('berkas_spt', $fileName, 'public');
+
+        $sebelum = $penugasan->toArray();
+        $penugasan->update([
+            'file_st'               => $path,
+            'file_st_nama'          => $namaAsli,
+            'file_st_diunggah_pada' => now(),
+            'file_st_diunggah_oleh' => $user->id,
+            'diperbarui_oleh'       => $user->id,
+        ]);
+
+        ActivityLog::catat(
+            'penugasan',
+            $penugasan->id,
+            'upload_berkas_st',
+            $sebelum,
+            $penugasan->toArray()
+        );
+
+        return back()->with('status', "Berkas Surat Tugas resmi {$penugasan->no_spt} berhasil diunggah/diperbarui.");
+    }
+
+    /**
+     * Unduh atau buka berkas fisik / digital Surat Tugas resmi.
+     */
+    public function downloadBerkasSt(Penugasan $penugasan)
+    {
+        $user = auth()->user();
+        if (! $penugasan->canAccess($user)) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki akses ke berkas Surat Tugas ini.');
+        }
+
+        if (! $penugasan->file_st || ! Storage::disk('public')->exists($penugasan->file_st)) {
+            return back()->with('error', 'Berkas fisik/digital Surat Tugas belum diunggah atau tidak ditemukan.');
+        }
+
+        return Storage::disk('public')->response(
+            $penugasan->file_st,
+            $penugasan->file_st_nama ?? basename($penugasan->file_st)
+        );
     }
 }
 
