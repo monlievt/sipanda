@@ -267,11 +267,11 @@ Saat pelaksanaan rekonsiliasi hasil tindak lanjut berkala atau forum Gelar Penga
    - Kolom tanda tangan para pihak berdampingan.
 4. Klik tombol **"Cetak / Simpan PDF Berita Acara"** untuk dicetak pada kertas A4 atau disimpan dalam format PDF.
 
-### 5.5 📊 Mengunduh Laporan Kompilasi Daerah (Standar Evaluasi BPKP / Kemendagri)
-Untuk kebutuhan pelaporan eksekutif kepada Bupati Trenggalek atau pemantauan evaluasi oleh BPKP Perwakilan Provinsi Jawa Timur:
+### 5.5 📊 Mengunduh Laporan Rekap per Penugasan (Standar Evaluasi dan Pemantauan)
+Untuk kebutuhan pelaporan eksekutif kepada Bupati Trenggalek atau pemantauan evaluasi pengawasan:
 1. Buka menu **Tindak Lanjut Result** (`/tindak-lanjut`).
-2. Klik tombol **"📊 Kompilasi BPKP (Excel)"**.
-3. Sistem mengunduh lembar kerja Excel/CSV berstandar BPKP yang mengelompokkan data seluruh OPD se-Kabupaten Trenggalek per Irban (Irban I, II, III, IV, dan Investigasi), dilengkapi sub-total per Irban serta Grand Total Pemulihan Keuangan Daerah se-Kabupaten Trenggalek.
+2. Klik tombol **"📊 Rekap per Penugasan (Excel)"**.
+3. Sistem mengunduh lembar kerja Excel berstandar evaluasi dan rekonsiliasi yang mengelompokkan data per Irban dan OPD sesuai kewenangan akun pengguna, dilengkapi sub-total serta total pemulihan keuangan daerah.
 
 ---
 
