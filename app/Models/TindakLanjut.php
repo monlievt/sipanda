@@ -124,4 +124,104 @@ class TindakLanjut extends Model
     {
         return $this->status_telaah === 'disetujui_inspektur';
     }
+
+    /**
+     * Scope untuk membatasi data Tindak Lanjut berdasarkan hak akses pengguna
+     */
+    public function scopeAccessibleBy($query, User $user)
+    {
+        // 1. Super Admin, Inspektur, Sekretaris, dan Tim Pelaporan: Akses penuh ke seluruh matriks se-Kabupaten
+        if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'pelaporan'])) {
+            return $query;
+        }
+
+        // 2. Pengguna OPD: hanya TL yang bersangkutan dengan OPD terkait
+        if ($user->isOpd() && $user->objek_penugasan_id) {
+            return $query->where(function ($q) use ($user) {
+                $q->where('objek_penugasan_id', $user->objek_penugasan_id)
+                  ->orWhereHas('penugasan.objekPenugasan', fn($op) => $op->where('objek_penugasan.id', $user->objek_penugasan_id));
+            });
+        }
+
+        // 3. Pejabat Irban dan Admin Irban: Menampilkan seluruh matriks TL di bawah unit Irban-nya
+        if ($user->hasRole(['irban', 'admin_irban'])) {
+            return $query->where(function ($q) use ($user) {
+                if ($user->irban_id) {
+                    $q->whereHas('penugasan', function ($pq) use ($user) {
+                        $pq->where('irban_id', $user->irban_id)
+                           ->orWhereHas('irbans', fn($ib) => $ib->where('irbans.id', $user->irban_id));
+                    })
+                    ->orWhereHas('stPemantauan', function ($sq) use ($user) {
+                        $sq->where('irban_id', $user->irban_id)
+                           ->orWhereHas('irbans', fn($ib) => $ib->where('irbans.id', $user->irban_id));
+                    })
+                    ->orWhereHas('pembuatData', function ($uq) use ($user) {
+                        $uq->where('irban_id', $user->irban_id);
+                    });
+                }
+                $q->orWhere('dibuat_oleh', $user->id)
+                  ->orWhere('telaah_oleh', $user->id);
+            });
+        }
+
+        // 4. Auditor / PPUPD / Anggota Tim Pengawasan:
+        // HANYA menampilkan matriks TL sesuai penugasan yang diampunya / terdaftar dalam susunan tim
+        return $query->where(function ($q) use ($user) {
+            $q->whereHas('penugasan', function ($pq) use ($user) {
+                $pq->whereHas('tim', fn($tq) => $tq->where('user_id', $user->id))
+                   ->orWhere('dibuat_oleh', $user->id);
+            })
+            ->orWhereHas('stPemantauan', function ($sq) use ($user) {
+                $sq->whereHas('tim', fn($tq) => $tq->where('user_id', $user->id))
+                   ->orWhere('dibuat_oleh', $user->id);
+            })
+            ->orWhere('dibuat_oleh', $user->id)
+            ->orWhere('telaah_oleh', $user->id);
+        });
+    }
+
+    /**
+     * Memeriksa apakah user berhak mengakses record tindak lanjut ini
+     */
+    public function canAccess(User $user): bool
+    {
+        if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'pelaporan'])) {
+            return true;
+        }
+
+        if ($user->isOpd() && $user->objek_penugasan_id) {
+            return $this->objek_penugasan_id == $user->objek_penugasan_id
+                || ($this->penugasan && $this->penugasan->objekPenugasan()->where('objek_penugasan.id', $user->objek_penugasan_id)->exists());
+        }
+
+        if ($user->hasRole(['irban', 'admin_irban'])) {
+            if ($user->irban_id) {
+                if ($this->penugasan && ($this->penugasan->irban_id == $user->irban_id || $this->penugasan->irbans()->where('irbans.id', $user->irban_id)->exists())) {
+                    return true;
+                }
+                if ($this->stPemantauan && ($this->stPemantauan->irban_id == $user->irban_id || $this->stPemantauan->irbans()->where('irbans.id', $user->irban_id)->exists())) {
+                    return true;
+                }
+                if ($this->pembuatData && $this->pembuatData->irban_id == $user->irban_id) {
+                    return true;
+                }
+            }
+            if ($this->dibuat_oleh == $user->id || $this->telaah_oleh == $user->id) {
+                return true;
+            }
+        }
+
+        // Auditor / PPUPD / lainnya
+        if ($this->dibuat_oleh == $user->id || $this->telaah_oleh == $user->id) {
+            return true;
+        }
+        if ($this->penugasan && ($this->penugasan->isAnggotaTim($user) || $this->penugasan->dibuat_oleh == $user->id)) {
+            return true;
+        }
+        if ($this->stPemantauan && ($this->stPemantauan->isAnggotaTim($user) || $this->stPemantauan->dibuat_oleh == $user->id)) {
+            return true;
+        }
+
+        return false;
+    }
 }

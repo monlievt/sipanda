@@ -9,6 +9,7 @@ use App\Models\Pkppt;
 use App\Models\TindakLanjut;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx as XlsxReader;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -322,8 +323,17 @@ class ExportController extends Controller
                 ],
             ]);
 
-            // Query Data Tindak Lanjut
-            $query = TindakLanjut::with(['penugasan.irban', 'penugasan.objekPenugasan', 'rincianPenyetoran']);
+            $user = auth()->user();
+
+            if ($user->hasRole(['irban', 'admin_irban']) && $user->irban) {
+                $sheet->setCellValue('A6', 'REKAPITULASI HASIL PENGAWASAN ' . strtoupper($user->irban->nama_irban));
+            } elseif (! $user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'pelaporan'])) {
+                $sheet->setCellValue('A6', 'REKAPITULASI HASIL PENGAWASAN TIM: ' . strtoupper($user->nama_tanpa_gelar ?: $user->nama));
+            }
+
+            // Query Data Tindak Lanjut yang dapat diakses oleh pengguna
+            $query = TindakLanjut::with(['penugasan.irban', 'penugasan.objekPenugasan', 'rincianPenyetoran'])
+                ->accessibleBy($user);
 
             if ($status) {
                 if ($status === 'proses') {
@@ -404,8 +414,8 @@ class ExportController extends Controller
 
                 // Nilai pengembalian ke kas daerah / negara
                 $nilaiPengembalian = (float) $yearItems->sum(function ($it) {
-                    $sumRincian = $it->rincianPenyetoran ? $it->rincianPenyetoran->sum('jumlah_setor') : 0;
-                    return $sumRincian > 0 ? $sumRincian : ($it->nilai_setor ?: 0);
+                    $sumRincian = $it->rincianPenyetoran ? $it->rincianPenyetoran->sum('nilai_setor_rp') : 0;
+                    return $sumRincian > 0 ? $sumRincian : ($it->nilai_setor_rp ?? ($it->nilai_setor ?: 0));
                 });
 
                 $sheet->setCellValue("A{$currentRow}", $no++);
@@ -463,27 +473,57 @@ class ExportController extends Controller
             $sheet->getStyle("F{$currentRow}")->getNumberFormat()->setFormatCode('#,##0');
             $sheet->getStyle("K{$currentRow}:L{$currentRow}")->getNumberFormat()->setFormatCode('#,##0');
 
-            // Signatures Inspektur
-            $inspektur = User::role('inspektur')->first() ?? User::where('jabatan', 'like', '%inspektur%')->first();
-            $inspekturNama = $inspektur?->nama ?? 'Ir. WIJIONO, S.T., M.Mkes.';
-            $prefixInspektur = match(strtolower($inspektur?->status_jabatan ?? 'plt')) {
-                'plt' => 'Plt. ',
-                'plh' => 'Plh. ',
-                'pj'  => 'Pj. ',
-                default => '',
-            };
-            $inspekturJabatan = $prefixInspektur . 'Inspektur Daerah';
-            $inspekturNip = $inspektur?->nip ?? '197001011995011001';
-
             $signStart = $currentRow + 2;
             $sheet->setCellValue("H{$signStart}", "Trenggalek, " . now()->translatedFormat('d F Y'));
-            $sheet->setCellValue("H" . ($signStart + 2), $inspekturJabatan);
-            $sheet->setCellValue("H" . ($signStart + 3), "Kabupaten Trenggalek");
-            $sheet->setCellValue("H" . ($signStart + 7), $inspekturNama);
-            $sheet->setCellValue("H" . ($signStart + 8), "NIP. " . $inspekturNip);
-            $sheet->getStyle("H" . ($signStart + 7))->getFont()->setBold(true)->setUnderline(true);
 
-            $filename = "Rekap_Matriks_TLHP_Trenggalek_" . ($tahun ? "Tahun_{$tahun}" : "Semua_Tahun") . ".xlsx";
+            if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'pelaporan'])) {
+                // Signatures Inspektur
+                $inspektur = User::role('inspektur')->first() ?? User::where('jabatan', 'like', '%inspektur%')->first();
+                $inspekturNama = $inspektur?->nama ?? 'Ir. WIJIONO, S.T., M.Mkes.';
+                $prefixInspektur = match(strtolower($inspektur?->status_jabatan ?? 'plt')) {
+                    'plt' => 'Plt. ',
+                    'plh' => 'Plh. ',
+                    'pj'  => 'Pj. ',
+                    default => '',
+                };
+                $inspekturJabatan = $prefixInspektur . 'Inspektur Daerah';
+                $inspekturNip = $inspektur?->nip ?? '197001011995011001';
+
+                $sheet->setCellValue("H" . ($signStart + 2), $inspekturJabatan);
+                $sheet->setCellValue("H" . ($signStart + 3), "Kabupaten Trenggalek");
+                $sheet->setCellValue("H" . ($signStart + 7), $inspekturNama);
+                $sheet->setCellValue("H" . ($signStart + 8), "NIP. " . $inspekturNip);
+                $sheet->getStyle("H" . ($signStart + 7))->getFont()->setBold(true)->setUnderline(true);
+
+                $filename = "Rekap_Matriks_TLHP_Trenggalek_" . ($tahun ? "Tahun_{$tahun}" : "Semua_Tahun") . ".xlsx";
+            } elseif ($user->hasRole(['irban', 'admin_irban'])) {
+                // Signatures Pejabat Irban Terkait
+                $pejabatIrban = User::role('irban')->where('irban_id', $user->irban_id)->first() ?? $user;
+                $signJabatan = $pejabatIrban->jabatan ?: ('Inspektur Pembantu ' . ($user->irban?->nama_irban ?? ''));
+                $signNama = $pejabatIrban->nama;
+                $signNip = $pejabatIrban->nip ?? '-';
+
+                $sheet->setCellValue("H" . ($signStart + 2), $signJabatan);
+                $sheet->setCellValue("H" . ($signStart + 3), "Inspektorat Kabupaten Trenggalek");
+                $sheet->setCellValue("H" . ($signStart + 7), $signNama);
+                $sheet->setCellValue("H" . ($signStart + 8), "NIP. " . $signNip);
+                $sheet->getStyle("H" . ($signStart + 7))->getFont()->setBold(true)->setUnderline(true);
+
+                $filename = "Rekap_Matriks_TLHP_" . Str::slug($user->irban?->nama_irban ?? 'Irban') . "_" . ($tahun ? "Tahun_{$tahun}" : "Semua_Tahun") . ".xlsx";
+            } else {
+                // Signatures Auditor / Pengawas Pemerintahan
+                $signJabatan = $user->jabatan ?: 'Auditor / Tim Pemeriksa';
+                $signNama = $user->nama;
+                $signNip = $user->nip ?? '-';
+
+                $sheet->setCellValue("H" . ($signStart + 2), $signJabatan);
+                $sheet->setCellValue("H" . ($signStart + 3), "Inspektorat Kabupaten Trenggalek");
+                $sheet->setCellValue("H" . ($signStart + 7), $signNama);
+                $sheet->setCellValue("H" . ($signStart + 8), "NIP. " . $signNip);
+                $sheet->getStyle("H" . ($signStart + 7))->getFont()->setBold(true)->setUnderline(true);
+
+                $filename = "Rekap_Matriks_TLHP_Auditor_" . Str::slug($user->nama_tanpa_gelar ?: $user->nama) . "_" . ($tahun ? "Tahun_{$tahun}" : "Semua_Tahun") . ".xlsx";
+            }
 
             return response()->stream(function () use ($spreadsheet) {
                 $writer = new XlsxWriter($spreadsheet);
@@ -505,15 +545,45 @@ class ExportController extends Controller
      */
     public function exportKompilasiDaerahExcel(Request $request): StreamedResponse
     {
+        $user = auth()->user();
         $tahun = $request->input('tahun', date('Y'));
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Kompilasi TLHP Trenggalek');
+        $sheet->setTitle('Kompilasi TLHP');
+
+        // Tentukan Lingkup dan Hak Akses Pengguna
+        if ($user->hasRole(['admin', 'administrator', 'inspektur', 'sekretaris', 'pelaporan'])) {
+            $judulKompilasi = 'KOMPILASI PEMANTAUAN TINDAK LANJUT HASIL PENGAWASAN (TLHP) SE-KABUPATEN TRENGGALEK';
+            $subJudul = 'STANDAR EVALUASI DAN REKONSILIASI BPKP & KEMENDAGRI RI';
+            $irbans = Irban::orderBy('id', 'asc')->get();
+            $grandTotalLabel = 'TOTAL SE-KABUPATEN TRENGGALEK';
+            $filename = "Kompilasi_TLHP_Kab_Trenggalek_" . ($tahun == 'semua' ? 'Semua_Tahun' : $tahun) . ".xlsx";
+        } elseif ($user->hasRole(['irban', 'admin_irban'])) {
+            $irbanModel = $user->irban;
+            $judulKompilasi = 'KOMPILASI PEMANTAUAN TINDAK LANJUT HASIL PENGAWASAN (TLHP) - ' . strtoupper($irbanModel?->nama_irban ?? 'INSPEKTUR PEMBANTU');
+            $subJudul = 'STANDAR EVALUASI DAN REKONSILIASI BPKP & KEMENDAGRI RI';
+            $irbans = $irbanModel ? Irban::where('id', $irbanModel->id)->get() : Irban::orderBy('id', 'asc')->get();
+            $grandTotalLabel = 'TOTAL ' . strtoupper($irbanModel?->nama_irban ?? 'IRBAN');
+            $filename = "Kompilasi_TLHP_" . Str::slug($irbanModel?->nama_irban ?? 'Irban') . "_" . ($tahun == 'semua' ? 'Semua_Tahun' : $tahun) . ".xlsx";
+        } else {
+            // Auditor / PPUPD / Anggota Tim Pengawasan Lainnya
+            $judulKompilasi = 'KOMPILASI PEMANTAUAN TINDAK LANJUT HASIL PENGAWASAN (TLHP) - TIM PENGAWASAN';
+            $subJudul = 'AUDITOR / PPUPD: ' . strtoupper($user->nama_tanpa_gelar ?: $user->nama);
+
+            $accessiblePenugasan = Penugasan::accessibleBy($user)->get();
+            $irbanIds = $accessiblePenugasan->pluck('irban_id')
+                ->merge($user->irban_id ? [$user->irban_id] : [])
+                ->filter()
+                ->unique();
+            $irbans = Irban::whereIn('id', $irbanIds)->orderBy('id', 'asc')->get();
+            $grandTotalLabel = 'TOTAL HASIL PENGAWASAN TIM (' . strtoupper($user->nama_tanpa_gelar ?: $user->nama) . ')';
+            $filename = "Kompilasi_TLHP_Auditor_" . Str::slug($user->nama_tanpa_gelar ?: $user->nama) . "_" . ($tahun == 'semua' ? 'Semua_Tahun' : $tahun) . ".xlsx";
+        }
 
         // Judul Header Dokumen Resmi
-        $sheet->setCellValue('A1', 'KOMPILASI PEMANTAUAN TINDAK LANJUT HASIL PENGAWASAN (TLHP) SE-KABUPATEN TRENGGALEK');
-        $sheet->setCellValue('A2', 'STANDAR EVALUASI DAN REKONSILIASI BPKP & KEMENDAGRI RI');
+        $sheet->setCellValue('A1', $judulKompilasi);
+        $sheet->setCellValue('A2', $subJudul);
         $sheet->setCellValue('A3', 'Tahun Anggaran Pemantauan: ' . ($tahun == 'semua' ? 'Seluruh Tahun Anggaran' : $tahun));
         $sheet->setCellValue('A4', 'Tanggal Cetak: ' . now()->translatedFormat('d F Y H:i') . ' WIB');
 
@@ -544,8 +614,6 @@ class ExportController extends Controller
         }
         $this->styleTableHeader($sheet, 'A6:N6', '0F172A', 'FFFFFF');
 
-        $irbans = Irban::orderBy('id', 'asc')->get();
-
         $noUrut = 1;
         $row = 7;
         $grandTotalLhp = 0;
@@ -567,8 +635,8 @@ class ExportController extends Controller
             $subTotalNilai = 0;
             $subTotalSetor = 0;
 
-            // Cari seluruh penugasan pada Irban ini
-            $irbanPenugasanIds = Penugasan::where(function ($q) use ($irban) {
+            // Cari seluruh penugasan pada Irban ini yang dapat diakses oleh user
+            $irbanPenugasanIds = Penugasan::accessibleBy($user)->where(function ($q) use ($irban) {
                 $q->where('irban_id', $irban->id)
                   ->orWhereHas('irbans', fn($m) => $m->where('irbans.id', $irban->id));
             })->pluck('id');
@@ -578,15 +646,21 @@ class ExportController extends Controller
                 $q->whereIn('penugasan.id', $irbanPenugasanIds);
             })->orderBy('nama', 'asc')->get();
 
+            if ($opdList->isEmpty()) {
+                continue;
+            }
+
             foreach ($opdList as $opd) {
-                $penugasanIds = Penugasan::where(function ($q) use ($irban) {
+                $penugasanIds = Penugasan::accessibleBy($user)->where(function ($q) use ($irban) {
                     $q->where('irban_id', $irban->id)
                       ->orWhereHas('irbans', fn($m) => $m->where('irbans.id', $irban->id));
                 })->whereHas('objekPenugasan', function ($q) use ($opd) {
                     $q->where('objek_penugasan.id', $opd->id);
                 })->pluck('id');
 
-                $tlQuery = TindakLanjut::with('rincianPenyetoran')->whereIn('penugasan_id', $penugasanIds);
+                $tlQuery = TindakLanjut::accessibleBy($user)
+                    ->with('rincianPenyetoran')
+                    ->whereIn('penugasan_id', $penugasanIds);
 
                 if ($tahun && $tahun !== 'semua') {
                     $tlQuery->whereYear('tgl_lhp', $tahun);
@@ -600,10 +674,10 @@ class ExportController extends Controller
                 }
 
                 $jmlRekomendasi = $rekomendasiList->count();
-                $jmlSs  = $rekomendasiList->where('status_tindak_lanjut', 'selesai')->count();
-                $jmlBs  = $rekomendasiList->where('status_tindak_lanjut', 'dalam_proses')->count();
-                $jmlBtl = $rekomendasiList->where('status_tindak_lanjut', 'belum_ditindaklanjuti')->count();
-                $jmlTdt = $rekomendasiList->where('status_tindak_lanjut', 'tdt')->count();
+                $jmlSs  = $rekomendasiList->whereIn('status_tindak_lanjut', ['selesai', 'sesuai'])->count();
+                $jmlBs  = $rekomendasiList->whereIn('status_tindak_lanjut', ['proses', 'menunggu_verifikasi', 'dalam_proses', 'belum_sesuai'])->count();
+                $jmlBtl = $rekomendasiList->whereIn('status_tindak_lanjut', ['belum', 'belum_ditindaklanjuti', 'belum_tl'])->count();
+                $jmlTdt = $rekomendasiList->whereIn('status_tindak_lanjut', ['tdt', 'tidak_dapat_ditindaklanjuti'])->count();
 
                 $nilaiRekomendasi = (float) $rekomendasiList->sum('nilai_rekomendasi_rp');
                 $nilaiSetor = (float) $rekomendasiList->sum(function ($r) {
@@ -690,12 +764,12 @@ class ExportController extends Controller
             $row++;
         }
 
-        // Baris GRAND TOTAL Se-Kabupaten Trenggalek
+        // Baris GRAND TOTAL
         $grandSisa = max(0, $grandTotalNilai - $grandTotalSetor);
         $grandPersenSelesai = $grandTotalRekomendasi > 0 ? round(($grandTotalSs / $grandTotalRekomendasi) * 100, 1) : 0;
         $grandPersenPulih   = $grandTotalNilai > 0 ? round(($grandTotalSetor / $grandTotalNilai) * 100, 1) : 0;
 
-        $sheet->setCellValue('B' . $row, 'TOTAL SE-KABUPATEN TRENGGALEK');
+        $sheet->setCellValue('B' . $row, $grandTotalLabel);
         $sheet->setCellValue('D' . $row, $grandTotalLhp);
         $sheet->setCellValue('E' . $row, $grandTotalRekomendasi);
         $sheet->setCellValue('F' . $row, $grandTotalSs);
@@ -725,8 +799,6 @@ class ExportController extends Controller
         foreach (range('A', 'N') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
-
-        $filename = "Kompilasi_TLHP_Kab_Trenggalek_" . ($tahun == 'semua' ? 'Semua_Tahun' : $tahun) . ".xlsx";
 
         return response()->stream(function () use ($spreadsheet) {
             $writer = new XlsxWriter($spreadsheet);
