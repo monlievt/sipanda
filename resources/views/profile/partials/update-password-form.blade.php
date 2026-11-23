@@ -1,10 +1,10 @@
 <section>
     <header>
-        <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+        <h2 class="text-lg font-bold text-ink">
             {{ __('Perbarui Kata Sandi') }}
         </h2>
 
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        <p class="mt-1 text-sm text-ink-secondary">
             {{ __('Pastikan akun Anda menggunakan kata sandi yang panjang dan acak untuk menjaga keamanan.') }}
         </p>
     </header>
@@ -40,7 +40,7 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-emerald-600 dark:text-emerald-400 font-semibold"
+                    class="text-sm text-brand-ink font-semibold"
                 >{{ __('Berhasil disimpan.') }}</p>
             @endif
         </div>

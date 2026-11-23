@@ -2,19 +2,21 @@
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <a href="{{ route('master.users.index') }}" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-bold inline-flex items-center gap-1 mb-1.5">
-                    &larr; Kembali ke Daftar Pegawai Internal
+                <a href="{{ route('master.users.index') }}" class="text-xs text-brand-ink hover:underline font-bold inline-flex items-center gap-1 mb-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    Kembali ke Daftar Pegawai Internal
                 </a>
-                <h1 class="text-xl font-bold text-slate-900 dark:text-white">Tambah Pegawai Internal APIP Baru</h1>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Daftarkan data auditor, PPUPD, pimpinan, atau pejabat pengawasan ke dalam database SINGAWASI</p>
+                <h1 class="text-xl font-bold text-ink">Tambah Pegawai Internal APIP Baru</h1>
+                <p class="text-xs text-ink-secondary mt-0.5">Daftarkan data auditor, PPUPD, pimpinan, atau pejabat pengawasan ke dalam database SINGAWASI</p>
             </div>
         </div>
     </x-slot>
 
     @if ($errors->any())
-        <div class="mb-6 p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-2xl text-rose-800 dark:text-rose-300 text-xs space-y-1">
+        <div class="mb-6 p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-[10px] text-rose-800 dark:text-rose-300 text-xs space-y-1">
             <p class="font-bold flex items-center gap-1.5 text-sm">
-                <span>⚠️</span> Terdapat beberapa isian yang perlu diperbaiki:
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                Terdapat beberapa isian yang perlu diperbaiki:
             </p>
             <ul class="list-disc list-inside space-y-0.5 pl-2">
                 @foreach ($errors->all() as $error)
@@ -28,75 +30,75 @@
         @csrf
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            
+
             <!-- KOLOM KIRI (FORM UTAMA) -->
             <div class="lg:col-span-2 space-y-6">
 
                 <!-- KARTU 1: IDENTITAS & KONTAK -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
-                    <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-                        <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 flex items-center justify-center font-black text-xs">1</span>
+                <div class="bg-surface rounded-[10px] p-6 sm:p-7 border border-hairline space-y-5">
+                    <div class="flex items-center gap-2.5 pb-3 border-b border-hairline">
+                        <span class="w-7 h-7 rounded-[6px] bg-brand-soft text-brand-ink border border-brand-border flex items-center justify-center font-bold text-xs">1</span>
                         <div>
-                            <h2 class="font-bold text-slate-900 dark:text-white text-sm">Identitas & Kontak Pegawai</h2>
-                            <p class="text-[11px] text-slate-500">Nama lengkap dengan gelar, NIP resmi, dan kontak aktif</p>
+                            <h2 class="font-bold text-ink text-sm">Identitas & Kontak Pegawai</h2>
+                            <p class="text-[11px] text-ink-secondary">Nama lengkap dengan gelar, NIP resmi, dan kontak aktif</p>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap (dg Gelar) <span class="text-rose-500">*</span></label>
-                            <input type="text" name="nama" id="inputNama" value="{{ old('nama') }}" required placeholder="Contoh: Ir. WIJIONO, S.T., M.MKes." class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
-                            <p class="text-[10px] text-slate-400 mt-1">Gelar depan/belakang dicantumkan untuk format dokumen resmi.</p>
+                            <label class="block font-bold text-xs text-ink mb-1.5">Nama Lengkap (dg Gelar) <span class="text-rose-600">*</span></label>
+                            <input type="text" name="nama" id="inputNama" value="{{ old('nama') }}" required placeholder="Contoh: Ir. WIJIONO, S.T., M.MKes." class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs px-3.5 py-2.5">
+                            <p class="text-[10px] text-ink-muted mt-1">Gelar depan/belakang dicantumkan untuk format dokumen resmi.</p>
                         </div>
 
                         <div>
-                            <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Nama Panggilan / Sapaan</label>
-                            <input type="text" name="nama_tanpa_gelar" id="inputNamaTanpaGelar" value="{{ old('nama_tanpa_gelar') }}" placeholder="Contoh: Pak Wijiono" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
-                            <p class="text-[10px] text-slate-400 mt-1">Digunakan untuk sapaan notifikasi & dasbor.</p>
+                            <label class="block font-bold text-xs text-ink mb-1.5">Nama Panggilan / Sapaan</label>
+                            <input type="text" name="nama_tanpa_gelar" id="inputNamaTanpaGelar" value="{{ old('nama_tanpa_gelar') }}" placeholder="Contoh: Pak Wijiono" class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs px-3.5 py-2.5">
+                            <p class="text-[10px] text-ink-muted mt-1">Digunakan untuk sapaan notifikasi & dasbor.</p>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
                         <div>
-                            <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">NIP Pegawai (18 Digit) <span class="text-rose-500">*</span></label>
-                            <input type="text" name="nip" id="inputNip" value="{{ old('nip') }}" required placeholder="197308051997031007" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs font-mono px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <label class="block font-bold text-xs text-ink mb-1.5">NIP Pegawai (18 Digit) <span class="text-rose-600">*</span></label>
+                            <input type="text" name="nip" id="inputNip" value="{{ old('nip') }}" required placeholder="197308051997031007" class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs font-mono px-3.5 py-2.5">
                         </div>
 
                         <div>
-                            <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Email Dinas / Akun <span class="text-rose-500">*</span></label>
-                            <input type="email" name="email" id="inputEmail" value="{{ old('email') }}" required placeholder="nama@trenggalek.go.id" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <label class="block font-bold text-xs text-ink mb-1.5">Email Dinas / Akun <span class="text-rose-600">*</span></label>
+                            <input type="email" name="email" id="inputEmail" value="{{ old('email') }}" required placeholder="nama@trenggalek.go.id" class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs px-3.5 py-2.5">
                         </div>
 
                         <div>
-                            <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">No. WhatsApp / HP</label>
-                            <input type="text" name="no_hp" id="inputNoHp" value="{{ old('no_hp') }}" placeholder="081234567890" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <label class="block font-bold text-xs text-ink mb-1.5">No. WhatsApp / HP</label>
+                            <input type="text" name="no_hp" id="inputNoHp" value="{{ old('no_hp') }}" placeholder="Nomor WhatsApp / HP aktif" class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs px-3.5 py-2.5">
                         </div>
                     </div>
                 </div>
 
                 <!-- KARTU 2: STATUS KEPEGAWAIAN ASN (BAKU BKN) -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
-                    <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-                        <span class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 flex items-center justify-center font-black text-xs">2</span>
+                <div class="bg-surface rounded-[10px] p-6 sm:p-7 border border-hairline space-y-5">
+                    <div class="flex items-center gap-2.5 pb-3 border-b border-hairline">
+                        <span class="w-7 h-7 rounded-[6px] bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800 flex items-center justify-center font-bold text-xs">2</span>
                         <div>
-                            <h2 class="font-bold text-slate-900 dark:text-white text-sm">Status Kepegawaian & Jabatan Definitif ASN</h2>
-                            <p class="text-[11px] text-slate-500">Pangkat, Golongan Ruang, dan Nomenklatur Jabatan Pegawai</p>
+                            <h2 class="font-bold text-ink text-sm">Status Kepegawaian & Jabatan Definitif ASN</h2>
+                            <p class="text-[11px] text-ink-secondary">Pangkat, Golongan Ruang, dan Nomenklatur Jabatan Pegawai</p>
                         </div>
                     </div>
 
                     <!-- Pilihan Jabatan Baku & Kustom -->
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <label class="block font-bold text-xs text-slate-700 dark:text-slate-300">Pilih Jabatan Definitif Baku <span class="text-rose-500">*</span></label>
-                            <label class="inline-flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer">
-                                <input type="checkbox" id="checkCustomJabatan" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                            <label class="block font-bold text-xs text-ink">Pilih Jabatan Definitif Baku <span class="text-rose-600">*</span></label>
+                            <label class="inline-flex items-center gap-1.5 text-xs text-ink-secondary cursor-pointer">
+                                <input type="checkbox" id="checkCustomJabatan" class="rounded-[4px] border-hairline-strong text-brand focus:ring-brand">
                                 <span>Input Kustom / Manual</span>
                             </label>
                         </div>
 
                         <!-- Dropdown Pilihan Baku -->
                         <div id="containerSelectJabatan">
-                            <select id="selectJabatanBaku" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 font-semibold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500">
+                            <select id="selectJabatanBaku" class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs px-3.5 py-2.5 font-semibold">
                                 <option value="">-- Pilih Jabatan Baku di Lingkungan Inspektorat --</option>
                                 @foreach($jabatanBaku as $kategori => $items)
                                     <optgroup label="{{ $kategori }}">
@@ -110,46 +112,46 @@
 
                         <!-- Input Text Jabatan (Aktual yang dikirim ke form) -->
                         <div id="containerTextJabatan" class="{{ old('jabatan') ? '' : 'hidden' }}">
-                            <input type="text" name="jabatan" id="inputJabatan" value="{{ old('jabatan') }}" required placeholder="Ketik nama jabatan definitif pegawai..." class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-900 dark:text-white px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <input type="text" name="jabatan" id="inputJabatan" value="{{ old('jabatan') }}" required placeholder="Ketik nama jabatan definitif pegawai..." class="w-full rounded-[6px] border border-hairline-strong bg-surface text-xs font-bold text-ink px-3.5 py-2.5">
                         </div>
                     </div>
 
                     <!-- Golongan & Pangkat Berpasangan Baku -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                         <div>
-                            <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Golongan Ruang ASN</label>
-                            <select name="golongan" id="selectGolongan" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 font-bold focus:ring-2 focus:ring-emerald-500">
+                            <label class="block font-bold text-xs text-ink mb-1.5">Golongan Ruang ASN</label>
+                            <select name="golongan" id="selectGolongan" class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs px-3.5 py-2.5 font-bold">
                                 <option value="">-- Pilih Golongan Ruang --</option>
                                 @foreach($pangkatGolongan as $gol => $pkt)
                                     <option value="{{ $gol }}" data-pangkat="{{ $pkt }}" {{ old('golongan') === $gol ? 'selected' : '' }}>
-                                        Golongan {{ $gol }} &mdash; {{ $pkt }}
+                                        Golongan {{ $gol }} | {{ $pkt }}
                                     </option>
                                 @endforeach
                             </select>
-                            <p class="text-[10px] text-slate-400 mt-1">Memilih Golongan akan otomatis mengisi Pangkat di samping.</p>
+                            <p class="text-[10px] text-ink-muted mt-1">Memilih Golongan akan otomatis mengisi Pangkat di samping.</p>
                         </div>
 
                         <div>
-                            <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Pangkat ASN</label>
-                            <input type="text" name="pangkat" id="inputPangkat" value="{{ old('pangkat') }}" placeholder="Contoh: Pembina Utama Muda" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs font-semibold px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <label class="block font-bold text-xs text-ink mb-1.5">Pangkat ASN</label>
+                            <input type="text" name="pangkat" id="inputPangkat" value="{{ old('pangkat') }}" placeholder="Contoh: Pembina Utama Muda" class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs font-semibold px-3.5 py-2.5">
                         </div>
                     </div>
                 </div>
 
                 <!-- KARTU 3: PENUGASAN PIMPINAN & HAK AKSES SISTEM -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
-                    <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-                        <span class="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 flex items-center justify-center font-black text-xs">3</span>
+                <div class="bg-surface rounded-[10px] p-6 sm:p-7 border border-hairline space-y-5">
+                    <div class="flex items-center gap-2.5 pb-3 border-b border-hairline">
+                        <span class="w-7 h-7 rounded-[6px] bg-surface-subtle text-ink border border-hairline-strong flex items-center justify-center font-bold text-xs">3</span>
                         <div>
-                            <h2 class="font-bold text-slate-900 dark:text-white text-sm">Penugasan Pimpinan & Hak Akses Sistem</h2>
-                            <p class="text-[11px] text-slate-500">Penetapan role akses, unit penempatan, serta status Plt / Plh / Pj / Definitif</p>
+                            <h2 class="font-bold text-ink text-sm">Penugasan Pimpinan & Hak Akses Sistem</h2>
+                            <p class="text-[11px] text-ink-secondary">Penetapan role akses, unit penempatan, serta status Plt / Plh / Pj / Definitif</p>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
-                            <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Role / Peran di Sistem <span class="text-rose-500">*</span></label>
-                            <select name="role" id="selectRole" required class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs font-bold text-purple-700 dark:text-purple-400 px-3.5 py-2.5 focus:ring-2 focus:ring-purple-500">
+                            <label class="block font-bold text-xs text-ink mb-1.5">Role / Peran di Sistem <span class="text-rose-600">*</span></label>
+                            <select name="role" id="selectRole" required class="w-full rounded-[6px] border border-hairline-strong bg-surface text-xs font-bold text-ink px-3.5 py-2.5">
                                 @foreach($roles as $r)
                                     <option value="{{ $r->name }}" {{ (old('role') === $r->name || (!old('role') && $r->name === 'auditor')) ? 'selected' : '' }}>{{ ucfirst($r->name) }}</option>
                                 @endforeach
@@ -157,8 +159,8 @@
                         </div>
 
                         <div>
-                            <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Unit Penempatan / Irban</label>
-                            <select name="irban_id" id="selectIrban" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs font-semibold px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
+                            <label class="block font-bold text-xs text-ink mb-1.5">Unit Penempatan / Irban</label>
+                            <select name="irban_id" id="selectIrban" class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs font-semibold px-3.5 py-2.5">
                                 <option value="">-- Sekretariat / Umum --</option>
                                 @foreach($irbans as $irban)
                                     <option value="{{ $irban->id }}" {{ old('irban_id') == $irban->id ? 'selected' : '' }}>{{ $irban->nama_irban }}</option>
@@ -167,8 +169,8 @@
                         </div>
 
                         <div>
-                            <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Status Penugasan Pimpinan <span class="text-rose-500">*</span></label>
-                            <select name="status_jabatan" id="selectStatusJabatan" required class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs font-bold text-amber-700 dark:text-amber-400 px-3.5 py-2.5 focus:ring-2 focus:ring-amber-500">
+                            <label class="block font-bold text-xs text-ink mb-1.5">Status Penugasan Pimpinan <span class="text-rose-600">*</span></label>
+                            <select name="status_jabatan" id="selectStatusJabatan" required class="w-full rounded-[6px] border border-hairline-strong bg-surface text-xs font-bold text-ink px-3.5 py-2.5">
                                 <option value="definitif" {{ old('status_jabatan') === 'definitif' ? 'selected' : '' }}>Definitif (Pejabat Tetap)</option>
                                 <option value="plt" {{ old('status_jabatan') === 'plt' ? 'selected' : '' }}>Plt. (Pelaksana Tugas)</option>
                                 <option value="plh" {{ old('status_jabatan') === 'plh' ? 'selected' : '' }}>Plh. (Pelaksana Harian)</option>
@@ -179,58 +181,58 @@
                 </div>
 
                 <!-- KARTU 4: KEAMANAN AKUN -->
-                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                    <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-                        <span class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 flex items-center justify-center font-black text-xs">4</span>
+                <div class="bg-surface rounded-[10px] p-6 sm:p-7 border border-hairline space-y-4">
+                    <div class="flex items-center gap-2.5 pb-3 border-b border-hairline">
+                        <span class="w-7 h-7 rounded-[6px] bg-surface-subtle text-ink border border-hairline-strong flex items-center justify-center font-bold text-xs">4</span>
                         <div>
-                            <h2 class="font-bold text-slate-900 dark:text-white text-sm">Keamanan & Password Awal</h2>
-                            <p class="text-[11px] text-slate-500">Pengaturan kata sandi untuk login pegawai</p>
+                            <h2 class="font-bold text-ink text-sm">Keamanan & Password Awal</h2>
+                            <p class="text-[11px] text-ink-secondary">Pengaturan kata sandi untuk login pegawai</p>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">Password Awal Akun (Opsional)</label>
-                        <input type="text" name="password" placeholder="Default: Sesuai NIP Pegawai" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500">
-                        <p class="text-[10px] text-slate-400 mt-1">Jika dikosongkan, password awal otomatis diset sama dengan NIP pegawai.</p>
+                        <label class="block font-bold text-xs text-ink mb-1.5">Password Awal Akun (Opsional)</label>
+                        <input type="text" name="password" placeholder="Default: Sesuai NIP Pegawai" class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs px-3.5 py-2.5">
+                        <p class="text-[10px] text-ink-muted mt-1">Jika dikosongkan, password awal otomatis diset sama dengan NIP pegawai.</p>
                     </div>
                 </div>
 
                 <!-- ACTION BUTTONS -->
                 <div class="flex items-center justify-end gap-3 pt-2">
-                    <a href="{{ route('master.users.index') }}" class="px-5 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-bold rounded-2xl text-xs transition-all">
+                    <a href="{{ route('master.users.index') }}" class="ledger-btn-secondary !text-xs">
                         Batal
                     </a>
-                    <button type="submit" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-black rounded-2xl text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer">
-                        💾 Simpan Pegawai Baru
+                    <button type="submit" class="ledger-btn-primary !text-xs cursor-pointer">
+                        Simpan Pegawai Baru
                     </button>
                 </div>
             </div>
 
             <!-- KOLOM KANAN (STICKY LIVE PREVIEW & PANDUAN) -->
             <div class="space-y-6 lg:sticky lg:top-6">
-                
+
                 <!-- LIVE PREVIEW CARD -->
-                <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-3xl p-6 shadow-xl border border-slate-700/50 space-y-4">
+                <div class="bg-surface text-ink rounded-[10px] p-6 border border-hairline-strong space-y-4">
                     <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400">⚡ Live Preview Pegawai</span>
-                        <span id="previewStatusBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Definitif</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-brand-ink">Live Preview Pegawai</span>
+                        <span id="previewStatusBadge" class="px-2 py-0.5 rounded-[4px] text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">Definitif</span>
                     </div>
 
                     <div class="space-y-1">
-                        <h3 id="previewNama" class="text-base font-black text-white line-clamp-2">Nama Pegawai Lengkap</h3>
-                        <p id="previewNip" class="text-xs font-mono text-slate-300">NIP. -</p>
+                        <h3 id="previewNama" class="text-base font-bold text-ink line-clamp-2">Nama Pegawai Lengkap</h3>
+                        <p id="previewNip" class="text-xs font-mono text-ink-secondary">NIP. -</p>
                     </div>
 
-                    <div class="pt-3 border-t border-slate-700/60 space-y-2 text-xs">
+                    <div class="pt-3 border-t border-hairline space-y-2 text-xs">
                         <div>
-                            <span class="text-[10px] text-slate-400 block uppercase font-bold">Jabatan Definitif ASN:</span>
-                            <p id="previewJabatanDefinitif" class="font-bold text-slate-200">Sekretaris</p>
-                            <p id="previewPangkatGolongan" class="text-[11px] text-slate-400">-</p>
+                            <span class="text-[10px] text-ink-muted block uppercase font-bold">Jabatan Definitif ASN:</span>
+                            <p id="previewJabatanDefinitif" class="font-bold text-ink">Sekretaris</p>
+                            <p id="previewPangkatGolongan" class="text-[11px] text-ink-secondary">-</p>
                         </div>
 
                         <div class="pt-2">
-                            <span class="text-[10px] text-slate-400 block uppercase font-bold">Penugasan Resmi Dokumen / SPT:</span>
-                            <div class="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 font-black text-xs mt-1" id="previewPenugasanSistem">
+                            <span class="text-[10px] text-ink-muted block uppercase font-bold">Penugasan Resmi Dokumen / SPT:</span>
+                            <div class="p-2.5 rounded-[6px] bg-brand-soft border border-brand-border text-brand-ink font-bold text-xs mt-1" id="previewPenugasanSistem">
                                 Pejabat Definitif (Auditor)
                             </div>
                         </div>
@@ -238,30 +240,30 @@
                 </div>
 
                 <!-- PANDUAN PENUGASAN PLT / DEFINITIF -->
-                <div class="bg-blue-50/80 dark:bg-blue-950/30 rounded-3xl p-6 border border-blue-200 dark:border-blue-900/60 space-y-3 text-xs text-blue-900 dark:text-blue-300">
-                    <div class="flex items-center gap-2 font-black text-xs uppercase tracking-wide text-blue-800 dark:text-blue-200">
-                        <span>💡</span>
+                <div class="bg-blue-50 dark:bg-blue-950/30 rounded-[10px] p-5 border border-blue-200 dark:border-blue-900 space-y-3 text-xs text-blue-900 dark:text-blue-200">
+                    <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wide text-blue-900 dark:text-blue-200">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         <span>Contoh Logika Penugasan Pimpinan</span>
                     </div>
 
                     <div class="space-y-2.5 text-[11px] leading-relaxed">
-                        <div class="p-2.5 bg-white/80 dark:bg-slate-900/80 rounded-xl border border-blue-200 dark:border-blue-800/60">
-                            <p class="font-bold text-slate-900 dark:text-white">Kasus 1: Sekretaris menjabat Plt. Inspektur</p>
-                            <p class="text-slate-600 dark:text-slate-400 mt-0.5">
-                                • Jabatan Definitif = <code>Sekretaris</code><br>
-                                • Role = <code>Inspektur</code><br>
-                                • Status = <code>Plt.</code><br>
-                                👉 Dokumen SPT tercetak: <strong>Plt. INSPEKTUR KABUPATEN TRENGGALEK</strong>.
+                        <div class="p-3 bg-surface rounded-[6px] border border-blue-200 dark:border-blue-800">
+                            <p class="font-bold text-ink">Kasus 1: Sekretaris menjabat Plt. Inspektur</p>
+                            <p class="text-ink-secondary mt-0.5">
+                                &bull; Jabatan Definitif = <code class="font-mono text-ink">Sekretaris</code><br>
+                                &bull; Role = <code class="font-mono text-ink">Inspektur</code><br>
+                                &bull; Status = <code class="font-mono text-ink">Plt.</code><br>
+                                Hasil cetak SPT: <strong class="text-ink">Plt. INSPEKTUR KABUPATEN TRENGGALEK</strong>.
                             </p>
                         </div>
 
-                        <div class="p-2.5 bg-white/80 dark:bg-slate-900/80 rounded-xl border border-blue-200 dark:border-blue-800/60">
-                            <p class="font-bold text-slate-900 dark:text-white">Kasus 2: Auditor Madya menjabat Plt. Irban</p>
-                            <p class="text-slate-600 dark:text-slate-400 mt-0.5">
-                                • Jabatan Definitif = <code>Auditor Ahli Madya</code><br>
-                                • Role = <code>Irban</code>, Unit = <code>Irban Khusus</code><br>
-                                • Status = <code>Plt.</code><br>
-                                👉 Terbaca di sistem: <strong>Plt. Inspektur Pembantu Khusus</strong>.
+                        <div class="p-3 bg-surface rounded-[6px] border border-blue-200 dark:border-blue-800">
+                            <p class="font-bold text-ink">Kasus 2: Auditor Madya menjabat Plt. Irban</p>
+                            <p class="text-ink-secondary mt-0.5">
+                                &bull; Jabatan Definitif = <code class="font-mono text-ink">Auditor Ahli Madya</code><br>
+                                &bull; Role = <code class="font-mono text-ink">Irban</code>, Unit = <code class="font-mono text-ink">Irban Khusus</code><br>
+                                &bull; Status = <code class="font-mono text-ink">Plt.</code><br>
+                                Terbaca di sistem: <strong class="text-ink">Plt. Inspektur Pembantu Khusus</strong>.
                             </p>
                         </div>
                     </div>
@@ -360,7 +362,7 @@
 
                 // 2. Jabatan Definitif
                 previewJabatanDefinitif.innerText = inputJabatan.value.trim() || 'Belum dipilih';
-                
+
                 // 3. Pangkat & Golongan
                 const gol = selectGolongan.value;
                 const pkt = inputPangkat.value.trim();
@@ -383,18 +385,18 @@
                 if (status === 'plt') {
                     prefix = 'Plt. ';
                     previewStatusBadge.innerText = 'Plt.';
-                    previewStatusBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30';
+                    previewStatusBadge.className = 'px-2 py-0.5 rounded-[4px] text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800';
                 } else if (status === 'plh') {
                     prefix = 'Plh. ';
                     previewStatusBadge.innerText = 'Plh.';
-                    previewStatusBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30';
+                    previewStatusBadge.className = 'px-2 py-0.5 rounded-[4px] text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800';
                 } else if (status === 'pj') {
                     prefix = 'Pj. ';
                     previewStatusBadge.innerText = 'Pj.';
-                    previewStatusBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/30';
+                    previewStatusBadge.className = 'px-2 py-0.5 rounded-[4px] text-[10px] font-bold bg-surface-subtle text-ink border border-hairline-strong';
                 } else {
                     previewStatusBadge.innerText = 'Definitif';
-                    previewStatusBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+                    previewStatusBadge.className = 'px-2 py-0.5 rounded-[4px] text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800';
                 }
 
                 if (role === 'inspektur') {

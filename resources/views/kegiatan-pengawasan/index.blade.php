@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Realisasi PKPPT — Perbandingan Rencana (PKPPT) vs Realisasi
+        Realisasi PKPPT: Perbandingan Rencana (PKPPT) vs Realisasi
     </x-slot>
 
     <!-- Main Container with Alpine State for Detail Modal -->
@@ -16,13 +16,13 @@
         <!-- Header & Filter -->
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h2 class="text-xl font-black text-slate-900 dark:text-white tracking-tight">Monitoring Realisasi PKPPT</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Perbandingan otomatis rencana kegiatan PKPPT dengan Surat Perintah Tugas (SPT) realisasi.</p>
+                <h2 class="text-xl font-bold text-ink tracking-tight">Monitoring Realisasi PKPPT</h2>
+                <p class="text-xs text-ink-secondary mt-0.5">Perbandingan otomatis rencana kegiatan PKPPT dengan Surat Perintah Tugas (SPT) realisasi.</p>
             </div>
 
             <form method="GET" action="{{ route('kegiatan-pengawasan.index') }}" class="flex items-center gap-3">
                 <div>
-                    <select name="tahun" onchange="this.form.submit()" class="text-xs font-semibold rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-emerald-500">
+                    <select name="tahun" onchange="this.form.submit()" class="text-xs font-semibold rounded-[6px] border-hairline-strong bg-surface text-ink">
                         @foreach($tahunList as $t)
                             <option value="{{ $t }}" {{ $t == $tahun ? 'selected' : '' }}>Tahun {{ $t }}</option>
                         @endforeach
@@ -31,7 +31,7 @@
 
                 @if(auth()->user()->isPimpinanOrAdmin())
                 <div>
-                    <select name="irban_id" onchange="this.form.submit()" class="text-xs font-semibold rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-emerald-500">
+                    <select name="irban_id" onchange="this.form.submit()" class="text-xs font-semibold rounded-[6px] border-hairline-strong bg-surface text-ink">
                         <option value="">-- Semua Irban --</option>
                         @foreach($irbans as $irban)
                             <option value="{{ $irban->id }}" {{ $irbanId == $irban->id ? 'selected' : '' }}>{{ $irban->nama_irban }}</option>
@@ -44,62 +44,72 @@
 
         <!-- Summary Indicators Cards -->
         <div class="grid grid-cols-2 sm:grid-cols-5 gap-3.5 mb-6">
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-lg">
-                    🟢
+            <div class="bg-surface p-4 rounded-[10px] border border-hairline flex items-center gap-3">
+                <div class="w-10 h-10 rounded-[6px] bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
                 </div>
                 <div>
-                    <p class="text-2xl font-black text-emerald-600 dark:text-emerald-400">{{ $rekap['indikator_hijau'] }}</p>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase">Selesai Target</p>
+                    <p class="text-2xl font-bold text-emerald-800 dark:text-emerald-300 tabular-nums">{{ $rekap['indikator_hijau'] }}</p>
+                    <p class="text-[10px] font-semibold text-ink-muted uppercase tracking-wider">Selesai Target</p>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-lg">
-                    🔵
+            <div class="bg-surface p-4 rounded-[10px] border border-hairline flex items-center gap-3">
+                <div class="w-10 h-10 rounded-[6px] bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                 </div>
                 <div>
-                    <p class="text-2xl font-black text-blue-600 dark:text-blue-400">{{ $rekap['indikator_biru'] }}</p>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase">Sedang Berjalan</p>
+                    <p class="text-2xl font-bold text-blue-800 dark:text-blue-300 tabular-nums">{{ $rekap['indikator_biru'] }}</p>
+                    <p class="text-[10px] font-semibold text-ink-muted uppercase tracking-wider">Sedang Berjalan</p>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-lg">
-                    🟡
+            <div class="bg-surface p-4 rounded-[10px] border border-hairline flex items-center gap-3">
+                <div class="w-10 h-10 rounded-[6px] bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-300 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
                 </div>
                 <div>
-                    <p class="text-2xl font-black text-amber-600 dark:text-amber-400">{{ $rekap['indikator_kuning'] }}</p>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase">Terlambat</p>
+                    <p class="text-2xl font-bold text-amber-900 dark:text-amber-300 tabular-nums">{{ $rekap['indikator_kuning'] }}</p>
+                    <p class="text-[10px] font-semibold text-ink-muted uppercase tracking-wider">Terlambat</p>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center font-bold text-lg">
-                    🔴
+            <div class="bg-surface p-4 rounded-[10px] border border-hairline flex items-center gap-3">
+                <div class="w-10 h-10 rounded-[6px] bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
                 </div>
                 <div>
-                    <p class="text-2xl font-black text-rose-600 dark:text-rose-400">{{ $rekap['indikator_merah'] + $rekap['indikator_abu'] }}</p>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase">Belum Dimulai</p>
+                    <p class="text-2xl font-bold text-red-800 dark:text-red-300 tabular-nums">{{ $rekap['indikator_merah'] + $rekap['indikator_abu'] }}</p>
+                    <p class="text-[10px] font-semibold text-ink-muted uppercase tracking-wider">Belum Dimulai</p>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3 col-span-2 sm:col-span-1">
-                <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold text-lg">
-                    📋
+            <div class="bg-surface p-4 rounded-[10px] border border-hairline flex items-center gap-3 col-span-2 sm:col-span-1">
+                <div class="w-10 h-10 rounded-[6px] bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-purple-800 dark:text-purple-300 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
                 </div>
                 <div>
-                    <p class="text-2xl font-black text-purple-600 dark:text-purple-400">{{ $rekap['total_realisasi'] }}</p>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase">Total Realisasi SPT</p>
+                    <p class="text-2xl font-bold text-purple-800 dark:text-purple-300 tabular-nums">{{ $rekap['total_realisasi'] }}</p>
+                    <p class="text-[10px] font-semibold text-ink-muted uppercase tracking-wider">Total Realisasi SPT</p>
                 </div>
             </div>
         </div>
 
         <!-- Table Perbandingan PKPPT vs Realisasi -->
-        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div class="bg-surface rounded-[10px] border border-hairline overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                    <thead class="bg-surface-subtle text-ink-secondary font-semibold uppercase tracking-wider border-b border-hairline">
                         <tr>
                             <th class="py-3.5 px-4 w-10 text-center">No</th>
                             <th class="py-3.5 px-4">Area Pengawasan</th>
@@ -112,7 +122,7 @@
                             <th class="py-3.5 px-4 text-center w-28">Rincian Tim</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                    <tbody class="divide-y divide-hairline">
                         @forelse($listPkppt as $index => $item)
                             @php
                                 $jsonItem = [
@@ -164,46 +174,46 @@
                                     })->values(),
                                 ];
                             @endphp
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                                <td class="py-3 px-4 font-semibold text-center text-slate-500">{{ $index + 1 }}</td>
+                            <tr class="hover:bg-surface-subtle/70 transition-colors">
+                                <td class="py-3 px-4 font-semibold text-center text-ink-muted tabular-nums">{{ $index + 1 }}</td>
                                 <td class="py-3 px-4">
-                                    <p class="font-bold text-slate-900 dark:text-white">{{ $item->area_pengawasan }}</p>
-                                    <span class="text-[10px] text-slate-400">Jenis: {{ $item->jenis_pengawasan }} | Sasaran: {{ $item->sasaran ?? '-' }}</span>
+                                    <p class="font-semibold text-ink">{{ $item->area_pengawasan }}</p>
+                                    <span class="text-[11px] text-ink-muted">Jenis: {{ $item->jenis_pengawasan }} | Sasaran: {{ $item->sasaran ?? '-' }}</span>
                                 </td>
-                                <td class="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">
+                                <td class="py-3 px-4 font-semibold text-ink-secondary">
                                     {{ $item->irban?->nama_irban ?? 'Semua Irban' }}
                                 </td>
-                                <td class="py-3 px-4 text-slate-600 dark:text-slate-400 font-mono text-[11px]">
+                                <td class="py-3 px-4 text-ink-secondary font-mono text-[11px] tabular-nums">
                                     {{ $item->rencana_mulai->format('d/m/Y') }} - {{ $item->rencana_selesai_laporan->format('d/m/Y') }}
                                 </td>
-                                <td class="py-3 px-4 text-center font-bold text-slate-900 dark:text-white">
+                                <td class="py-3 px-4 text-center font-semibold text-ink tabular-nums">
                                     {{ $item->jumlah_laporan_rencana }} Laporan
                                 </td>
-                                <td class="py-3 px-4 text-center font-bold">
-                                    <button type="button" @click="openDetail({{ json_encode($jsonItem) }})" class="px-2.5 py-1 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 hover:bg-blue-100 rounded-xl text-xs font-black inline-flex items-center gap-1 border border-blue-200 dark:border-blue-800 shadow-xs" title="Klik untuk membuka rincian penugasan tim">
+                                <td class="py-3 px-4 text-center font-semibold">
+                                    <button type="button" @click="openDetail({{ json_encode($jsonItem) }})" class="px-2.5 py-1 bg-blue-50 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-[6px] text-xs font-semibold inline-flex items-center gap-1 border border-blue-200 dark:border-blue-800 transition-colors tabular-nums" title="Klik untuk membuka rincian penugasan tim">
                                         <span>{{ $item->penugasan->count() }} SPT</span>
-                                        <svg class="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </button>
                                 </td>
-                                <td class="py-3 px-4 text-center font-bold text-emerald-600 dark:text-emerald-400">
+                                <td class="py-3 px-4 text-center font-semibold text-brand-ink tabular-nums">
                                     {{ $item->penugasan->where('status', 'selesai')->count() }} Selesai
                                 </td>
                                 <td class="py-3 px-4 text-center whitespace-nowrap">
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase
-                                        {{ $item->indikator === 'hijau' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200' : '' }}
-                                        {{ $item->indikator === 'kuning' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200' : '' }}
-                                        {{ $item->indikator === 'merah' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200' : '' }}
-                                        {{ $item->indikator === 'biru' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200' : '' }}
-                                        {{ $item->indikator === 'abu' ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200' : '' }}">
+                                    <span class="px-2.5 py-0.5 rounded-[4px] text-[10px] font-bold uppercase
+                                        {{ $item->indikator === 'hijau' ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : '' }}
+                                        {{ $item->indikator === 'kuning' ? 'bg-amber-50 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800' : '' }}
+                                        {{ $item->indikator === 'merah' ? 'bg-red-50 text-red-800 dark:bg-red-950/60 dark:text-red-300 border border-red-200 dark:border-red-800' : '' }}
+                                        {{ $item->indikator === 'biru' ? 'bg-blue-50 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800' : '' }}
+                                        {{ $item->indikator === 'abu' ? 'bg-surface-subtle text-ink-secondary border border-hairline' : '' }}">
                                         {{ $item->indikator_label }}
                                     </span>
                                 </td>
                                 <td class="py-3 px-4 text-center whitespace-nowrap">
-                                    <button type="button" @click="openDetail({{ json_encode($jsonItem) }})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-xs flex items-center gap-1 shadow-xs mx-auto">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <button type="button" @click="openDetail({{ json_encode($jsonItem) }})" class="ledger-btn-secondary !min-h-0 !py-1.5 !px-3 !text-xs mx-auto">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                         </svg>
                                         <span>Rincian Tim</span>
@@ -212,7 +222,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="py-8 text-center text-slate-400">Belum ada data perencanaan PKPPT pada tahun ini.</td>
+                                <td colspan="9" class="py-8 text-center text-ink-muted">Belum ada data perencanaan PKPPT pada tahun ini.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -220,22 +230,22 @@
             </div>
         </div>
 
-        <!-- 🔍 Pop-up Modal Rincian Penugasan & Tim Pengawasan (Keterkaitan Database Real-Time) -->
-        <div x-show="showModalDetail" x-transition class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4" style="display: none;">
-            <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-4xl w-full p-6 border border-slate-200 dark:border-slate-800 text-xs space-y-4">
+        <!-- Pop-up Modal Rincian Penugasan & Tim Pengawasan (Keterkaitan Database Real-Time) -->
+        <div x-show="showModalDetail" x-transition class="fixed inset-0 z-50 overflow-y-auto bg-black/50 flex items-center justify-center p-4" style="display: none;">
+            <div class="bg-surface rounded-[10px] shadow-lg max-w-4xl w-full p-6 border border-hairline text-xs space-y-4">
                 
                 <!-- Modal Header -->
-                <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center justify-between pb-4 border-b border-hairline">
                     <div>
-                        <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block">Rincian Realisasi Penugasan PKPPT</span>
-                        <h3 class="font-extrabold text-slate-900 dark:text-white text-base leading-tight mt-0.5" x-text="activePkppt?.area_pengawasan"></h3>
-                        <p class="text-[11px] text-slate-500 mt-0.5">
-                            Pelaksana: <span class="font-bold text-slate-700 dark:text-slate-300" x-text="activePkppt?.nama_irban"></span> |
-                            Jadwal: <span class="font-mono font-bold text-slate-700 dark:text-slate-300" x-text="activePkppt?.rencana_mulai + ' - ' + activePkppt?.rencana_selesai"></span> |
-                            Target Laporan: <span class="font-bold text-emerald-600" x-text="activePkppt?.jumlah_laporan_rencana + ' Laporan'"></span>
+                        <span class="text-xs font-semibold text-blue-800 dark:text-blue-300 uppercase tracking-wider block">Rincian Realisasi Penugasan PKPPT</span>
+                        <h3 class="font-bold text-ink text-base leading-tight mt-0.5" x-text="activePkppt?.area_pengawasan"></h3>
+                        <p class="text-[11px] text-ink-secondary mt-0.5">
+                            Pelaksana: <span class="font-semibold text-ink" x-text="activePkppt?.nama_irban"></span> |
+                            Jadwal: <span class="font-mono font-semibold text-ink tabular-nums" x-text="activePkppt?.rencana_mulai + ' - ' + activePkppt?.rencana_selesai"></span> |
+                            Target Laporan: <span class="font-semibold text-brand-ink tabular-nums" x-text="activePkppt?.jumlah_laporan_rencana + ' Laporan'"></span>
                         </p>
                     </div>
-                    <button type="button" @click="showModalDetail = false" class="text-slate-400 hover:text-slate-600 text-xl font-bold p-1">&times;</button>
+                    <button type="button" @click="showModalDetail = false" class="text-ink-muted hover:text-ink text-xl font-bold p-1 leading-none" aria-label="Tutup">&times;</button>
                 </div>
 
                 <!-- Modal Body: Loop List Penugasan (SPT) -->
@@ -243,24 +253,24 @@
                     <template x-if="activePkppt?.penugasan && activePkppt.penugasan.length > 0">
                         <div class="space-y-4">
                             <template x-for="(st, sIdx) in activePkppt.penugasan" :key="st.id">
-                                <div class="p-5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+                                <div class="p-5 bg-surface-subtle rounded-[10px] border border-hairline space-y-4">
                                     
                                     <!-- Header ST -->
-                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200 dark:border-slate-700">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-hairline">
                                         <div class="flex items-center gap-3">
-                                            <span class="w-7 h-7 rounded-xl bg-blue-600 text-white font-black flex items-center justify-center text-xs shadow-xs" x-text="sIdx + 1"></span>
+                                            <span class="w-7 h-7 rounded-[6px] bg-brand text-white font-bold flex items-center justify-center text-xs tabular-nums" x-text="sIdx + 1"></span>
                                             <div>
-                                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Nomor Surat Tugas (No. SPT):</span>
-                                                <span class="font-mono font-extrabold text-sm text-blue-600 dark:text-blue-400" x-text="st.no_spt"></span>
+                                                <span class="text-[10px] text-ink-muted font-semibold uppercase tracking-wider block">Nomor Surat Tugas (No. SPT):</span>
+                                                <span class="font-mono font-bold text-sm text-blue-800 dark:text-blue-300" x-text="st.no_spt"></span>
                                             </div>
                                         </div>
 
                                         <div class="flex items-center gap-2">
-                                            <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider"
+                                            <span class="px-2.5 py-1 rounded-[4px] text-xs font-bold uppercase tracking-wider"
                                                 :class="{
-                                                    'bg-emerald-100 text-emerald-800 border border-emerald-200': st.status === 'selesai',
-                                                    'bg-blue-100 text-blue-800 border border-blue-200': st.status === 'berjalan',
-                                                    'bg-amber-100 text-amber-800 border border-amber-200': st.status === 'belum_berjalan'
+                                                    'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800': st.status === 'selesai',
+                                                    'bg-blue-50 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800': st.status === 'berjalan',
+                                                    'bg-amber-50 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800': st.status === 'belum_berjalan'
                                                 }"
                                                 x-text="'Status SPT: ' + st.status_label">
                                             </span>
@@ -269,61 +279,63 @@
 
                                     <!-- Grid Info Tanggal & Objek OPD -->
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">
-                                            <span class="font-bold text-slate-500 text-[10px] block">🗓️ Tanggal Penugasan (SPT):</span>
-                                            <p class="font-mono font-bold text-slate-800 dark:text-slate-200" x-text="st.tanggal_mulai + ' s/d ' + st.tanggal_selesai"></p>
+                                        <div class="p-3 bg-surface rounded-[6px] border border-hairline space-y-1">
+                                            <span class="font-semibold text-ink-muted text-[10px] uppercase block">Tanggal Penugasan (SPT):</span>
+                                            <p class="font-mono font-semibold text-ink tabular-nums" x-text="st.tanggal_mulai + ' s/d ' + st.tanggal_selesai"></p>
                                         </div>
 
-                                        <div class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">
-                                            <span class="font-bold text-slate-500 text-[10px] block">🏢 Objek OPD Penugasan Target:</span>
-                                            <p class="font-bold text-slate-800 dark:text-slate-200" x-text="st.objek_names"></p>
+                                        <div class="p-3 bg-surface rounded-[6px] border border-hairline space-y-1">
+                                            <span class="font-semibold text-ink-muted text-[10px] uppercase block">Objek OPD Penugasan Target:</span>
+                                            <p class="font-semibold text-ink" x-text="st.objek_names"></p>
                                         </div>
                                     </div>
 
-                                    <!-- 👥 Personil Tim yang Berjalan -->
-                                    <div class="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
-                                        <span class="font-bold text-slate-800 dark:text-slate-200 text-xs block">
-                                            👥 Personil Tim Pengawasan yang Berjalan:
+                                    <!-- Personil Tim yang Berjalan -->
+                                    <div class="p-3.5 bg-surface rounded-[6px] border border-hairline space-y-2">
+                                        <span class="font-semibold text-ink text-xs block">
+                                            Personil Tim Pengawasan yang Berjalan:
                                         </span>
 
                                         <template x-if="st.tim && st.tim.length > 0">
-                                            <div class="space-y-1.5 p-2 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
+                                            <div class="space-y-1.5 p-2 bg-surface-subtle rounded-[6px] border border-hairline">
                                                 <template x-for="pTim in st.tim" :key="pTim.nama">
-                                                    <div class="flex items-center justify-between text-xs py-1 px-2 hover:bg-white dark:hover:bg-slate-700/50 rounded-lg transition-colors">
+                                                    <div class="flex items-center justify-between text-xs py-1 px-2 hover:bg-surface rounded-[4px] transition-colors">
                                                         <div class="flex items-center gap-2">
-                                                            <span class="text-emerald-500 font-bold">👤</span>
-                                                            <span class="font-bold text-slate-900 dark:text-white" x-text="pTim.nama"></span>
-                                                            <span class="text-slate-600 dark:text-slate-300 font-semibold" x-text="'(' + pTim.peran_label + ')'"></span>
+                                                            <svg class="w-3.5 h-3.5 text-brand-ink shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                            </svg>
+                                                            <span class="font-semibold text-ink" x-text="pTim.nama"></span>
+                                                            <span class="text-ink-secondary font-medium" x-text="'(' + pTim.peran_label + ')'"></span>
                                                         </div>
-                                                        <span class="text-[10px] text-slate-400 font-mono" x-text="pTim.nip !== '-' ? 'NIP: ' + pTim.nip : ''"></span>
+                                                        <span class="text-[10px] text-ink-muted font-mono tabular-nums" x-text="pTim.nip !== '-' ? 'NIP: ' + pTim.nip : ''"></span>
                                                     </div>
                                                 </template>
                                             </div>
                                         </template>
 
                                         <template x-if="!st.tim || st.tim.length === 0">
-                                            <p class="text-slate-400 text-[11px] italic p-2">Belum ada rincian susunan tim personil yang didaftarkan pada SPT ini.</p>
+                                            <p class="text-ink-muted text-[11px] italic p-2">Belum ada rincian susunan tim personil yang didaftarkan pada SPT ini.</p>
                                         </template>
                                     </div>
 
-                                    <!-- 📜 Rincian Dokumen LHP Hasil Pengawasan -->
-                                    <div class="p-3.5 bg-blue-50/60 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900 space-y-2">
-                                        <span class="font-bold text-blue-900 dark:text-blue-200 text-xs block">
-                                            📜 Rincian Laporan Hasil Pengawasan (LHP):
+                                    <!-- Rincian Dokumen LHP Hasil Pengawasan -->
+                                    <div class="p-3.5 bg-blue-50/70 dark:bg-blue-950/30 rounded-[6px] border border-blue-200 dark:border-blue-800 space-y-2">
+                                        <span class="font-semibold text-blue-800 dark:text-blue-300 text-xs block">
+                                            Rincian Laporan Hasil Pengawasan (LHP):
                                         </span>
 
                                         <template x-if="st.lhp_items && st.lhp_items.length > 0">
                                             <div class="space-y-2">
                                                 <template x-for="lhp in st.lhp_items" :key="lhp.id">
-                                                    <div class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                                    <div class="p-3 bg-surface rounded-[6px] border border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                                         <div>
-                                                            <span class="font-mono font-bold text-blue-600 dark:text-blue-400 text-xs block" x-text="'Nomor LHP: ' + lhp.no_lhp"></span>
-                                                            <p class="font-bold text-slate-800 dark:text-slate-200 mt-0.5" x-text="'Judul: ' + lhp.judul_lhp"></p>
-                                                            <span class="text-[10px] text-slate-400" x-text="'Tanggal Terbit LHP: ' + lhp.tgl_lhp"></span>
+                                                            <span class="font-mono font-semibold text-blue-800 dark:text-blue-300 text-xs block" x-text="'Nomor LHP: ' + lhp.no_lhp"></span>
+                                                            <p class="font-semibold text-ink mt-0.5" x-text="'Judul: ' + lhp.judul_lhp"></p>
+                                                            <span class="text-[10px] text-ink-muted tabular-nums" x-text="'Tanggal Terbit LHP: ' + lhp.tgl_lhp"></span>
                                                         </div>
 
-                                                        <a :href="'/tindak-lanjut/' + lhp.id" target="_blank" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-xs inline-flex items-center gap-1 shrink-0">
-                                                            <span>📄 Buka Matriks LHP</span>
+                                                        <a :href="'/tindak-lanjut/' + lhp.id" target="_blank" class="px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-[6px] text-xs inline-flex items-center gap-1 shrink-0 transition-colors">
+                                                            <span>Buka Matriks LHP</span>
                                                         </a>
                                                     </div>
                                                 </template>
@@ -331,7 +343,7 @@
                                         </template>
 
                                         <template x-if="!st.lhp_items || st.lhp_items.length === 0">
-                                            <p class="text-slate-400 text-[11px] italic">Belum ada dokumen LHP yang terbit untuk Surat Tugas (SPT) ini.</p>
+                                            <p class="text-ink-muted text-[11px] italic">Belum ada dokumen LHP yang terbit untuk Surat Tugas (SPT) ini.</p>
                                         </template>
                                     </div>
                                 </div>
@@ -340,15 +352,15 @@
                     </template>
 
                     <template x-if="!activePkppt?.penugasan || activePkppt.penugasan.length === 0">
-                        <div class="p-8 text-center bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-400">
+                        <div class="p-8 text-center bg-surface-subtle rounded-[10px] border border-hairline text-ink-muted">
                             Belum ada Surat Tugas (SPT) realisasi yang dikaitkan dengan kegiatan PKPPT ini.
                         </div>
                     </template>
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end">
-                    <button type="button" @click="showModalDetail = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl">Tutup</button>
+                <div class="pt-3 border-t border-hairline flex items-center justify-end">
+                    <button type="button" @click="showModalDetail = false" class="ledger-btn-secondary !text-xs">Tutup</button>
                 </div>
             </div>
         </div>

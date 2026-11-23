@@ -1,10 +1,10 @@
 <section>
     <header>
-        <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+        <h2 class="text-lg font-bold text-ink">
             {{ __('Informasi Profil') }}
         </h2>
 
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        <p class="mt-1 text-sm text-ink-secondary">
             {{ __('Perbarui informasi akun dan alamat email Anda.') }}
         </p>
     </header>
@@ -30,16 +30,16 @@
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <div>
-                    <p class="text-sm mt-2 text-slate-800 dark:text-slate-200">
+                    <p class="text-sm mt-2 text-ink">
                         {{ __('Alamat email Anda belum diverifikasi.') }}
 
-                        <button form="send-verification" class="underline text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                        <button form="send-verification" class="underline text-sm text-ink-secondary hover:text-ink rounded-[6px] focus-visible:outline-2 focus-visible:outline-brand">
                             {{ __('Klik di sini untuk mengirim ulang email verifikasi.') }}
                         </button>
                     </p>
 
                     @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-emerald-600 dark:text-emerald-400">
+                        <p class="mt-2 font-medium text-sm text-brand-ink">
                             {{ __('Tautan verifikasi baru telah dikirim ke alamat email Anda.') }}
                         </p>
                     @endif
@@ -56,7 +56,7 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-emerald-600 dark:text-emerald-400 font-semibold"
+                    class="text-sm text-brand-ink font-semibold"
                 >{{ __('Berhasil disimpan.') }}</p>
             @endif
         </div>

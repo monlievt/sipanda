@@ -1,31 +1,33 @@
 <!-- Modal Universal Pratinjau Dokumen & PDF SINGAWASI (Popup Preview Tanpa Download) -->
 <div id="pdfPreviewModalWrapper" class="no-print font-sans relative" style="z-index: 99999999; display: none;">
-    
-    <!-- Backdrop Blur Gelap -->
-    <div id="pdfPreviewBackdrop" 
+
+    <!-- Solid Scrim Backdrop -->
+    <div id="pdfPreviewBackdrop"
          onclick="closePdfPreviewModal()"
-         style="position: fixed; inset: 0; background: rgba(2, 6, 23, 0.82); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: opacity 0.25s ease;" 
-         class="cursor-pointer"></div>
+         style="position: fixed; inset: 0; transition: opacity 0.15s ease;"
+         class="bg-black/50 cursor-pointer"></div>
 
     <!-- Modal Dialog Window -->
-    <div style="position: fixed; inset: 0; pointer-events: none; display: flex; items-center: center; justify-content: center; padding: 16px; z-index: 100000000;" class="sm:p-6">
-        <div id="pdfPreviewContainer" 
-             style="pointer-events: auto; width: 100%; max-width: 1100px; height: 92vh; max-height: 96vh; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);" 
-             class="rounded-3xl flex flex-col overflow-hidden transition-all transform scale-100">
-            
+    <div style="position: fixed; inset: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 100000000;" class="sm:p-6">
+        <div id="pdfPreviewContainer"
+             style="pointer-events: auto; width: 100%; max-width: 1100px; height: 92vh; max-height: 96vh;"
+             class="rounded-[10px] bg-surface border border-hairline shadow-lg flex flex-col overflow-hidden transition-all">
+
             <!-- Modal Header -->
-            <div class="px-5 py-3.5 bg-slate-900/95 border-b border-slate-800 text-white flex items-center justify-between gap-3 shrink-0">
+            <div class="px-5 py-3.5 bg-surface-subtle border-b border-hairline text-ink flex items-center justify-between gap-3 shrink-0">
                 <div class="flex items-center gap-3 min-w-0">
-                    <div id="pdfModalIcon" class="w-9 h-9 rounded-2xl bg-teal-500/20 text-teal-400 flex items-center justify-center text-lg font-bold border border-teal-500/30 shrink-0">
-                        📄
+                    <div id="pdfModalIcon" class="w-9 h-9 rounded-[6px] bg-brand-soft text-brand-ink flex items-center justify-center border border-brand-border shrink-0">
+                        <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
                     </div>
                     <div class="min-w-0">
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-teal-500/20 text-teal-300 tracking-wider">
+                            <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-[4px] bg-brand-soft text-brand-ink border border-brand-border tracking-wider">
                                 Pratinjau Dokumen
                             </span>
                         </div>
-                        <h3 id="pdfModalTitle" class="text-xs sm:text-sm font-bold text-slate-100 truncate mt-0.5" title="Pratinjau Dokumen">
+                        <h3 id="pdfModalTitle" class="text-xs sm:text-sm font-bold text-ink truncate mt-0.5" title="Pratinjau Dokumen">
                             Dokumen PDF
                         </h3>
                     </div>
@@ -34,56 +36,63 @@
                 <!-- Header Actions -->
                 <div class="flex items-center gap-2 shrink-0">
                     <!-- Tombol Print -->
-                    <button type="button" 
-                            id="pdfBtnPrint" 
-                            onclick="printPdfPreviewFrame()" 
-                            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors cursor-pointer"
+                    <button type="button"
+                            id="pdfBtnPrint"
+                            onclick="printPdfPreviewFrame()"
+                            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] bg-surface hover:bg-surface-subtle text-ink text-xs font-semibold border border-hairline-strong transition-colors cursor-pointer"
                             title="Cetak Dokumen Ini">
-                        <span>🖨️</span>
+                        <svg class="w-4 h-4 text-ink-secondary" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
                         <span>Cetak</span>
                     </button>
 
                     <!-- Tombol Buka di Tab Baru -->
-                    <a id="pdfBtnNewTab" 
-                       href="#" 
-                       target="_blank" 
+                    <a id="pdfBtnNewTab"
+                       href="#"
+                       target="_blank"
                        rel="noopener noreferrer"
                        data-no-preview="true"
-                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] bg-surface hover:bg-surface-subtle text-ink text-xs font-semibold border border-hairline-strong transition-colors"
                        title="Buka Dokumen di Tab Browser Baru">
-                        <span>↗️</span>
+                        <svg class="w-4 h-4 text-ink-secondary" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
                         <span class="hidden md:inline">Tab Baru</span>
                     </a>
 
                     <!-- Tombol Unduh Fisik Asli -->
-                    <a id="pdfBtnDownload" 
-                       href="#" 
-                       download 
+                    <a id="pdfBtnDownload"
+                       href="#"
+                       download
                        data-no-preview="true"
-                       class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-md shadow-teal-600/30 transition-all cursor-pointer"
+                       class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-[6px] bg-brand hover:bg-brand-hover text-white text-xs font-semibold transition-colors cursor-pointer"
                        title="Unduh File Dokumen">
-                        <span>📥</span>
+                        <svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
                         <span>Unduh File</span>
                     </a>
 
                     <!-- Tombol Tutup (Silang) -->
-                    <button type="button" 
-                            onclick="closePdfPreviewModal()" 
-                            class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors ml-1 cursor-pointer" 
+                    <button type="button"
+                            onclick="closePdfPreviewModal()"
+                            aria-label="Tutup pratinjau dokumen"
+                            class="p-2 rounded-[6px] text-ink-muted hover:text-ink hover:bg-surface transition-colors ml-1 cursor-pointer"
                             title="Tutup Pratinjau (ESC)">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                        <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                     </button>
                 </div>
             </div>
 
             <!-- Modal Body (Iframe & Image Preview Container) -->
-            <div class="flex-1 w-full h-full relative bg-slate-950 overflow-hidden flex items-center justify-center">
-                
+            <div class="flex-1 w-full h-full relative bg-canvas overflow-hidden flex items-center justify-center">
+
                 <!-- Loading State Spinner -->
-                <div id="pdfLoadingIndicator" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 text-slate-400 z-10 space-y-3 pointer-events-none">
-                    <svg class="w-9 h-9 animate-spin text-teal-500" fill="none" viewBox="0 0 24 24">
+                <div id="pdfLoadingIndicator" class="absolute inset-0 flex flex-col items-center justify-center bg-canvas text-ink-muted z-10 space-y-3 pointer-events-none">
+                    <svg class="w-8 h-8 animate-spin text-brand-ink" aria-hidden="true" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                     </svg>
@@ -91,28 +100,32 @@
                 </div>
 
                 <!-- PDF / Web Iframe Viewer -->
-                <iframe id="pdfPreviewIframe" 
-                        src="about:blank" 
+                <iframe id="pdfPreviewIframe"
+                        src="about:blank"
                         onload="handlePdfIframeLoaded()"
-                        class="w-full h-full border-0 bg-white" 
+                        title="Pratinjau Dokumen PDF"
+                        class="w-full h-full border-0 bg-surface"
                         style="width: 100%; height: 100%;"></iframe>
 
                 <!-- Image Preview Viewer (Untuk file foto/gambar) -->
-                <div id="imagePreviewContainer" style="display: none;" class="w-full h-full overflow-auto p-4 flex items-center justify-center bg-slate-950">
-                    <img id="pdfPreviewImg" src="" alt="Pratinjau Berkas" class="max-h-full max-w-full rounded-xl object-contain shadow-2xl border border-slate-800">
+                <div id="imagePreviewContainer" style="display: none;" class="w-full h-full overflow-auto p-4 flex items-center justify-center bg-canvas">
+                    <img id="pdfPreviewImg" src="" alt="Pratinjau Berkas" class="max-h-full max-w-full rounded-[10px] object-contain border border-hairline">
                 </div>
             </div>
 
             <!-- Modal Footer Note -->
-            <div class="px-4 py-2 bg-slate-900 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between shrink-0">
-                <span>💡 Tips: Tekan <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-200 rounded font-mono text-[10px]">ESC</kbd> untuk menutup pratinjau.</span>
-                <span class="text-slate-500">SINGAWASI Dokumen Viewer</span>
+            <div class="px-4 py-2 bg-surface-subtle border-t border-hairline text-xs text-ink-muted flex items-center justify-between shrink-0">
+                <span>Tips: Tekan <kbd class="px-1.5 py-0.5 bg-surface border border-hairline text-ink rounded-[4px] font-mono text-[10px]">ESC</kbd> untuk menutup pratinjau.</span>
+                <span class="text-ink-secondary font-medium">SINGAWASI Dokumen Viewer</span>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    const pdfIconSvg = '<svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>';
+    const imageIconSvg = '<svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>';
+
     /**
      * Buka Modal Pratinjau Dokumen Universal
      */
@@ -137,15 +150,15 @@
         } else if (previewUrl.includes('/regulasi/') && previewUrl.endsWith('/download')) {
             previewUrl = previewUrl.replace('/download', '/preview');
         } else if (previewUrl.includes('/storage/')) {
-            // 🛡️ Bypass Apache 403 Forbidden: Alihkan direct static storage link ke backend stream
+            // Bypass Apache 403 Forbidden: Alihkan direct static storage link ke backend stream
             const pathPart = previewUrl.substring(previewUrl.indexOf('/storage/') + 9);
             previewUrl = '/dokumen/berkas/' + pathPart;
         }
 
         // Set Link New Tab & Download Asli
         btnNewTab.href = previewUrl;
-        btnDownload.href = previewUrl.includes('/dokumen/berkas/') 
-            ? (previewUrl + (previewUrl.includes('?') ? '&download=1' : '?download=1')) 
+        btnDownload.href = previewUrl.includes('/dokumen/berkas/')
+            ? (previewUrl + (previewUrl.includes('?') ? '&download=1' : '?download=1'))
             : url;
         modalTitle.textContent = title || 'Dokumen PDF';
         modalTitle.title = title || 'Dokumen PDF';
@@ -158,13 +171,13 @@
             iframe.style.display = 'none';
             imgContainer.style.display = 'flex';
             img.src = previewUrl;
-            modalIcon.textContent = '🖼️';
+            modalIcon.innerHTML = imageIconSvg;
             btnPrint.style.display = 'none';
             img.onload = () => { loading.style.display = 'none'; };
         } else {
             imgContainer.style.display = 'none';
             iframe.style.display = 'block';
-            modalIcon.textContent = '📄';
+            modalIcon.innerHTML = pdfIconSvg;
             btnPrint.style.display = 'inline-flex';
             iframe.src = previewUrl;
         }
@@ -229,13 +242,13 @@
         if (!href || href === '#' || href.startsWith('javascript:')) return;
 
         const lowerHref = href.toLowerCase();
-        const isPdf = lowerHref.includes('.pdf') || 
-                      lowerHref.includes('/cetak') || 
+        const isPdf = lowerHref.includes('.pdf') ||
+                      lowerHref.includes('/cetak') ||
                       lowerHref.includes('/preview') ||
                       lowerHref.includes('/dokumen/berkas') ||
                       (lowerHref.includes('/arsip/') && lowerHref.includes('/download')) ||
                       (lowerHref.includes('/regulasi/') && lowerHref.includes('/download')) ||
-                      link.classList.contains('preview-pdf') || 
+                      link.classList.contains('preview-pdf') ||
                       link.hasAttribute('data-preview-pdf');
 
         const isImage = /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(lowerHref);
@@ -244,13 +257,13 @@
             e.preventDefault();
             e.stopPropagation();
 
-            let title = link.getAttribute('title') || 
-                        link.getAttribute('data-title') || 
-                        link.innerText.trim() || 
+            let title = link.getAttribute('title') ||
+                        link.getAttribute('data-title') ||
+                        link.innerText.trim() ||
                         'Dokumen';
-            
-            // Bersihkan teks emoji atau tanda panah dari title
-            title = title.replace(/[📥📄📎🔍→&rarr;]/g, '').trim();
+
+            // Bersihkan karakter simbol dekoratif dari title
+            title = title.replace(/[\u2190-\u2199\u{1F300}-\u{1FAFF}]/gu, '').trim();
 
             openPdfPreviewModal(href, title || 'Pratinjau Dokumen');
         }

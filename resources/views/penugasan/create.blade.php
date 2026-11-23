@@ -2,7 +2,7 @@
     $parentStOptions = $parentStList->map(function($pst) {
         return [
             'id' => (string) $pst->id,
-            'label' => 'No. SPT: ' . $pst->no_spt . ' — ' . \Illuminate\Support\Str::limit($pst->uraian_penugasan, 50),
+            'label' => 'No. SPT: ' . $pst->no_spt . ' | ' . \Illuminate\Support\Str::limit($pst->uraian_penugasan, 50),
             'no_spt' => $pst->no_spt,
             'uraian' => $pst->uraian_penugasan,
             'jenis' => $pst->jenisPenugasan?->nama ?? '-',
@@ -34,59 +34,59 @@
             @csrf
 
             <!-- Banner Mode ST Reguler vs ST Perpanjangan vs ST Bantuan -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-800">
-                <label class="block font-bold text-slate-900 dark:text-white text-sm mb-2">Jenis Pembuatan Surat Tugas (SPT) <span class="text-rose-500">*</span></label>
+            <div class="bg-surface rounded-[10px] p-5 border border-hairline">
+                <label class="block font-semibold text-ink text-sm mb-2">Jenis Pembuatan Surat Tugas (SPT) <span class="text-red-700 dark:text-red-400">*</span></label>
                 <input type="hidden" name="jenis_st" :value="jenisSt">
                 <input type="hidden" name="is_perpanjangan" :value="jenisSt === 'perpanjangan' ? '1' : '0'">
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <label class="flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all"
-                        :class="jenisSt === 'reguler' ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 shadow-xs font-bold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'">
-                        <input type="radio" name="jenis_st_radio" value="reguler" x-model="jenisSt" class="mt-0.5 text-emerald-600 focus:ring-emerald-500">
+                    <label class="flex items-start gap-3 p-3.5 rounded-[6px] border cursor-pointer transition-colors"
+                        :class="jenisSt === 'reguler' ? 'border-brand-border bg-brand-soft text-brand-ink font-semibold' : 'border-hairline hover:bg-surface-subtle text-ink-secondary'">
+                        <input type="radio" name="jenis_st_radio" value="reguler" x-model="jenisSt" class="mt-0.5 text-brand focus:ring-brand">
                         <div>
-                            <p class="text-xs font-bold">📄 ST Baru (Reguler)</p>
-                            <p class="text-[11px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">Penugasan mandiri baru dengan input objek dan tim lengkap.</p>
+                            <p class="text-xs font-semibold text-ink">ST Baru (Reguler)</p>
+                            <p class="text-[11px] font-normal text-ink-secondary mt-0.5">Penugasan mandiri baru dengan input objek dan tim lengkap.</p>
                         </div>
                     </label>
 
-                    <label class="flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all"
-                        :class="jenisSt === 'perpanjangan' ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 text-blue-950 dark:text-blue-200 shadow-xs font-bold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'">
-                        <input type="radio" name="jenis_st_radio" value="perpanjangan" x-model="jenisSt" class="mt-0.5 text-blue-600 focus:ring-blue-500">
+                    <label class="flex items-start gap-3 p-3.5 rounded-[6px] border cursor-pointer transition-colors"
+                        :class="jenisSt === 'perpanjangan' ? 'border-blue-300 dark:border-blue-700 bg-blue-50/70 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 font-semibold' : 'border-hairline hover:bg-surface-subtle text-ink-secondary'">
+                        <input type="radio" name="jenis_st_radio" value="perpanjangan" x-model="jenisSt" class="mt-0.5 text-blue-700 focus:ring-blue-600">
                         <div>
-                            <p class="text-xs font-bold">🔄 ST Perpanjangan</p>
-                            <p class="text-[11px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">Mewarisi data Objek, Tim, PKPPT & Irban otomatis dari ST Induk.</p>
+                            <p class="text-xs font-semibold text-ink">ST Perpanjangan</p>
+                            <p class="text-[11px] font-normal text-ink-secondary mt-0.5">Mewarisi data Objek, Tim, PKPPT & Irban otomatis dari ST Induk.</p>
                         </div>
                     </label>
 
-                    <label class="flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all"
-                        :class="jenisSt === 'bantuan' ? 'border-cyan-500 bg-cyan-50/60 dark:bg-cyan-950/40 text-cyan-950 dark:text-cyan-200 shadow-xs font-bold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'">
-                        <input type="radio" name="jenis_st_radio" value="bantuan" x-model="jenisSt" class="mt-0.5 text-cyan-600 focus:ring-cyan-500">
+                    <label class="flex items-start gap-3 p-3.5 rounded-[6px] border cursor-pointer transition-colors"
+                        :class="jenisSt === 'bantuan' ? 'border-cyan-300 dark:border-cyan-700 bg-cyan-50/70 dark:bg-cyan-950/40 text-cyan-900 dark:text-cyan-200 font-semibold' : 'border-hairline hover:bg-surface-subtle text-ink-secondary'">
+                        <input type="radio" name="jenis_st_radio" value="bantuan" x-model="jenisSt" class="mt-0.5 text-cyan-700 focus:ring-cyan-600">
                         <div>
-                            <p class="text-xs font-bold">🤝 Surat Tugas Bantuan</p>
-                            <p class="text-[11px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">Menginduk ke ST Utama. Hanya berisi Anggota Tim bantuan.</p>
+                            <p class="text-xs font-semibold text-ink">Surat Tugas Bantuan</p>
+                            <p class="text-[11px] font-normal text-ink-secondary mt-0.5">Menginduk ke ST Utama. Hanya berisi Anggota Tim bantuan.</p>
                         </div>
                     </label>
                 </div>
             </div>
 
             <!-- Card 1: Informasi SPT -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 space-y-4 text-xs">
-                <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
-                    <span class="w-3 h-3 bg-emerald-500 rounded-full"></span>
+            <div class="bg-surface rounded-[10px] p-6 border border-hairline space-y-4 text-xs">
+                <h3 class="font-bold text-ink text-base flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 bg-brand rounded-full" aria-hidden="true"></span>
                     1. Informasi Penugasan & Nomor SPT
                 </h3>
 
                 @if ($errors->any())
-                    <div class="mb-5 p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-300 text-xs space-y-1">
-                        <p class="font-bold mb-1">Mohon lengkapi atau perbaiki isian berikut:</p>
+                    <div class="mb-5 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-[6px] text-red-800 dark:text-red-300 text-xs space-y-1">
+                        <p class="font-semibold mb-1">Mohon lengkapi atau perbaiki isian berikut:</p>
                         @foreach ($errors->all() as $error)
-                            <p>• {{ $error }}</p>
+                            <p>- {{ $error }}</p>
                         @endforeach
                     </div>
                 @endif
 
                 <!-- Pilihan ST Induk (Muncul jika ST Perpanjangan atau ST Bantuan) -->
-                <div x-show="jenisSt === 'perpanjangan' || jenisSt === 'bantuan'" x-transition class="p-4 bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-2xl space-y-3"
+                <div x-show="jenisSt === 'perpanjangan' || jenisSt === 'bantuan'" x-transition class="p-4 bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-[10px] space-y-3"
                     x-data="{
                         open: false,
                         search: '',
@@ -109,35 +109,35 @@
                         }
                     }">
                     
-                    <label class="block font-bold text-blue-900 dark:text-blue-300 text-xs">
+                    <label class="block font-semibold text-blue-800 dark:text-blue-300 text-xs">
                         <span x-text="jenisSt === 'bantuan' ? 'Pilih Surat Tugas Utama (ST Induk yang Dibantu)' : 'Pilih Surat Tugas Indikator (ST Induk yang Diperpanjang)'"></span>
-                        <span class="text-rose-500">*</span>
+                        <span class="text-red-700 dark:text-red-400">*</span>
                     </label>
                     <input type="hidden" name="penugasan_induk_id" :value="(jenisSt === 'perpanjangan' || jenisSt === 'bantuan') ? selectedParentId : ''">
 
                     <div class="relative">
                         <button type="button" @click="open = !open; if(open) $nextTick(() => $refs.parentSearchInput.focus())" @click.outside="open = false" 
-                            class="w-full text-left px-3.5 py-2.5 rounded-xl border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-800 text-xs font-semibold flex items-center justify-between shadow-xs focus:ring-2 focus:ring-blue-500">
-                            <span x-text="selectedParentId ? selectedLabel : (jenisSt === 'bantuan' ? '-- Klik untuk memilih ST Utama --' : '-- Klik untuk memilih ST Induk --')" class="truncate text-slate-800 dark:text-slate-200"></span>
-                            <svg class="w-4 h-4 text-slate-400 shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="w-full text-left px-3.5 py-2.5 rounded-[6px] border border-blue-300 dark:border-blue-700 bg-surface text-xs font-semibold flex items-center justify-between text-ink">
+                            <span x-text="selectedParentId ? selectedLabel : (jenisSt === 'bantuan' ? '-- Klik untuk memilih ST Utama --' : '-- Klik untuk memilih ST Induk --')" class="truncate text-ink"></span>
+                            <svg class="w-4 h-4 text-ink-muted shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
 
                         <div x-show="open" x-transition 
-                            class="absolute z-50 mt-1 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-2 space-y-2">
-                            <input type="text" x-model="search" x-ref="parentSearchInput" placeholder="🔍 Cari nomor SPT / uraian ST Induk di sini..." 
-                                class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs px-3 py-2 focus:ring-2 focus:ring-blue-500 font-medium">
+                            class="absolute z-50 mt-1 w-full bg-surface border border-hairline rounded-[10px] shadow-lg p-2 space-y-2">
+                            <input type="text" x-model="search" x-ref="parentSearchInput" placeholder="Cari nomor SPT / uraian ST Induk di sini..." 
+                                class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs px-3 py-2 font-medium">
                             
-                            <div class="max-h-52 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
+                            <div class="max-h-52 overflow-y-auto divide-y divide-hairline">
                                 <template x-for="opt in filteredOptions" :key="opt.id">
-                                    <div @click="select(opt)" 
-                                        class="px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-700 dark:hover:text-blue-300 rounded-lg cursor-pointer transition-colors"
-                                        :class="{ 'bg-blue-50 text-blue-700 dark:bg-blue-950/80 font-bold': selectedParentId == opt.id }">
+                                    <button type="button" @click="select(opt)" 
+                                        class="w-full text-left px-3 py-2 text-xs font-medium text-ink hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-800 dark:hover:text-blue-300 rounded-[6px] transition-colors"
+                                        :class="{ 'bg-blue-50 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 font-semibold': selectedParentId == opt.id }">
                                         <span x-text="opt.label"></span>
-                                    </div>
+                                    </button>
                                 </template>
-                                <div x-show="filteredOptions.length === 0" class="p-3 text-center text-slate-400 text-xs">
+                                <div x-show="filteredOptions.length === 0" class="p-3 text-center text-ink-muted text-xs">
                                     Tidak ada nomor ST Induk / Utama yang cocok.
                                 </div>
                             </div>
@@ -146,19 +146,19 @@
 
                     <!-- Panel Info Otomatis Pewarisan Data ST Induk -->
                     <template x-if="selectedParent">
-                        <div class="p-3.5 bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl space-y-2.5">
-                            <div class="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5 text-xs">
-                                <span>✨ Data yang Otomatis Terhubung dengan ST Induk:</span>
+                        <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-[6px] space-y-2.5">
+                            <div class="font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 text-xs">
+                                <span>Data yang Otomatis Terhubung dengan ST Induk:</span>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-700 dark:text-slate-300">
-                                <div><strong>🏢 Objek Sasaran:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.objek"></span></div>
-                                <div><strong>🏛️ Irban:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.irban"></span></div>
-                                <div><strong>📑 Jenis Pengawasan:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.jenis"></span></div>
-                                <div><strong>📌 Sumber:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.sumber"></span></div>
-                                <div class="sm:col-span-2" x-show="jenisSt === 'perpanjangan'"><strong>👥 Susunan Tim Induk:</strong> <span class="font-semibold text-slate-900 dark:text-white" x-text="selectedParent.tim"></span></div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-ink-secondary">
+                                <div><strong>Objek Sasaran:</strong> <span class="font-semibold text-ink" x-text="selectedParent.objek"></span></div>
+                                <div><strong>Irban:</strong> <span class="font-semibold text-ink" x-text="selectedParent.irban"></span></div>
+                                <div><strong>Jenis Pengawasan:</strong> <span class="font-semibold text-ink" x-text="selectedParent.jenis"></span></div>
+                                <div><strong>Sumber:</strong> <span class="font-semibold text-ink" x-text="selectedParent.sumber"></span></div>
+                                <div class="sm:col-span-2" x-show="jenisSt === 'perpanjangan'"><strong>Susunan Tim Induk:</strong> <span class="font-semibold text-ink" x-text="selectedParent.tim"></span></div>
                             </div>
-                            <p class="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium" x-show="jenisSt === 'bantuan'">
-                                💡 Data objek dan irban otomatis tersambung ke ST Utama. Pada ST Bantuan, Anda hanya perlu menentukan <strong>Anggota Tim Bantuan</strong>.
+                            <p class="text-[11px] text-emerald-800 dark:text-emerald-300 font-medium" x-show="jenisSt === 'bantuan'">
+                                Catatan: Data objek dan irban otomatis tersambung ke ST Utama. Pada ST Bantuan, Anda hanya perlu menentukan <strong>Anggota Tim Bantuan</strong>.
                             </p>
                         </div>
                     </template>
@@ -167,30 +167,30 @@
                 <!-- Form Fields -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="sm:col-span-2">
-                        <label class="block font-semibold mb-1">
+                        <label class="block font-semibold text-ink mb-1">
                             <span x-text="jenisSt === 'bantuan' ? 'Nomor SPT Bantuan' : (jenisSt === 'perpanjangan' ? 'Nomor SPT Perpanjangan' : 'Nomor SPT Baru')"></span>
-                            <span class="text-rose-500">*</span>
+                            <span class="text-red-700 dark:text-red-400">*</span>
                         </label>
-                        <input type="text" name="no_spt" value="{{ old('no_spt') }}" required placeholder="mis. 700/717/406.008/2026" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
-                        <p class="text-[10px] text-slate-400 mt-1">Harus unik di dalam sistem.</p>
+                        <input type="text" name="no_spt" value="{{ old('no_spt') }}" required placeholder="mis. 700/717/406.008/2026" class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs">
+                        <p class="text-[11px] text-ink-muted mt-1">Harus unik di dalam sistem.</p>
                     </div>
 
                     <div>
-                        <label class="block font-semibold mb-1">Tanggal Naskah SPT <span class="text-rose-500">*</span></label>
-                        <input type="date" name="tanggal_st" value="{{ old('tanggal_st', date('Y-m-d')) }}" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
-                        <p class="text-[10px] text-slate-400 mt-1">Dapat diisi tanggal mundur (backdate) bila ST terbit sebelum diinput.</p>
+                        <label class="block font-semibold text-ink mb-1">Tanggal Naskah SPT <span class="text-red-700 dark:text-red-400">*</span></label>
+                        <input type="date" name="tanggal_st" value="{{ old('tanggal_st', date('Y-m-d')) }}" required class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs">
+                        <p class="text-[11px] text-ink-muted mt-1">Dapat diisi tanggal mundur (backdate) bila ST terbit sebelum diinput.</p>
                     </div>
                 </div>
 
                 <!-- Multi-Irban Penanggung Jawab (Hanya tampil jika ST Baru / Reguler) -->
                 <div x-show="jenisSt === 'reguler'" x-transition>
-                    <label class="block font-semibold mb-1">Irban Penanggung Jawab <span class="text-rose-500">*</span> (Dapat memilih lebih dari 1)</label>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1 max-h-36 overflow-y-auto">
+                    <label class="block font-semibold text-ink mb-1">Irban Penanggung Jawab <span class="text-red-700 dark:text-red-400">*</span> (Dapat memilih lebih dari 1)</label>
+                    <div class="p-3 bg-surface-subtle rounded-[6px] border border-hairline space-y-1 max-h-36 overflow-y-auto">
                         @foreach($irbans as $irban)
-                            <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                            <label class="flex items-center gap-2 text-xs font-medium text-ink cursor-pointer p-1 rounded-[4px] hover:bg-surface">
                                 <input type="checkbox" name="irban_ids[]" value="{{ $irban->id }}"
                                     {{ (is_array(old('irban_ids')) && in_array($irban->id, old('irban_ids'))) || (auth()->user()->irban_id == $irban->id) ? 'checked' : '' }}
-                                    class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                    class="rounded-[4px] border-hairline-strong text-brand focus:ring-brand">
                                 <span>{{ $irban->nama_irban }}</span>
                             </label>
                         @endforeach
@@ -198,8 +198,8 @@
                 </div>
 
                 <div>
-                    <label class="block font-semibold mb-1">Uraian Penugasan <span class="text-rose-500">*</span></label>
-                    <textarea name="uraian_penugasan" rows="3" required placeholder="Jelaskan uraian penugasan..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">{{ old('uraian_penugasan') }}</textarea>
+                    <label class="block font-semibold text-ink mb-1">Uraian Penugasan <span class="text-red-700 dark:text-red-400">*</span></label>
+                    <textarea name="uraian_penugasan" rows="3" required placeholder="Jelaskan uraian penugasan..." class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs">{{ old('uraian_penugasan') }}</textarea>
                 </div>
 
                 <!-- Komponen Interaktif Dasar Penugasan (Bank Regulasi & Disposisi) -->
@@ -332,82 +332,82 @@
                             r.nomor_regulasi.toLowerCase().includes(s)
                         ).slice(0, 15);
                     }
-                }" class="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+                }" class="p-4 bg-surface-subtle rounded-[10px] border border-hairline space-y-3">
                     
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-hairline pb-2">
                         <div>
-                            <label class="block font-bold text-slate-800 dark:text-slate-200 text-xs">Dasar Surat Perintah Tugas (SPT)</label>
-                            <p class="text-[10px] text-slate-400">Rujukan regulasi, dasar hukum pengawasan, atau surat disposisi kepala daerah</p>
+                            <label class="block font-semibold text-ink text-xs">Dasar Surat Perintah Tugas (SPT)</label>
+                            <p class="text-[11px] text-ink-muted">Rujukan regulasi, dasar hukum pengawasan, atau surat disposisi kepala daerah</p>
                         </div>
                         <div class="flex items-center gap-1.5 flex-wrap">
-                            <button type="button" @click="openRegulasiModal = true" class="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold text-[11px] rounded-lg border border-emerald-300 dark:border-emerald-700 shadow-2xs transition-all cursor-pointer">
-                                📚 + Bank Regulasi
+                            <button type="button" @click="openRegulasiModal = true" class="px-2.5 py-1 bg-surface hover:bg-brand-soft text-emerald-800 dark:text-emerald-300 font-semibold text-[11px] rounded-[6px] border border-emerald-200 dark:border-emerald-800 transition-colors">
+                                + Bank Regulasi
                             </button>
-                            <button type="button" @click="openSuratModal = true" class="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-bold text-[11px] rounded-lg border border-blue-300 dark:border-blue-700 shadow-2xs transition-all cursor-pointer">
-                                📩 + Surat / Disposisi
+                            <button type="button" @click="openSuratModal = true" class="px-2.5 py-1 bg-surface hover:bg-blue-50 dark:hover:bg-blue-950/40 text-blue-800 dark:text-blue-300 font-semibold text-[11px] rounded-[6px] border border-blue-200 dark:border-blue-800 transition-colors">
+                                + Surat / Disposisi
                             </button>
-                            <button type="button" @click="urutkanHierarki()" class="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold text-[11px] rounded-lg border border-amber-300 dark:border-amber-700 shadow-2xs transition-all cursor-pointer" title="Urutkan dari Perda, Perbup, SK Bupati, hingga Disposisi">
-                                ⚖️ Urutkan Hierarki
+                            <button type="button" @click="urutkanHierarki()" class="px-2.5 py-1 bg-surface hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-900 dark:text-amber-300 font-semibold text-[11px] rounded-[6px] border border-amber-200 dark:border-amber-800 transition-colors" title="Urutkan dari Perda, Perbup, SK Bupati, hingga Disposisi">
+                                Urutkan Hierarki
                             </button>
-                            <button type="button" @click="resetDasarBaku()" class="px-2 py-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-[10px] font-semibold underline cursor-pointer" title="Reset ke Regulasi Baku">
-                                🔄 Reset Baku
+                            <button type="button" @click="resetDasarBaku()" class="px-2 py-1 text-ink-secondary hover:text-ink text-[11px] font-semibold underline transition-colors" title="Reset ke Regulasi Baku">
+                                Reset Baku
                             </button>
                         </div>
                     </div>
 
-                    <textarea name="dasar_penugasan" x-model="dasarText" rows="4" placeholder="1. Peraturan Daerah...&#10;2. Peraturan Bupati...&#10;3. PKPT Inspektorat Daerah..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500 leading-relaxed font-sans"></textarea>
-                    <p class="text-[10px] text-slate-400">Teks di atas otomatis tersusun sesuai hierarki perundang-undangan (Perda &gt; Perbup &gt; SK Kepala Daerah &gt; Disposisi) dan dapat Anda sunting secara langsung.</p>
+                    <textarea name="dasar_penugasan" x-model="dasarText" rows="4" placeholder="1. Peraturan Daerah...&#10;2. Peraturan Bupati...&#10;3. PKPT Inspektorat Daerah..." class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs leading-relaxed font-sans"></textarea>
+                    <p class="text-[11px] text-ink-muted">Teks di atas otomatis tersusun sesuai hierarki perundang-undangan (Perda &gt; Perbup &gt; SK Kepala Daerah &gt; Disposisi) dan dapat Anda sunting secara langsung.</p>
 
                     <!-- Modal Picker: Tambah dari Bank Regulasi -->
-                    <div x-show="openRegulasiModal" style="display: none;" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
-                        <div @click.outside="openRegulasiModal = false" class="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-4 border border-slate-200 dark:border-slate-700 shadow-2xl space-y-3">
-                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                                <h4 class="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
-                                    <span>📚 Pilih Regulasi dari Bank Data APIP</span>
+                    <div x-show="openRegulasiModal" style="display: none;" class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+                        <div @click.outside="openRegulasiModal = false" class="bg-surface rounded-[10px] max-w-lg w-full p-4 border border-hairline shadow-lg space-y-3">
+                            <div class="flex items-center justify-between border-b border-hairline pb-2">
+                                <h4 class="font-bold text-xs text-ink flex items-center gap-1.5">
+                                    <span>Pilih Regulasi dari Bank Data APIP</span>
                                 </h4>
-                                <button type="button" @click="openRegulasiModal = false" class="text-slate-400 hover:text-slate-600 text-sm font-bold">&times;</button>
+                                <button type="button" @click="openRegulasiModal = false" class="text-ink-muted hover:text-ink text-base font-bold leading-none" aria-label="Tutup">&times;</button>
                             </div>
 
-                            <input type="text" x-model="searchRegulasi" placeholder="Ketik nomor atau judul peraturan (mis. 45, PKPT, 10)..." class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs px-3 py-2">
+                            <input type="text" x-model="searchRegulasi" placeholder="Ketik nomor atau judul peraturan (mis. 45, PKPT, 10)..." class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs px-3 py-2">
 
-                            <div class="max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                            <div class="max-h-60 overflow-y-auto divide-y divide-hairline text-xs">
                                 <template x-for="r in filteredRegulasi" :key="r.id">
-                                    <div @click="tambahRegulasi(r)" class="p-2.5 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-xl cursor-pointer transition-colors space-y-0.5">
+                                    <button type="button" @click="tambahRegulasi(r)" class="w-full text-left p-2.5 hover:bg-brand-soft rounded-[6px] transition-colors space-y-0.5">
                                         <div class="flex items-center gap-2">
-                                            <span class="px-1.5 py-0.2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold uppercase text-[9px] rounded" x-text="r.jenis_regulasi"></span>
-                                            <span class="font-mono font-bold text-emerald-700 dark:text-emerald-400 text-[11px]" x-text="r.nomor_regulasi"></span>
+                                            <span class="px-1.5 py-0.5 bg-surface-subtle border border-hairline text-ink-secondary font-semibold uppercase text-[10px] rounded-[4px]" x-text="r.jenis_regulasi"></span>
+                                            <span class="font-mono font-semibold text-brand-ink text-[11px]" x-text="r.nomor_regulasi"></span>
                                         </div>
-                                        <p class="font-semibold text-slate-800 dark:text-slate-200 line-clamp-2 text-[11px]" x-text="r.judul"></p>
-                                    </div>
+                                        <p class="font-semibold text-ink line-clamp-2 text-[11px]" x-text="r.judul"></p>
+                                    </button>
                                 </template>
                             </div>
                         </div>
                     </div>
 
                     <!-- Modal Picker: Tambah Surat Masuk / Disposisi -->
-                    <div x-show="openSuratModal" style="display: none;" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
-                        <div @click.outside="openSuratModal = false" class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-4 border border-slate-200 dark:border-slate-700 shadow-2xl space-y-3">
-                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                                <h4 class="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
-                                    <span>📩 Tambah Dasar Berupa Surat Masuk / Disposisi</span>
+                    <div x-show="openSuratModal" style="display: none;" class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+                        <div @click.outside="openSuratModal = false" class="bg-surface rounded-[10px] max-w-md w-full p-4 border border-hairline shadow-lg space-y-3">
+                            <div class="flex items-center justify-between border-b border-hairline pb-2">
+                                <h4 class="font-bold text-xs text-ink flex items-center gap-1.5">
+                                    <span>Tambah Dasar Berupa Surat Masuk / Disposisi</span>
                                 </h4>
-                                <button type="button" @click="openSuratModal = false" class="text-slate-400 hover:text-slate-600 text-sm font-bold">&times;</button>
+                                <button type="button" @click="openSuratModal = false" class="text-ink-muted hover:text-ink text-base font-bold leading-none" aria-label="Tutup">&times;</button>
                             </div>
 
                             <div class="space-y-2.5 text-xs">
                                 <div>
-                                    <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400 text-[11px]">Nomor Surat / Disposisi <span class="text-rose-500">*</span></label>
-                                    <input type="text" x-model="suratNomor" placeholder="mis. 700/125/406.008/2026" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs px-3 py-2">
+                                    <label class="block font-semibold mb-1 text-ink-secondary text-[11px]">Nomor Surat / Disposisi <span class="text-red-700 dark:text-red-400">*</span></label>
+                                    <input type="text" x-model="suratNomor" placeholder="mis. 700/125/406.008/2026" class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs px-3 py-2">
                                 </div>
                                 <div>
-                                    <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400 text-[11px]">Tanggal Surat</label>
-                                    <input type="date" x-model="suratTanggal" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs px-3 py-2">
+                                    <label class="block font-semibold mb-1 text-ink-secondary text-[11px]">Tanggal Surat</label>
+                                    <input type="date" x-model="suratTanggal" value="{{ date('Y-m-d') }}" class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs px-3 py-2">
                                 </div>
                                 <div>
-                                    <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400 text-[11px]">Perihal / Asal Surat</label>
-                                    <input type="text" x-model="suratPerihal" placeholder="mis. Disposisi Bupati Trenggalek perihal Audit Khusus..." class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs px-3 py-2">
+                                    <label class="block font-semibold mb-1 text-ink-secondary text-[11px]">Perihal / Asal Surat</label>
+                                    <input type="text" x-model="suratPerihal" placeholder="mis. Disposisi Bupati Trenggalek perihal Audit Khusus..." class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs px-3 py-2">
                                 </div>
-                                <button type="button" @click="tambahSuratDisposisi()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-xs transition-all cursor-pointer">
+                                <button type="button" @click="tambahSuratDisposisi()" class="w-full py-2 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-[6px] text-xs transition-colors">
                                     + Sisipkan ke Dasar SPT
                                 </button>
                             </div>
@@ -418,8 +418,8 @@
                 <!-- Jenis & Sumber (Hanya tampil jika ST Baru / Reguler) -->
                 <div x-show="jenisSt === 'reguler'" x-transition class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block font-semibold mb-1">Jenis Penugasan <span class="text-rose-500">*</span></label>
-                        <select name="jenis_penugasan_id" :required="jenisSt === 'reguler'" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
+                        <label class="block font-semibold text-ink mb-1">Jenis Penugasan <span class="text-red-700 dark:text-red-400">*</span></label>
+                        <select name="jenis_penugasan_id" :required="jenisSt === 'reguler'" class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs">
                             <option value="">-- Pilih Jenis Penugasan --</option>
                             @foreach($jenisList as $j)
                                 <option value="{{ $j->id }}" {{ old('jenis_penugasan_id') == $j->id ? 'selected' : '' }}>
@@ -430,8 +430,8 @@
                     </div>
 
                     <div>
-                        <label class="block font-semibold mb-1">Sumber Penugasan <span class="text-rose-500">*</span></label>
-                        <select name="sumber_penugasan_id" :required="jenisSt === 'reguler'" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
+                        <label class="block font-semibold text-ink mb-1">Sumber Penugasan <span class="text-red-700 dark:text-red-400">*</span></label>
+                        <select name="sumber_penugasan_id" :required="jenisSt === 'reguler'" class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs">
                             <option value="">-- Pilih Sumber Penugasan --</option>
                             @foreach($sumberList as $s)
                                 <option value="{{ $s->id }}" {{ old('sumber_penugasan_id') == $s->id ? 'selected' : '' }}>{{ $s->nama }}</option>
@@ -442,8 +442,8 @@
 
                 <!-- Kelompok / Kluster Pengawasan (Bahan ILHP) -->
                 <div x-show="jenisSt === 'reguler'" x-transition>
-                    <label class="block font-semibold mb-1">Kelompok / Kluster Pengawasan (Bahan ILHP) <span class="text-slate-400 font-normal">(Otomatis terisi jika memilih PKPPT)</span></label>
-                    <select name="kelompok_pengawasan_id" id="kelompokPengawasanSelect" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500 font-semibold text-slate-800 dark:text-slate-200">
+                    <label class="block font-semibold text-ink mb-1">Kelompok / Kluster Pengawasan (Bahan ILHP) <span class="text-ink-muted font-normal">(Otomatis terisi jika memilih PKPPT)</span></label>
+                    <select name="kelompok_pengawasan_id" id="kelompokPengawasanSelect" class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs font-semibold">
                         <option value="">-- Pilih Kelompok Pengawasan (Opsional / Otomatis dari PKPPT) --</option>
                         @foreach($kelompokList as $k)
                             <option value="{{ $k->id }}" {{ old('kelompok_pengawasan_id') == $k->id ? 'selected' : '' }}>
@@ -456,27 +456,27 @@
                 <!-- Tanggal Mulai & Selesai -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block font-semibold mb-1">Tanggal Mulai <span class="text-rose-500">*</span></label>
-                        <input type="date" name="tanggal_mulai" value="{{ old('tanggal_mulai') }}" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
+                        <label class="block font-semibold text-ink mb-1">Tanggal Mulai <span class="text-red-700 dark:text-red-400">*</span></label>
+                        <input type="date" name="tanggal_mulai" value="{{ old('tanggal_mulai') }}" required class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs">
                     </div>
                     <div>
-                        <label class="block font-semibold mb-1">Tanggal Selesai <span class="text-rose-500">*</span></label>
-                        <input type="date" name="tanggal_selesai" value="{{ old('tanggal_selesai') }}" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-emerald-500">
+                        <label class="block font-semibold text-ink mb-1">Tanggal Selesai <span class="text-red-700 dark:text-red-400">*</span></label>
+                        <input type="date" name="tanggal_selesai" value="{{ old('tanggal_selesai') }}" required class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs">
                     </div>
                 </div>
 
                 <!-- Flag Sesuai PKPPT (Hanya tampil jika ST Baru / Reguler) -->
-                <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800"
+                <div class="mt-5 pt-4 border-t border-hairline"
                     x-show="jenisSt === 'reguler'" x-transition>
                     
-                    <label class="block font-semibold mb-2">Kesesuaian dengan PKPPT</label>
+                    <label class="block font-semibold text-ink mb-2">Kesesuaian dengan PKPPT</label>
                     <div class="flex items-center gap-6">
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" name="is_sesuai_pkppt" value="1" x-model="isPkppt" class="text-emerald-600 focus:ring-emerald-500">
+                        <label class="inline-flex items-center cursor-pointer text-ink">
+                            <input type="radio" name="is_sesuai_pkppt" value="1" x-model="isPkppt" class="text-brand focus:ring-brand">
                             <span class="ms-2 font-medium">Sesuai PKPPT</span>
                         </label>
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" name="is_sesuai_pkppt" value="0" x-model="isPkppt" class="text-emerald-600 focus:ring-emerald-500">
+                        <label class="inline-flex items-center cursor-pointer text-ink">
+                            <input type="radio" name="is_sesuai_pkppt" value="0" x-model="isPkppt" class="text-brand focus:ring-brand">
                             <span class="ms-2 font-medium">Di Luar PKPPT (Non-PKPPT)</span>
                         </label>
                     </div>
@@ -519,32 +519,32 @@
                             }
                         }">
 
-                        <label class="block font-semibold mb-1">Pilih Baris Rencana PKPPT Terkait <span class="text-rose-500">*</span></label>
+                        <label class="block font-semibold text-ink mb-1">Pilih Baris Rencana PKPPT Terkait <span class="text-red-700 dark:text-red-400">*</span></label>
                         <input type="hidden" name="pkppt_id" :value="(jenisSt === 'reguler' && isPkppt == '1') ? selectedId : ''">
 
                         <div class="relative">
                             <button type="button" @click="open = !open; if(open) $nextTick(() => $refs.searchInput.focus())" @click.outside="open = false" 
-                                class="w-full text-left px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold flex items-center justify-between shadow-xs focus:ring-2 focus:ring-emerald-500">
-                                <span x-text="selectedId ? selectedLabel : '-- Klik untuk memilih Rencana PKPPT --'" class="truncate text-slate-800 dark:text-slate-200"></span>
-                                <svg class="w-4 h-4 text-slate-400 shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                class="w-full text-left px-3.5 py-2.5 rounded-[6px] border border-hairline-strong bg-surface text-xs font-semibold flex items-center justify-between text-ink">
+                                <span x-text="selectedId ? selectedLabel : '-- Klik untuk memilih Rencana PKPPT --'" class="truncate text-ink"></span>
+                                <svg class="w-4 h-4 text-ink-muted shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
 
                             <div x-show="open" x-transition 
-                                class="absolute z-50 mt-1 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-2 space-y-2">
-                                <input type="text" x-model="search" x-ref="searchInput" placeholder="🔍 Ketik nama area / Irban di sini..." 
-                                    class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs px-3 py-2 focus:ring-2 focus:ring-emerald-500 font-medium">
+                                class="absolute z-50 mt-1 w-full bg-surface border border-hairline rounded-[10px] shadow-lg p-2 space-y-2">
+                                <input type="text" x-model="search" x-ref="searchInput" placeholder="Ketik nama area / Irban di sini..." 
+                                    class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs px-3 py-2 font-medium">
                                 
-                                <div class="max-h-52 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
+                                <div class="max-h-52 overflow-y-auto divide-y divide-hairline">
                                     <template x-for="opt in filteredOptions" :key="opt.id">
-                                        <div @click="select(opt)" 
-                                            class="px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-lg cursor-pointer transition-colors"
-                                            :class="{ 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 font-bold': selectedId == opt.id }">
+                                        <button type="button" @click="select(opt)" 
+                                            class="w-full text-left px-3 py-2 text-xs font-medium text-ink hover:bg-brand-soft hover:text-brand-ink rounded-[6px] transition-colors"
+                                            :class="{ 'bg-brand-soft text-brand-ink font-semibold': selectedId == opt.id }">
                                             <span x-text="opt.label"></span>
-                                        </div>
+                                        </button>
                                     </template>
-                                    <div x-show="filteredOptions.length === 0" class="p-3 text-center text-slate-400 text-xs">
+                                    <div x-show="filteredOptions.length === 0" class="p-3 text-center text-ink-muted text-xs">
                                         Tidak ada baris PKPPT yang cocok.
                                     </div>
                                 </div>
@@ -555,48 +555,48 @@
             </div>
 
             <!-- Card 2: Objek Penugasan (Hanya jika ST Baru / Reguler) -->
-            <div x-show="jenisSt === 'reguler'" x-transition class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 text-xs">
+            <div x-show="jenisSt === 'reguler'" x-transition class="bg-surface rounded-[10px] p-6 border border-hairline text-xs">
                 <div class="flex items-center justify-between mb-2">
                     <div>
-                        <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
-                            <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
-                            2. Objek Penugasan (OPD / Kecamatan Target) <span class="text-rose-500">*</span>
+                        <h3 class="font-bold text-ink text-base flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 bg-blue-600 rounded-full" aria-hidden="true"></span>
+                            2. Objek Penugasan (OPD / Kecamatan Target) <span class="text-red-700 dark:text-red-400">*</span>
                         </h3>
-                        <p class="text-slate-500 mt-0.5">Pilih satu atau beberapa instansi target pemeriksaan.</p>
+                        <p class="text-ink-secondary mt-0.5">Pilih satu atau beberapa instansi target pemeriksaan.</p>
                     </div>
 
-                    <button type="button" onclick="document.getElementById('modalTambahObjekFast').classList.remove('hidden')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-semibold rounded-xl text-xs flex items-center gap-1 border border-blue-200">
+                    <button type="button" onclick="document.getElementById('modalTambahObjekFast').classList.remove('hidden')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 dark:hover:bg-blue-900/50 font-semibold rounded-[6px] text-xs flex items-center gap-1 border border-blue-200 dark:border-blue-800 transition-colors">
                         <span>+ Tambah Objek Baru</span>
                     </button>
                 </div>
 
                 <!-- Filter Objek Penugasan -->
                 <div class="mb-2">
-                    <input type="text" id="searchObjek" onkeyup="filterObjekOptions()" placeholder="🔍 Cari nama instansi / kecamatan target..." class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs px-3 py-1.5 focus:ring-blue-500 font-medium">
+                    <input type="text" id="searchObjek" onkeyup="filterObjekOptions()" placeholder="Cari nama instansi / kecamatan target..." class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs px-3 py-1.5 font-medium">
                 </div>
 
-                <div id="containerObjekList" class="max-h-48 overflow-y-auto p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div id="containerObjekList" class="max-h-48 overflow-y-auto p-3 bg-surface-subtle rounded-[6px] border border-hairline grid grid-cols-1 sm:grid-cols-2 gap-2">
                     @foreach($objekList as $objek)
-                        <label class="item-objek inline-flex items-center gap-2 p-1.5 rounded-lg hover:bg-white dark:hover:bg-slate-700/60 cursor-pointer">
-                            <input type="checkbox" name="objek_ids[]" value="{{ $objek->id }}" {{ is_array(old('objek_ids')) && in_array($objek->id, old('objek_ids')) ? 'checked' : '' }} class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-                            <span class="text-xs font-medium text-slate-800 dark:text-slate-200">{{ $objek->nama }}</span>
+                        <label class="item-objek inline-flex items-center gap-2 p-1.5 rounded-[4px] hover:bg-surface cursor-pointer">
+                            <input type="checkbox" name="objek_ids[]" value="{{ $objek->id }}" {{ is_array(old('objek_ids')) && in_array($objek->id, old('objek_ids')) ? 'checked' : '' }} class="rounded-[4px] border-hairline-strong text-brand focus:ring-brand">
+                            <span class="text-xs font-medium text-ink">{{ $objek->nama }}</span>
                         </label>
                     @endforeach
                 </div>
             </div>
 
             <!-- Card 3: Susunan Personil Tim Pengawasan (Tampil jika ST Reguler atau ST Bantuan) -->
-            <div x-show="jenisSt === 'reguler' || jenisSt === 'bantuan'" x-transition class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 text-xs space-y-4">
-                <h3 class="font-bold text-slate-900 dark:text-white text-base mb-1 flex items-center gap-2">
-                    <span class="w-3 h-3 bg-purple-500 rounded-full"></span>
+            <div x-show="jenisSt === 'reguler' || jenisSt === 'bantuan'" x-transition class="bg-surface rounded-[10px] p-6 border border-hairline text-xs space-y-4">
+                <h3 class="font-bold text-ink text-base mb-1 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 bg-purple-600 rounded-full" aria-hidden="true"></span>
                     <span x-text="jenisSt === 'bantuan' ? '3. Susunan Personil Tim Bantuan' : '3. Susunan Personil Tim Pengawasan'"></span>
-                    <span class="text-rose-500">*</span>
+                    <span class="text-red-700 dark:text-red-400">*</span>
                 </h3>
 
                 <!-- Info Khusus ST Bantuan -->
-                <div x-show="jenisSt === 'bantuan'" class="p-3.5 bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/60 rounded-xl text-cyan-950 dark:text-cyan-200">
-                    <p class="font-bold flex items-center gap-1.5 text-xs">
-                        <span>🤝 Ketentuan Format Tim ST Bantuan:</span>
+                <div x-show="jenisSt === 'bantuan'" class="p-3.5 bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 rounded-[6px] text-cyan-900 dark:text-cyan-200">
+                    <p class="font-semibold flex items-center gap-1.5 text-xs">
+                        <span>Ketentuan Format Tim ST Bantuan:</span>
                     </p>
                     <p class="text-[11px] mt-1 leading-relaxed">
                         Pada Surat Tugas Bantuan, struktur Penanggung Jawab, Wakil PJ, Pengendali Teknis, dan Ketua Tim <strong>menginduk pada Surat Tugas Utama</strong>. Anda hanya perlu memilih satu atau beberapa <strong>Anggota Tim Bantuan</strong> di bawah ini.
@@ -607,14 +607,14 @@
                 <div x-show="jenisSt === 'reguler'" x-transition class="space-y-4">
                     <!-- Wakil Penanggung Jawab -->
                     <div>
-                        <label class="block font-semibold mb-1">Wakil Penanggung Jawab <span class="text-rose-500">*</span></label>
-                        <input type="text" onkeyup="filterPersonil(this, 'containerWakilPj')" placeholder="🔍 Cari nama / NIP Wakil Penanggung Jawab..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
-                        <div id="containerWakilPj" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
+                        <label class="block font-semibold text-ink mb-1">Wakil Penanggung Jawab <span class="text-red-700 dark:text-red-400">*</span></label>
+                        <input type="text" onkeyup="filterPersonil(this, 'containerWakilPj')" placeholder="Cari nama / NIP Wakil Penanggung Jawab..." class="w-full mb-1.5 rounded-[6px] border-hairline-strong bg-surface text-ink text-[11px] px-3 py-1.5 font-medium">
+                        <div id="containerWakilPj" class="p-3 bg-surface-subtle rounded-[6px] border border-hairline max-h-36 overflow-y-auto space-y-1">
                             @foreach($usersList as $u)
-                                <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                                <label class="item-personil flex items-center gap-2 font-medium text-ink cursor-pointer p-1 rounded-[4px] hover:bg-surface">
                                     <input type="checkbox" name="tim_wakil_pj[]" value="{{ $u->id }}"
                                         {{ is_array(old('tim_wakil_pj')) && in_array($u->id, old('tim_wakil_pj')) ? 'checked' : '' }}
-                                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                        class="rounded-[4px] border-hairline-strong text-brand focus:ring-brand">
                                     <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
                                 </label>
                             @endforeach
@@ -623,14 +623,14 @@
 
                     <!-- Pengendali Teknis -->
                     <div>
-                        <label class="block font-semibold mb-1">Pengendali Teknis <span class="text-rose-500">*</span></label>
-                        <input type="text" onkeyup="filterPersonil(this, 'containerDaltek')" placeholder="🔍 Cari nama / NIP Pengendali Teknis (Dalnis)..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
-                        <div id="containerDaltek" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
+                        <label class="block font-semibold text-ink mb-1">Pengendali Teknis <span class="text-red-700 dark:text-red-400">*</span></label>
+                        <input type="text" onkeyup="filterPersonil(this, 'containerDaltek')" placeholder="Cari nama / NIP Pengendali Teknis (Dalnis)..." class="w-full mb-1.5 rounded-[6px] border-hairline-strong bg-surface text-ink text-[11px] px-3 py-1.5 font-medium">
+                        <div id="containerDaltek" class="p-3 bg-surface-subtle rounded-[6px] border border-hairline max-h-36 overflow-y-auto space-y-1">
                             @foreach($usersList as $u)
-                                <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                                <label class="item-personil flex items-center gap-2 font-medium text-ink cursor-pointer p-1 rounded-[4px] hover:bg-surface">
                                     <input type="checkbox" name="tim_daltek[]" value="{{ $u->id }}"
                                         {{ is_array(old('tim_daltek')) && in_array($u->id, old('tim_daltek')) ? 'checked' : '' }}
-                                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                        class="rounded-[4px] border-hairline-strong text-brand focus:ring-brand">
                                     <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
                                 </label>
                             @endforeach
@@ -639,14 +639,14 @@
 
                     <!-- Ketua Tim -->
                     <div>
-                        <label class="block font-semibold mb-1">Ketua Tim <span class="text-rose-500">*</span></label>
-                        <input type="text" onkeyup="filterPersonil(this, 'containerKetua')" placeholder="🔍 Cari nama / NIP Ketua Tim..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
-                        <div id="containerKetua" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-36 overflow-y-auto space-y-1">
+                        <label class="block font-semibold text-ink mb-1">Ketua Tim <span class="text-red-700 dark:text-red-400">*</span></label>
+                        <input type="text" onkeyup="filterPersonil(this, 'containerKetua')" placeholder="Cari nama / NIP Ketua Tim..." class="w-full mb-1.5 rounded-[6px] border-hairline-strong bg-surface text-ink text-[11px] px-3 py-1.5 font-medium">
+                        <div id="containerKetua" class="p-3 bg-surface-subtle rounded-[6px] border border-hairline max-h-36 overflow-y-auto space-y-1">
                             @foreach($usersList as $u)
-                                <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                                <label class="item-personil flex items-center gap-2 font-medium text-ink cursor-pointer p-1 rounded-[4px] hover:bg-surface">
                                     <input type="checkbox" name="tim_ketua[]" value="{{ $u->id }}"
                                         {{ is_array(old('tim_ketua')) && in_array($u->id, old('tim_ketua')) ? 'checked' : '' }}
-                                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                        class="rounded-[4px] border-hairline-strong text-brand focus:ring-brand">
                                     <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
                                 </label>
                             @endforeach
@@ -656,18 +656,18 @@
 
                 <!-- Anggota Tim -->
                 <div>
-                    <label class="block font-semibold mb-1">
+                    <label class="block font-semibold text-ink mb-1">
                         <span x-text="jenisSt === 'bantuan' ? 'Anggota Tim Bantuan' : 'Anggota Tim'"></span>
-                        <span class="text-rose-500">*</span>
-                        <span class="text-slate-400 font-normal text-[11px]">(Minimal 1 orang)</span>
+                        <span class="text-red-700 dark:text-red-400">*</span>
+                        <span class="text-ink-muted font-normal text-[11px]">(Minimal 1 orang)</span>
                     </label>
-                    <input type="text" onkeyup="filterPersonil(this, 'containerAnggota')" placeholder="🔍 Cari nama / NIP Anggota Tim..." class="w-full mb-1.5 rounded-xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] px-3 py-1.5 focus:ring-emerald-500 font-medium">
-                    <div id="containerAnggota" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-40 overflow-y-auto space-y-1">
+                    <input type="text" onkeyup="filterPersonil(this, 'containerAnggota')" placeholder="Cari nama / NIP Anggota Tim..." class="w-full mb-1.5 rounded-[6px] border-hairline-strong bg-surface text-ink text-[11px] px-3 py-1.5 font-medium">
+                    <div id="containerAnggota" class="p-3 bg-surface-subtle rounded-[6px] border border-hairline max-h-40 overflow-y-auto space-y-1">
                         @foreach($usersList as $u)
-                            <label class="item-personil flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer p-1 rounded hover:bg-white dark:hover:bg-slate-700">
+                            <label class="item-personil flex items-center gap-2 font-medium text-ink cursor-pointer p-1 rounded-[4px] hover:bg-surface">
                                 <input type="checkbox" name="tim_anggota[]" value="{{ $u->id }}"
                                     {{ is_array(old('tim_anggota')) && in_array($u->id, old('tim_anggota')) ? 'checked' : '' }}
-                                    class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                    class="rounded-[4px] border-hairline-strong text-brand focus:ring-brand">
                                 <span>{{ $u->nama }} (NIP. {{ $u->nip ?? '-' }})</span>
                             </label>
                         @endforeach
@@ -677,10 +677,10 @@
 
             <!-- Submit Button -->
             <div class="flex items-center justify-end gap-3 pt-2">
-                <a href="{{ route('penugasan.index') }}" class="px-5 py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs">
+                <a href="{{ route('penugasan.index') }}" class="ledger-btn-secondary !text-xs">
                     Batal
                 </a>
-                <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/25 transition-all">
+                <button type="submit" class="ledger-btn-primary !text-xs">
                     Simpan Penugasan (SPT)
                 </button>
             </div>
@@ -688,23 +688,23 @@
     </div>
 
     <!-- Modal Fast Tambah Objek Baru -->
-    <div id="modalTambahObjekFast" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-800 text-xs">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
-                <h3 class="font-bold text-slate-900 dark:text-white text-base">Tambah Manual Objek Penugasan Baru</h3>
-                <button onclick="document.getElementById('modalTambahObjekFast').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+    <div id="modalTambahObjekFast" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/50 flex items-center justify-center p-4">
+        <div class="bg-surface rounded-[10px] shadow-lg max-w-md w-full p-6 border border-hairline text-xs">
+            <div class="flex items-center justify-between pb-4 border-b border-hairline">
+                <h3 class="font-bold text-ink text-base">Tambah Manual Objek Penugasan Baru</h3>
+                <button type="button" onclick="document.getElementById('modalTambahObjekFast').classList.add('hidden')" class="text-ink-muted hover:text-ink text-xl font-bold leading-none" aria-label="Tutup">&times;</button>
             </div>
 
             <form method="POST" action="{{ route('master.objek-penugasan.store') }}" class="space-y-4 mt-4">
                 @csrf
                 <div>
-                    <label class="block font-semibold mb-1">Nama Instansi / Objek <span class="text-rose-500">*</span></label>
-                    <input type="text" name="nama" required placeholder="mis. Dinas Ketahanan Pangan / Desa Sambirejo" class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                    <label class="block font-semibold text-ink mb-1">Nama Instansi / Objek <span class="text-red-700 dark:text-red-400">*</span></label>
+                    <input type="text" name="nama" required placeholder="mis. Dinas Ketahanan Pangan / Desa Sambirejo" class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs">
                 </div>
 
                 <div>
-                    <label class="block font-semibold mb-1">Kategori Objek <span class="text-rose-500">*</span></label>
-                    <select name="kategori" required class="w-full rounded-xl border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs">
+                    <label class="block font-semibold text-ink mb-1">Kategori Objek <span class="text-red-700 dark:text-red-400">*</span></label>
+                    <select name="kategori" required class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs">
                         <option value="opd">OPD (Dinas / Badan / RSUD)</option>
                         <option value="kecamatan">Kecamatan</option>
                         <option value="desa">Desa</option>
@@ -713,9 +713,9 @@
                     </select>
                 </div>
 
-                <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800">
-                    <button type="button" onclick="document.getElementById('modalTambahObjekFast').classList.add('hidden')" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-semibold rounded-xl">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md">Simpan Objek</button>
+                <div class="pt-4 flex items-center justify-end gap-3 border-t border-hairline">
+                    <button type="button" onclick="document.getElementById('modalTambahObjekFast').classList.add('hidden')" class="ledger-btn-secondary !text-xs">Batal</button>
+                    <button type="submit" class="ledger-btn-primary !text-xs">Simpan Objek</button>
                 </div>
             </form>
         </div>
@@ -757,7 +757,7 @@
             let emptyMsg = container.querySelector('.empty-msg');
             if (!emptyMsg) {
                 emptyMsg = document.createElement('div');
-                emptyMsg.className = 'empty-msg p-2 text-center text-slate-400 text-[11px]';
+                emptyMsg.className = 'empty-msg p-2 text-center text-ink-muted text-[11px]';
                 emptyMsg.innerText = 'Tidak ada nama / NIP personil yang cocok.';
                 container.appendChild(emptyMsg);
             }
