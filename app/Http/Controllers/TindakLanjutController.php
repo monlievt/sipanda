@@ -758,7 +758,7 @@ class TindakLanjutController extends Controller
                 'jenis'        => 'info_lain',
                 'judul'        => 'Pengajuan Telaah TL: ' . ($tindakLanjut->no_lhp ?? $tindakLanjut->penugasan?->no_spt),
                 'pesan'        => "Tim Pemantauan telah mengajukan hasil telaah tindak lanjut LHP (Usulan: " . strtoupper($validated['status_rekomendasi']) . ") untuk diverifikasi oleh Irban.",
-                'url_target'   => route('tindak-lanjut.show', $tindakLanjut->id),
+                'url_target'   => route('tindak-lanjut.show', $tindakLanjut->id, false),
                 'status'       => 'terkirim',
                 'dikirim_pada' => now(),
             ]);
@@ -820,7 +820,7 @@ class TindakLanjutController extends Controller
                     'jenis'        => 'info_lain',
                     'judul'        => 'Usulan Persetujuan Telaah TL dari Irban',
                     'pesan'        => "Irban telah memverifikasi telaah TL ({$tindakLanjut->no_lhp}) dan mengusulkannya kepada Inspektur untuk disetujui.",
-                    'url_target'   => route('tindak-lanjut.show', $tindakLanjut->id),
+                    'url_target'   => route('tindak-lanjut.show', $tindakLanjut->id, false),
                     'status'       => 'terkirim',
                     'dikirim_pada' => now(),
                 ]);
@@ -834,7 +834,7 @@ class TindakLanjutController extends Controller
                     'jenis'        => 'info_lain',
                     'judul'        => 'Telaah TL Dikembalikan oleh Irban (Perlu Revisi)',
                     'pesan'        => "Hasil telaah TL ({$tindakLanjut->no_lhp}) dikembalikan oleh Irban untuk diperbaiki. Catatan: {$validated['catatan_verifikasi_irban']}",
-                    'url_target'   => route('tindak-lanjut.show', $tindakLanjut->id),
+                    'url_target'   => route('tindak-lanjut.show', $tindakLanjut->id, false),
                     'status'       => 'terkirim',
                     'dikirim_pada' => now(),
                 ]);
@@ -946,7 +946,7 @@ class TindakLanjutController extends Controller
                     'jenis'        => 'info_lain',
                     'judul'        => "Persetujuan Akhir Telaah TL: Disetujui Final",
                     'pesan'        => "Inspektur telah MENYETUJUI FINAL telaah tindak lanjut LHP {$namaLhp}. Matriks TL & Surat Pengantar resmi siap dicetak/didistribusikan.",
-                    'url_target'   => route('tindak-lanjut.show', $tindakLanjut->id),
+                    'url_target'   => route('tindak-lanjut.show', $tindakLanjut->id, false),
                     'status'       => 'terkirim',
                     'dikirim_pada' => now(),
                 ]);
@@ -972,7 +972,7 @@ class TindakLanjutController extends Controller
                     'jenis'        => 'info_lain',
                     'judul'        => "Telaah TL Dikembalikan oleh Inspektur (Perlu Penyesuaian)",
                     'pesan'        => "Inspektur mengembalikan telaah TL ({$tindakLanjut->no_lhp}) untuk disesuaikan. Catatan: {$validated['catatan_persetujuan_inspektur']}",
-                    'url_target'   => route('tindak-lanjut.show', $tindakLanjut->id),
+                    'url_target'   => route('tindak-lanjut.show', $tindakLanjut->id, false),
                     'status'       => 'terkirim',
                     'dikirim_pada' => now(),
                 ]);

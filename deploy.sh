@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Memulai Deployment Produksi SIPANDA Web..."
+echo "Memulai Deployment Produksi SINGAWASI Web..."
 
 # 1. Maintenance Mode
 php artisan down || true
@@ -28,4 +28,4 @@ php artisan queue:restart || true
 # 7. Keluar dari Maintenance Mode
 php artisan up
 
-echo "✅ SIPANDA Web Berhasil Dideploy ke Produksi!"
+echo "SINGAWASI Web Berhasil Dideploy ke Produksi!"

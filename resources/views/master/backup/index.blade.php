@@ -97,7 +97,7 @@
 
                         <div>
                             <label class="block font-semibold text-ink-secondary text-[10px] uppercase mb-1">Email Tujuan</label>
-                            <input type="email" name="email_destination" value="{{ $settings['email_destination'] }}" placeholder="admin@trenggalek.go.id" class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs px-3 py-1.5 font-semibold">
+                            <input type="email" name="email_destination" value="{{ $settings['email_destination'] }}" placeholder="admin@trenggalekkab.go.id" class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs px-3 py-1.5 font-semibold">
                         </div>
 
                         <div class="flex items-center justify-between gap-2">

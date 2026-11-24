@@ -151,7 +151,7 @@ class KonsultasiController extends Controller
                 'jenis'        => 'info_lain',
                 'judul'        => 'Disposisi Konsultasi dari Inspektur',
                 'pesan'        => "Konsultasi '{$konsultasi->topik}' didisposisikan kepada Irban Anda. Arahan: {$request->catatan_disposisi_inspektur}",
-                'url_target'   => route('konsultasi.show', $konsultasi->id),
+                'url_target'   => route('konsultasi.show', $konsultasi->id, false),
                 'status'       => 'terkirim',
                 'dikirim_pada' => now(),
             ]);
@@ -175,7 +175,7 @@ class KonsultasiController extends Controller
                 'jenis'        => 'info_lain',
                 'judul'        => 'Konsultasi Didisposisikan oleh Inspektur',
                 'pesan'        => "Permohonan konsultasi #{$konsultasi->nomor_tiket} telah didisposisikan oleh Inspektur kepada {$irban->nama_irban}.",
-                'url_target'   => route('opd.konsultasi.show', $konsultasi->id),
+                'url_target'   => route('opd.konsultasi.show', $konsultasi->id, false),
                 'status'       => 'terkirim',
                 'dikirim_pada' => now(),
             ]);
@@ -256,7 +256,7 @@ class KonsultasiController extends Controller
                 'jenis'        => 'info_lain',
                 'judul'        => 'Penugasan Tim Konsultasi APIP',
                 'pesan'        => "Konsultasi topik '{$konsultasi->topik}' ditugaskan kepada Anda.",
-                'url_target'   => route('konsultasi.show', $konsultasi->id),
+                'url_target'   => route('konsultasi.show', $konsultasi->id, false),
                 'status'       => 'terkirim',
                 'dikirim_pada' => now(),
             ]);
@@ -275,7 +275,7 @@ class KonsultasiController extends Controller
                 'jenis'        => 'info_lain',
                 'judul'        => 'Tim Konsultasi APIP Telah Siap',
                 'pesan'        => "Permohonan konsultasi #{$konsultasi->nomor_tiket} telah ditanggapi. Tim APIP telah siap melayani.",
-                'url_target'   => route('opd.konsultasi.show', $konsultasi->id),
+                'url_target'   => route('opd.konsultasi.show', $konsultasi->id, false),
                 'status'       => 'terkirim',
                 'dikirim_pada' => now(),
             ]);

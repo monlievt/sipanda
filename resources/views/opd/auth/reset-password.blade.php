@@ -80,7 +80,7 @@
                     <label for="email" class="block text-xs sm:text-sm font-semibold text-ink mb-1">Email Resmi OPD</label>
                     <input id="email" type="email" name="email" value="{{ old('email', $email) }}" required autocomplete="email"
                         class="w-full"
-                        placeholder="dinas@trenggalek.go.id">
+                        placeholder="dinas@trenggalekkab.go.id">
                 </div>
 
                 <div>

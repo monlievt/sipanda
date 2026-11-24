@@ -46,7 +46,7 @@
             <label for="email" class="block text-xs sm:text-sm font-semibold text-ink mb-1">Email atau NIP</label>
             <input id="email" type="text" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
                 class="w-full"
-                placeholder="nama@trenggalek.go.id atau NIP">
+                placeholder="nama@trenggalekkab.go.id atau NIP">
             <x-input-error :messages="$errors->get('email')" class="mt-1" />
         </div>
 

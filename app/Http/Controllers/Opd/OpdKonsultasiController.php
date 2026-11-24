@@ -127,7 +127,7 @@ class OpdKonsultasiController extends Controller
                 'jenis'        => 'info_lain',
                 'judul'        => 'Permohonan Konsultasi Baru dari OPD',
                 'pesan'        => "Permohonan #{$nomorTiket} dari {$objek?->nama}: '{$konsultasi->judul_permasalahan}'. Menunggu disposisi arahan Inspektur.",
-                'url_target'   => route('konsultasi.show', $konsultasi->id),
+                'url_target'   => route('konsultasi.show', $konsultasi->id, false),
                 'status'       => 'terkirim',
                 'dikirim_pada' => now(),
             ]);
@@ -214,7 +214,7 @@ class OpdKonsultasiController extends Controller
                 'jenis'        => 'info_lain',
                 'judul'        => 'Pesan Konsultasi Baru dari OPD',
                 'pesan'        => "Pesan baru dari " . ($opdUser->nama_display ?? 'OPD') . ": \"" . Str::limit($request->pesan, 80) . "\"",
-                'url_target'   => route('konsultasi.show', $konsultasi->id),
+                'url_target'   => route('konsultasi.show', $konsultasi->id, false),
                 'status'       => 'terkirim',
                 'dikirim_pada' => now(),
             ]);

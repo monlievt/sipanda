@@ -39,6 +39,44 @@ class Notifikasi extends Model
 
     // ─── Helper Methods ───────────────────────────────────
 
+    /**
+     * Normalisasi url_target menjadi path relatif internal agar tidak terikat
+     * pada domain lama (misal sipanda.* saat aplikasi sudah pindah ke singawasi.*)
+     * sekaligus mencegah open redirect ke host eksternal.
+     */
+    public static function normalizeUrlTarget(?string $url): ?string
+    {
+        if ($url === null) {
+            return null;
+        }
+
+        $trimmed = trim($url);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        $parts = parse_url($trimmed);
+        if ($parts === false) {
+            return null;
+        }
+
+        $path = '/' . ltrim((string) ($parts['path'] ?? ''), '/');
+        $query = isset($parts['query']) && $parts['query'] !== '' ? '?' . $parts['query'] : '';
+        $fragment = isset($parts['fragment']) && $parts['fragment'] !== '' ? '#' . $parts['fragment'] : '';
+
+        return $path . $query . $fragment;
+    }
+
+    public function setUrlTargetAttribute(?string $value): void
+    {
+        $this->attributes['url_target'] = self::normalizeUrlTarget($value);
+    }
+
+    public function getResolvedUrlTargetAttribute(): ?string
+    {
+        return self::normalizeUrlTarget($this->attributes['url_target'] ?? null);
+    }
+
     public function markAsRead(): bool
     {
         if (is_null($this->dibaca_pada)) {

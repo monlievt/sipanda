@@ -217,7 +217,7 @@
 
                 <div>
                     <label class="block font-bold mb-1 text-ink">Email Objek Pengawasan / Entitas <span class="text-rose-600">*</span></label>
-                    <input type="email" name="email" required placeholder="disdik@trenggalek.go.id" class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs font-semibold">
+                    <input type="email" name="email" required placeholder="disdik@trenggalekkab.go.id" class="w-full rounded-[6px] border-hairline-strong bg-surface text-ink text-xs font-semibold">
                     <p class="text-[10px] text-ink-muted mt-1">Digunakan sebagai username saat login di Portal OPD.</p>
                 </div>
 

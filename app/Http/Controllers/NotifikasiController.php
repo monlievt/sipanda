@@ -82,8 +82,8 @@ class NotifikasiController extends Controller
             return response()->json(['success' => true]);
         }
 
-        if ($notifikasi->url_target) {
-            return redirect($notifikasi->url_target);
+        if ($targetUrl = $notifikasi->resolved_url_target) {
+            return redirect()->to($targetUrl);
         }
 
         if ($notifikasi->penugasan_id) {

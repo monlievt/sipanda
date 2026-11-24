@@ -292,7 +292,7 @@ class OpdDashboardController extends Controller
                 'jenis'        => 'bukti_diunggah',
                 'judul'        => "Tindak Lanjut Baru dari {$namaOpd}",
                 'pesan'        => "PIC {$namaOpd} mengirim respon/bukti baru untuk LHP {$tindakLanjut->no_lhp}." . ($nilaiSetor > 0 ? " Setoran Kasda: Rp " . number_format($nilaiSetor, 0, ',', '.') : ""),
-                'url_target'   => route('tindak-lanjut.show', $tindakLanjut->id),
+                'url_target'   => route('tindak-lanjut.show', $tindakLanjut->id, false),
                 'status'       => 'terkirim',
                 'dikirim_pada' => now(),
             ]);

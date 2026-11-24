@@ -66,7 +66,7 @@
 
                         <div>
                             <label class="block font-bold text-xs text-ink mb-1.5">Email Dinas / Akun <span class="text-rose-600">*</span></label>
-                            <input type="email" name="email" id="inputEmail" value="{{ old('email') }}" required placeholder="nama@trenggalek.go.id" class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs px-3.5 py-2.5">
+                            <input type="email" name="email" id="inputEmail" value="{{ old('email') }}" required placeholder="nama@trenggalekkab.go.id" class="w-full rounded-[6px] border border-hairline-strong bg-surface text-ink text-xs px-3.5 py-2.5">
                         </div>
 
                         <div>
